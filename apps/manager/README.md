@@ -1,6 +1,6 @@
-# `apps/manager` — Restaurant Manager
+# `apps/manager` — Web dashboard
 
-Lovable-generated **web dashboard** for the `restaurant_manager` role.
+One login for platform admins and restaurant partners. `admin` lands on `/admin`. `restaurant_owner` and `restaurant_manager` land on the kitchen. Everyone else lands on `/blocked`.
 
 ## What belongs here
 

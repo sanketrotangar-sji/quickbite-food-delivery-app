@@ -46,6 +46,9 @@ export type HighlightInput = {
   kind: HighlightKind;
   sort_order: number;
   is_active: boolean;
+  restaurant_id: string | null;
+  badge: string | null;
+  cta_label: string | null;
 };
 
 export type AdminSummary = {
@@ -178,7 +181,7 @@ export async function loadAdminRestaurants(): Promise<AdminRestaurant[]> {
 export async function loadHighlights(): Promise<AdminHighlight[]> {
   const { data, error } = await supabase
     .from('home_highlights')
-    .select('id, title, subtitle, image_url, kind, sort_order, is_active, created_at')
+    .select('id, title, subtitle, image_url, kind, sort_order, is_active, created_at, restaurant_id, badge, cta_label')
     .order('sort_order');
   if (error) throw new Error(error.message);
   return data ?? [];

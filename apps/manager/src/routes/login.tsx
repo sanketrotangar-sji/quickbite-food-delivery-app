@@ -1,15 +1,15 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { UtensilsCrossed } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import { signInWithEmail, signInWithGoogle, supabaseConfigured } from '@/api/auth';
+import { AuthFrame, GoogleMark } from '@/components/auth-frame';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export const Route = createFileRoute('/login')({
   head: () => ({
-    meta: [{ title: 'Sign in — QuickBite Manager' }],
+    meta: [{ title: 'Sign in — QuickBite' }],
   }),
   component: LoginPage,
 });
@@ -58,43 +58,49 @@ function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 shadow-card">
-        <div className="mb-6 flex items-center gap-3">
-          <span className="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <UtensilsCrossed size={18} />
-          </span>
-          <div>
-            <strong className="block text-base font-extrabold">QUICKBITE</strong>
-            <span className="block text-[11px] font-semibold text-muted-foreground">Restaurant Partner</span>
-          </div>
+    <AuthFrame>
+      <h1 className="font-heading text-center text-2xl font-extrabold">Welcome back</h1>
+      <p className="mt-1 text-center text-sm text-muted-foreground">
+        Sign in to manage orders, menu, and your kitchen.
+      </p>
+      <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
-        <h1 className="text-2xl font-extrabold">Sign in</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Email and password, or Google.</p>
-        <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          </div>
-          {error && <p className="text-sm font-semibold text-destructive">{error}</p>}
-          <Button className="h-11 w-full" type="submit" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in'}
-          </Button>
-        </form>
-        <Button className="mt-3 h-11 w-full" type="button" variant="outline" onClick={() => void onGoogle()} disabled={googleLoading}>
-          {googleLoading ? 'Redirecting…' : 'Sign in with Google'}
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        </div>
+        {error && <p className="text-sm font-semibold text-destructive">{error}</p>}
+        <Button className="h-11 w-full" type="submit" disabled={loading}>
+          {loading ? 'Signing in…' : 'Sign in'}
         </Button>
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          New restaurant? Apply in the QuickBite app, then{' '}
-          <Link to="/signup" className="font-bold text-primary">
-            read how access works
-          </Link>
-        </p>
+      </form>
+      <div className="relative my-5">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <span className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs font-semibold uppercase tracking-wide">
+          <span className="bg-card px-3 text-muted-foreground">or</span>
+        </div>
       </div>
-    </div>
+      <Button
+        className="h-11 w-full gap-2.5"
+        type="button"
+        variant="outline"
+        onClick={() => void onGoogle()}
+        disabled={googleLoading}
+      >
+        <GoogleMark className="size-5" />
+        {googleLoading ? 'Redirecting…' : 'Continue with Google'}
+      </Button>
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        New restaurant? Apply in the QuickBite app, then{' '}
+        <Link to="/signup" className="font-bold text-primary">
+          read how access works
+        </Link>
+      </p>
+    </AuthFrame>
   );
 }

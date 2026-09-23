@@ -14,10 +14,12 @@ export type Order = {
   status: OrderStatus;
   items: { name: string; quantity: number; price: number; image: string; lineTotal: number }[];
   total: number;
+  deliveryFee: number;
   fulfillment: string;
   address: string;
   placedAt: string;
   riderId: string | null;
+  history: { status: OrderStatus; changedAt: string }[];
 };
 
 export type MenuItem = {

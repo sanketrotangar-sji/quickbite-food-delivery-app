@@ -2,7 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
-import { deleteHighlight, loadHighlights, saveHighlight, type AdminHighlight } from '@/api/admin';
+import {
+  deleteHighlight,
+  loadAdminRestaurants,
+  loadHighlights,
+  saveHighlight,
+  type AdminHighlight,
+} from '@/api/admin';
 import { Button } from '@/components/ui/button';
 
 type HighlightForm = {
@@ -12,13 +18,27 @@ type HighlightForm = {
   kind: 'offer' | 'video';
   sort_order: string;
   is_active: boolean;
+  restaurant_id: string;
+  badge: string;
+  cta_label: string;
 };
 
-const empty: HighlightForm = { title: '', subtitle: '', image_url: '', kind: 'offer', sort_order: '0', is_active: true };
+const empty: HighlightForm = {
+  title: '',
+  subtitle: '',
+  image_url: '',
+  kind: 'offer',
+  sort_order: '0',
+  is_active: true,
+  restaurant_id: '',
+  badge: '',
+  cta_label: 'Order Now',
+};
 
 export function AdminHighlightsPage() {
   const queryClient = useQueryClient();
   const highlights = useQuery({ queryKey: ['admin-highlights'], queryFn: loadHighlights });
+  const restaurants = useQuery({ queryKey: ['admin-restaurants'], queryFn: loadAdminRestaurants });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<AdminHighlight | null>(null);
   const [form, setForm] = useState<HighlightForm>(empty);
@@ -40,6 +60,9 @@ export function AdminHighlightsPage() {
       kind: row.kind,
       sort_order: String(row.sort_order),
       is_active: row.is_active,
+      restaurant_id: row.restaurant_id ?? '',
+      badge: row.badge ?? '',
+      cta_label: row.cta_label ?? 'Order Now',
     });
     setError(null);
     setOpen(true);
@@ -48,6 +71,9 @@ export function AdminHighlightsPage() {
   const save = useMutation({
     mutationFn: async () => {
       if (!form.title.trim() || !form.image_url.trim()) throw new Error('Title and image URL are required.');
+      if (form.kind === 'offer' && !form.restaurant_id) {
+        throw new Error('Link an offer to a restaurant so Order Now opens the right kitchen.');
+      }
       await saveHighlight(editing?.id ?? null, {
         title: form.title.trim(),
         subtitle: form.subtitle.trim() || null,
@@ -55,6 +81,9 @@ export function AdminHighlightsPage() {
         kind: form.kind,
         sort_order: Number(form.sort_order) || 0,
         is_active: form.is_active,
+        restaurant_id: form.restaurant_id || null,
+        badge: form.badge.trim() || null,
+        cta_label: form.cta_label.trim() || 'Order Now',
       });
     },
     onSuccess: () => {
@@ -69,15 +98,23 @@ export function AdminHighlightsPage() {
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['admin-highlights'] }),
   });
 
+  const kitchenName = (id: string | null) => {
+    if (!id) return 'No kitchen';
+    return restaurants.data?.find((row) => row.id === id)?.name ?? 'Kitchen';
+  };
+
   return (
     <div className="mx-auto max-w-5xl">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase text-primary">Customer home</p>
-          <h1 className="mt-1 text-3xl font-extrabold">Highlights</h1>
+          <h1 className="mt-1 text-3xl font-extrabold">Home offers</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Rotating offer cards on the customer home. Order Now opens the linked restaurant.
+          </p>
         </div>
         <Button type="button" onClick={startCreate}>
-          Add highlight
+          Add offer
         </Button>
       </div>
       {highlights.error ? <p className="mt-4 text-sm font-semibold text-destructive">{(highlights.error as Error).message}</p> : null}
@@ -89,8 +126,9 @@ export function AdminHighlightsPage() {
             <div className="min-w-0">
               <p className="truncate font-extrabold">{row.title}</p>
               <p className="truncate text-xs text-muted-foreground">
-                {row.kind} · {row.is_active ? 'Active' : 'Hidden'} · {row.subtitle || 'No subtitle'}
+                {row.badge || row.kind} · {kitchenName(row.restaurant_id)} · {row.is_active ? 'Active' : 'Hidden'}
               </p>
+              <p className="truncate text-xs text-muted-foreground">{row.subtitle || 'No subtitle'}</p>
             </div>
             <div className="flex gap-2">
               <button type="button" className="text-xs font-bold text-primary" onClick={() => startEdit(row)}>
@@ -103,7 +141,11 @@ export function AdminHighlightsPage() {
           </article>
         ))}
       </div>
-      <Panel open={open} title={editing ? 'Edit highlight' : 'Add highlight'} description="Offers and videos shown on the customer home." onClose={() => setOpen(false)}>
+      <Panel
+        open={open}
+        title={editing ? 'Edit offer' : 'Add offer'}
+        description="Shown on the customer home carousel. Link a restaurant for the Order Now button."
+        onClose={() => setOpen(false)}>
         <div className="space-y-3">
           <label className="block text-sm font-bold">
             Title
@@ -114,8 +156,40 @@ export function AdminHighlightsPage() {
             <input className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium" value={form.subtitle} onChange={(event) => setForm({ ...form, subtitle: event.target.value })} />
           </label>
           <label className="block text-sm font-bold">
+            Badge
+            <input
+              className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium"
+              placeholder="20% OFF"
+              value={form.badge}
+              onChange={(event) => setForm({ ...form, badge: event.target.value })}
+            />
+          </label>
+          <label className="block text-sm font-bold">
             Image URL
             <input className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium" value={form.image_url} onChange={(event) => setForm({ ...form, image_url: event.target.value })} />
+          </label>
+          <label className="block text-sm font-bold">
+            Restaurant
+            <select
+              className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium"
+              value={form.restaurant_id}
+              onChange={(event) => setForm({ ...form, restaurant_id: event.target.value })}>
+              <option value="">Select kitchen</option>
+              {(restaurants.data ?? []).map((row) => (
+                <option key={row.id} value={row.id}>
+                  {row.name}
+                  {row.branch_name ? ` · ${row.branch_name}` : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block text-sm font-bold">
+            CTA label
+            <input
+              className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium"
+              value={form.cta_label}
+              onChange={(event) => setForm({ ...form, cta_label: event.target.value })}
+            />
           </label>
           <label className="block text-sm font-bold">
             Kind

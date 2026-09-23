@@ -12,6 +12,7 @@ type OrderQueryRow = {
   id: string;
   status: OrderStatusDb;
   total_amount: number;
+  delivery_fee: number;
   delivery_address: string;
   rider_id: string | null;
   placed_at: string;
@@ -24,6 +25,7 @@ type OrderQueryRow = {
     line_total: number | null;
     menu_items: { image_url: string | null } | null;
   }[];
+  order_status_history: { status: OrderStatusDb; changed_at: string }[] | null;
 };
 
 const KITCHEN_STATUSES: OrderStatus[] = ['placed', 'preparing', 'ready'];
@@ -53,10 +55,14 @@ export function toUiOrder(row: OrderQueryRow): Order {
       lineTotal: item.line_total == null ? Number(item.unit_price) * item.quantity : Number(item.line_total),
     })),
     total: Number(row.total_amount),
+    deliveryFee: Number(row.delivery_fee ?? 0),
     fulfillment: fulfillmentFor(row),
     address: row.delivery_address,
     placedAt: row.placed_at,
     riderId: row.rider_id,
+    history: [...(row.order_status_history ?? [])]
+      .sort((a, b) => new Date(a.changed_at).getTime() - new Date(b.changed_at).getTime())
+      .map((entry) => ({ status: entry.status, changedAt: entry.changed_at })),
   };
 }
 
@@ -76,6 +82,7 @@ export async function listRestaurantOrders(restaurantId: string): Promise<Order[
       id,
       status,
       total_amount,
+      delivery_fee,
       delivery_address,
       rider_id,
       placed_at,
@@ -87,7 +94,8 @@ export async function listRestaurantOrders(restaurantId: string): Promise<Order[
         unit_price,
         line_total,
         menu_items (image_url)
-      )
+      ),
+      order_status_history (status, changed_at)
     `,
     )
     .eq('restaurant_id', restaurantId)

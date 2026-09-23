@@ -118,36 +118,53 @@ export type Database = {
       }
       home_highlights: {
         Row: {
+          badge: string | null
           created_at: string
+          cta_label: string | null
           id: string
           image_url: string
           is_active: boolean
           kind: 'offer' | 'video'
+          restaurant_id: string | null
           sort_order: number
           subtitle: string | null
           title: string
         }
         Insert: {
+          badge?: string | null
           created_at?: string
+          cta_label?: string | null
           id?: string
           image_url: string
           is_active?: boolean
           kind: 'offer' | 'video'
+          restaurant_id?: string | null
           sort_order?: number
           subtitle?: string | null
           title: string
         }
         Update: {
+          badge?: string | null
           created_at?: string
+          cta_label?: string | null
           id?: string
           image_url?: string
           is_active?: boolean
           kind?: 'offer' | 'video'
+          restaurant_id?: string | null
           sort_order?: number
           subtitle?: string | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "home_highlights_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -238,6 +255,7 @@ export type Database = {
           customer_id: string
           delivered_at: string | null
           delivery_address: string
+          delivery_fee: number
           delivery_lat: number | null
           delivery_lng: number | null
           id: string
@@ -253,6 +271,7 @@ export type Database = {
           customer_id: string
           delivered_at?: string | null
           delivery_address: string
+          delivery_fee?: number
           delivery_lat?: number | null
           delivery_lng?: number | null
           id?: string
@@ -268,6 +287,7 @@ export type Database = {
           customer_id?: string
           delivered_at?: string | null
           delivery_address?: string
+          delivery_fee?: number
           delivery_lat?: number | null
           delivery_lng?: number | null
           id?: string
@@ -622,6 +642,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      standard_delivery_fee: { Args: Record<PropertyKey, never>; Returns: number }
       claim_delivery: {
         Args: { p_order_id: string }
         Returns: {

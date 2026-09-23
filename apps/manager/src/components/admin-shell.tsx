@@ -23,7 +23,7 @@ const nav = [
   { to: '/admin/applications', label: 'Applications', icon: ClipboardList, exact: false },
   { to: '/admin/restaurants', label: 'Restaurants', icon: Building2, exact: false },
   { to: '/admin/users', label: 'Users', icon: Users, exact: false },
-  { to: '/admin/highlights', label: 'Home', icon: Sparkles, exact: false },
+  { to: '/admin/highlights', label: 'Offers', icon: Sparkles, exact: false },
 ] as const;
 
 function initials(name: string) {

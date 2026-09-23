@@ -146,9 +146,9 @@ function Dashboard() {
   return (
     <QuickBiteShell>
       <div className="mx-auto max-w-[1500px]">
-        <section aria-label="Today’s metrics" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <section aria-label="Today’s metrics" className="grid grid-cols-2 items-stretch gap-3 xl:grid-cols-4">
           {statCards.map(({ label, value, change, icon: Icon }) => (
-            <article key={label} className="min-w-0 rounded-xl border border-border bg-card p-4">
+            <article key={label} className="flex h-full min-h-[7.25rem] min-w-0 flex-col rounded-xl border border-border bg-card p-4">
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
                 <p className="truncate text-xs font-bold text-muted-foreground">{label}</p>
                 <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
@@ -163,8 +163,8 @@ function Dashboard() {
           ))}
         </section>
 
-        <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
-          <section className="min-w-0 rounded-xl border border-border bg-card p-4 sm:p-5">
+        <div className="mt-5 grid items-stretch gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <section className="flex h-full min-w-0 flex-col rounded-xl border border-border bg-card p-4 sm:p-5">
             <div className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3">
               <div className="min-w-0">
                 <h1 className="text-xl font-extrabold">Live orders</h1>
@@ -178,14 +178,14 @@ function Dashboard() {
                 </Link>
               </Button>
             </div>
-            <div className="grid items-start gap-4 lg:grid-cols-3">
+            <div className="grid flex-1 items-stretch gap-4 lg:grid-cols-3">
               {statuses.map((status) => {
                 const laneOrders = orders.filter((order) => order.status === status);
                 const featured = laneOrders[0];
                 const listed = laneOrders.slice(1, 3);
                 const hidden = Math.max(0, laneOrders.length - 3);
                 return (
-                  <div key={status} className="grid min-w-0 items-start gap-3">
+                  <div key={status} className="flex h-full min-h-52 min-w-0 flex-col gap-3">
                     {featured ? (
                       <OrderCard
                         order={featured}
@@ -193,7 +193,7 @@ function Dashboard() {
                         onAdvance={() => advance(featured.id)}
                       />
                     ) : (
-                      <div className="rounded-lg border border-dashed border-border px-3 py-8 text-center text-xs text-muted-foreground">
+                      <div className="flex min-h-52 flex-1 items-center justify-center rounded-lg border border-dashed border-border px-3 text-center text-xs text-muted-foreground">
                         No orders here
                       </div>
                     )}
@@ -235,7 +235,7 @@ function Dashboard() {
             </div>
           </section>
 
-          <div className="flex flex-col gap-5">
+          <div className="flex h-full flex-col gap-5">
             <section className="rounded-xl border border-border bg-card p-4">
               <h2 className="text-sm font-extrabold">Quick actions</h2>
               <div className="mt-3 grid grid-cols-2 gap-2">
@@ -359,8 +359,8 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="mt-5 grid items-start gap-5 xl:grid-cols-[1.2fr_1fr]">
-          <section className="rounded-xl border border-border bg-card p-5">
+        <div className="mt-5 grid items-stretch gap-5 xl:grid-cols-[1.2fr_1fr]">
+          <section className="flex h-full flex-col rounded-xl border border-border bg-card p-5">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
               <div className="min-w-0">
                 <h2 className="font-extrabold">Unavailable items</h2>
@@ -372,7 +372,7 @@ function Dashboard() {
                 <Link to="/menu" search={{ q: "" }}>Manage menu</Link>
               </Button>
             </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-4 grid flex-1 content-start gap-3 sm:grid-cols-2">
               {unavailable.length ? (
                 unavailable.map((item) => (
                   <div
@@ -407,11 +407,13 @@ function Dashboard() {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">Every menu item is available.</p>
+                <p className="col-span-full flex min-h-40 items-center justify-center rounded-lg border border-dashed border-border px-3 text-center text-sm text-muted-foreground">
+                  Every menu item is available.
+                </p>
               )}
             </div>
           </section>
-          <section className="rounded-xl border border-border bg-card p-5">
+          <section className="flex h-full flex-col rounded-xl border border-border bg-card p-5">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="font-extrabold">Today’s pace</h2>
