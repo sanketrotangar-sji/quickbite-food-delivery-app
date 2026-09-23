@@ -1,0 +1,35 @@
+# Keep EAS upload lean. Metro only bundles require()'d assets into the APK;
+# these catalog PNGs are referenced by filename in Supabase seed data / storage,
+# not as local React Native modules.
+
+# Dependencies (EAS also ignores these by default)
+node_modules/
+.expo/
+dist/
+web-build/
+
+# Local env — set EXPO_PUBLIC_* via EAS Environment Variables instead
+.env
+.env.*
+!.env.example
+
+# Large demo / catalog images not imported by the app
+assets/images/batata_bhaji.png
+assets/images/bharli_vangi_and_bhakri.png
+assets/images/chicken_biryani.png
+assets/images/ghee_roast_dosa.png
+assets/images/idli_sambar.png
+assets/images/kothimbir_vadi.png
+assets/images/Malvan_restuarant.png
+assets/images/medu_vada.png
+assets/images/Mysore_masala_dosa.png
+assets/images/pithla_bhakri.png
+assets/images/sabudana_vada.png
+assets/images/set_dosa.png
+assets/images/sol_khadi.png
+assets/images/udupi_restuarant.png
+assets/images/ukadiche_modak.png
+
+# Docs / unused
+REMAINING.md
+LICENSE

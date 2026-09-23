@@ -1,0 +1,25 @@
+{
+  "name": "quickbite",
+  "private": true,
+  "version": "0.1.0",
+  "description": "QuickBite — food delivery (Expo client + web dashboard + Supabase)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "db:push": "supabase db push",
+    "db:reset": "supabase db reset",
+    "functions:serve": "supabase functions serve notify-new-order directions --no-verify-jwt",
+    "functions:deploy": "supabase functions deploy notify-new-order && supabase functions deploy directions",
+    "types:client": "supabase gen types typescript --project-id motqehtswgjbbvoazarh --schema public > apps/client/src/types/database.ts",
+    "client": "npm run start --workspace=client",
+    "dashboard": "npm run dev --workspace=dashboard"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

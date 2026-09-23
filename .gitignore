@@ -1,0 +1,44 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+supabase/.env
+supabase/functions/.env
+
+# Expo / EAS
+.expo/
+dist/
+web-build/
+*.jks
+*.keystore
+credentials.json
+google-services.json
+
+# Dependencies & builds
+node_modules/
+dist/
+build/
+.vite/
+.next/
+.turbo/
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Cursor local (keep mcp.json if you want team MCP config)
+# .cursor/
+
+
+agent skills/* 
+
+docs/planning.md
