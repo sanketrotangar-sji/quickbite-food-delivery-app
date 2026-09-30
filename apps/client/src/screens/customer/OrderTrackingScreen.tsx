@@ -1,34 +1,72 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Alert, Linking, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { DeliveryCoordinate } from '@/api/deliveries';
 import type { TrackedOrder } from '@/api/order-tracking';
 import { AppText } from '@/components/AppText';
-import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
-import { LogoLoader } from '@/components/LogoLoader';
+import { HomeHero } from '@/components/home/HomeHero';
+import { LoadingSkeleton } from '@/components/LoadingSkeleton';
+import { ROUTE_ORANGE } from '@/components/maps/quickbite-map-style';
 import { CustomerOrderMap } from '@/components/order/CustomerOrderMap';
+import { RemoteImage } from '@/components/RemoteImage';
+import { VegMark } from '@/components/VegMark';
 import { ORDER_STATUS_META, ORDER_STATUS_ORDER, type OrderStatus } from '@/constants/orderStatus';
 import { colors, formatInr, radii } from '@/constants/theme';
 import { useTrackedOrder } from '@/hooks/useOrderTracking';
+import { useMyNotifications } from '@/hooks/useMyNotifications';
+import { distanceKm, formatKm } from '@/lib/geo';
+
+const TRACK_BG = colors.background;
+const TRACK_TEXT = colors.text;
+const TRACK_MUTED = colors.textMuted;
+const PAGE_PAD = 16;
+const MAP_RADIUS = 20;
+
+const STEP_ICONS: Record<OrderStatus, keyof typeof Ionicons.glyphMap> = {
+  placed: 'receipt-outline',
+  preparing: 'restaurant-outline',
+  ready: 'bag-check-outline',
+  out_for_delivery: 'bicycle',
+  delivered: 'home-outline',
+  cancelled: 'close-circle-outline',
+};
 
 export function OrderTrackingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const tracked = useTrackedOrder(id);
+  const notices = useMyNotifications();
   const order = tracked.data;
+  const automationBanner = (notices.data ?? []).find(
+    (n) =>
+      !n.readAt &&
+      (n.title.includes('Rider assigned') ||
+        n.title.includes('ETA updated') ||
+        n.title.includes('Kitchen is busy')),
+  );
 
   if (tracked.isLoading && !order) {
-    return <View style={[styles.root, { paddingTop: insets.top }]}><LogoLoader /></View>;
+    return (
+      <View style={styles.root}>
+        <StatusBar style="dark" />
+        <HomeHero />
+        <View style={styles.loading}>
+          <LoadingSkeleton variant="feature" rows={1} />
+          <LoadingSkeleton rows={2} />
+        </View>
+      </View>
+    );
   }
 
   if (!order) {
     return (
-      <View style={[styles.root, { paddingTop: insets.top + 8 }]}>
-        <Header />
+      <View style={styles.root}>
+        <StatusBar style="dark" />
+        <HomeHero />
         <EmptyState
           icon="receipt-outline"
           title="Order unavailable"
@@ -43,172 +81,301 @@ export function OrderTrackingScreen() {
   const restaurant = coordinate(order.restaurant?.lat, order.restaurant?.lng);
   const customer = coordinate(order.delivery_lat, order.delivery_lng);
   const rider = coordinate(order.riderLocation?.lat, order.riderLocation?.lng);
+  const live = Boolean(order.rider_id && order.riderLocation && order.status === 'out_for_delivery');
+  const code = orderCode(order.id);
+  const placedAt = formatClock(order.placed_at);
+  const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <View style={styles.root}>
       <StatusBar style="dark" />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={tracked.isRefetching} onRefresh={() => void tracked.refetch()} />}
-        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 14) + 24 }}>
-        <View style={{ paddingTop: insets.top + 6 }}><Header /></View>
-        <CustomerOrderMap rider={rider} restaurant={restaurant} customer={customer} />
+        refreshControl={
+          <RefreshControl refreshing={tracked.isRefetching} onRefresh={() => void tracked.refetch()} />
+        }
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) + 28 }}>
+        <HomeHero />
+
+        <View style={styles.pageTitle}>
+          <Pressable onPress={() => router.back()} style={styles.back} accessibilityLabel="Go back">
+            <Ionicons name="chevron-back" size={22} color={TRACK_TEXT} />
+          </Pressable>
+          <View style={styles.pageTitleCopy}>
+            <AppText heading weight="bold" style={styles.title}>
+              Track Your Order
+            </AppText>
+            <AppText style={styles.subtitle}>Good food is on the way ❤️</AppText>
+          </View>
+        </View>
+
         <View style={styles.content}>
-          <StatusHero order={order} />
-          <RiderCard order={order} />
-          <StatusHistory order={order} />
-          <InfoCard icon="location-outline" title="Delivery address">
-            <AppText style={styles.body}>{order.delivery_address}</AppText>
-            {order.notes ? <AppText muted style={styles.note}>Note: {order.notes}</AppText> : null}
-          </InfoCard>
-          <OrderSummary order={order} />
-          <SupportAction phone={order.restaurant?.phone ?? order.rider?.phone ?? null} />
+          {automationBanner ? (
+            <View style={styles.automationBanner}>
+              <AppText weight="semibold" style={styles.automationTitle}>
+                {automationBanner.title}
+              </AppText>
+              <AppText style={styles.automationBody}>{automationBanner.body}</AppText>
+            </View>
+          ) : null}
+
+          <View style={styles.mapHero}>
+            <CustomerOrderMap
+              rider={rider}
+              restaurant={restaurant}
+              customer={customer}
+              height={280}
+              borderRadius={MAP_RADIUS}
+              restaurantLabel={order.restaurant?.name ?? 'Kitchen'}
+              customerLabel="Your location"
+              showChrome
+              live={live}
+              onViewFullMap={() => router.push(`/(customer)/orders/${order.id}/map`)}
+            />
+          </View>
+
+          <OrderProgressCard
+            code={code}
+            placedAt={placedAt}
+            itemCount={itemCount}
+            total={Number(order.total_amount)}
+            status={order.status}
+            history={order.history}
+          />
+
+          <RiderSection order={order} riderCoord={rider} customerCoord={customer} />
+
+          <OrderItemsCard order={order} />
+
+          <Pressable
+            onPress={() => router.push('/(customer)/(tabs)/assistant')}
+            style={({ pressed }) => [styles.support, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel="Get help with this order">
+            <View style={styles.supportIcon}>
+              <Ionicons name="headset-outline" size={18} color={ROUTE_ORANGE} />
+            </View>
+            <View style={styles.supportCopy}>
+              <AppText weight="semibold" style={styles.supportTitle}>
+                Need help with your order?
+              </AppText>
+              <AppText style={styles.supportBody}>Chat with RIO or get in touch with support</AppText>
+            </View>
+            <Ionicons name="arrow-forward" size={16} color={TRACK_MUTED} />
+          </Pressable>
         </View>
       </ScrollView>
     </View>
   );
 }
 
-function Header() {
+function OrderProgressCard({
+  code,
+  placedAt,
+  itemCount,
+  total,
+  status,
+  history,
+}: {
+  code: string;
+  placedAt: string;
+  itemCount: number;
+  total: number;
+  status: OrderStatus;
+  history: TrackedOrder['history'];
+}) {
+  const steps = ORDER_STATUS_ORDER;
+  const activeIndex = status === 'cancelled' ? -1 : Math.max(0, steps.indexOf(status));
+  const timeFor = (step: OrderStatus) => {
+    const hit = history.find((row) => row.status === step);
+    return hit ? formatClock(hit.changed_at) : null;
+  };
+
   return (
-    <View style={styles.header}>
-      <Pressable onPress={() => router.back()} style={styles.headerButton} accessibilityLabel="Go back">
-        <Ionicons name="chevron-back" size={24} color={colors.text} />
-      </Pressable>
-      <AppText heading weight="semibold" style={styles.headerTitle}>Track order</AppText>
-      <Pressable onPress={() => router.replace('/(customer)/(tabs)/reorder')} style={styles.headerButton} accessibilityLabel="All orders">
-        <Ionicons name="receipt-outline" size={21} color={colors.text} />
-      </Pressable>
+    <View style={styles.card}>
+      <AppText weight="bold" style={styles.orderCode}>
+        Order #{code}
+      </AppText>
+      <AppText style={styles.orderMeta}>
+        Placed at {placedAt} · {itemCount} {itemCount === 1 ? 'item' : 'items'} · {formatInr(total)}
+      </AppText>
+      {status === 'cancelled' ? (
+        <AppText style={styles.cancelledHint}>{ORDER_STATUS_META.cancelled.customerHint}</AppText>
+      ) : (
+        <View style={styles.stepper}>
+          {steps.map((step, index) => {
+            const done = index < activeIndex;
+            const active = index === activeIndex;
+            const time = timeFor(step);
+            return (
+              <View key={step} style={styles.step}>
+                <View style={styles.stepRail}>
+                  <View style={[styles.stepDot, (done || active) && styles.stepDotOn, active && styles.stepDotActive]}>
+                    <Ionicons
+                      name={done ? 'checkmark' : STEP_ICONS[step]}
+                      size={active ? 14 : 11}
+                      color={done || active ? colors.white : TRACK_MUTED}
+                    />
+                  </View>
+                  {index < steps.length - 1 ? (
+                    <View style={[styles.stepLine, index < activeIndex && styles.stepLineOn]} />
+                  ) : null}
+                </View>
+                <AppText
+                  weight={active ? 'semibold' : 'medium'}
+                  numberOfLines={2}
+                  style={[styles.stepLabel, (done || active) && styles.stepLabelOn]}>
+                  {ORDER_STATUS_META[step].label}
+                </AppText>
+                {time ? <AppText style={styles.stepTime}>{time}</AppText> : null}
+              </View>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
 }
 
-function StatusHero({ order }: { order: TrackedOrder }) {
-  const meta = ORDER_STATUS_META[order.status];
-  const code = order.id.replace(/-/g, '').slice(0, 6).toUpperCase();
-  return (
-    <View style={[styles.hero, { backgroundColor: meta.background }]}>
-      <View style={styles.heroTop}>
-        <View style={styles.heroCopy}>
-          <AppText muted style={styles.eyebrow}>ORDER #{code}</AppText>
-          <AppText heading weight="bold" style={styles.heroTitle}>{meta.label}</AppText>
-          <AppText style={styles.heroHint}>{meta.customerHint}</AppText>
-        </View>
-        <View style={[styles.statusIcon, { backgroundColor: meta.color }]}>
-          <Ionicons name={statusIcon(order.status)} size={24} color={colors.white} />
-        </View>
-      </View>
-      {order.eta_minutes != null && order.status !== 'delivered' && order.status !== 'cancelled' ? (
-        <View style={styles.eta}>
-          <Ionicons name="time-outline" size={19} color={meta.color} />
-          <AppText weight="bold" style={{ color: meta.color }}>{order.eta_minutes} min ETA</AppText>
-        </View>
-      ) : null}
-    </View>
-  );
-}
-
-function RiderCard({ order }: { order: TrackedOrder }) {
+function RiderSection({
+  order,
+  riderCoord,
+  customerCoord,
+}: {
+  order: TrackedOrder;
+  riderCoord: DeliveryCoordinate | null;
+  customerCoord: DeliveryCoordinate | null;
+}) {
   if (!order.rider_id) {
     return (
-      <InfoCard icon="bicycle-outline" title="Finding your rider">
-        <AppText muted style={styles.body}>A delivery partner will be assigned as your food gets ready.</AppText>
-      </InfoCard>
+      <View style={styles.card}>
+        <AppText weight="bold" style={styles.sectionTitle}>
+          Finding your rider
+        </AppText>
+        <AppText style={styles.bodyMuted}>
+          A delivery partner will be assigned as your food gets ready.
+        </AppText>
+      </View>
     );
   }
+
   const rider = order.rider;
-  return (
-    <InfoCard icon="bicycle" title={rider?.full_name || 'Your delivery partner'}>
-      <View style={styles.detailRow}>
-        <AppText muted style={styles.body}>
-          {[rider?.vehicle_label, rider?.plate].filter(Boolean).join(' · ') || 'Rider assigned'}
-        </AppText>
-        {order.riderLocation ? <View style={styles.liveBadge}><View style={styles.liveDot} /><AppText weight="semibold" style={styles.liveText}>Live</AppText></View> : null}
-      </View>
-      {rider?.phone ? (
-        <Pressable onPress={() => void Linking.openURL(`tel:${rider.phone}`)} style={styles.inlineAction}>
-          <Ionicons name="call-outline" size={16} color={colors.primary} />
-          <AppText weight="semibold" style={styles.actionText}>Call rider</AppText>
-        </Pressable>
-      ) : null}
-    </InfoCard>
-  );
-}
+  const name = rider?.full_name?.trim() || 'Your delivery partner';
+  const initial = name.slice(0, 1).toUpperCase();
+  const km =
+    riderCoord && customerCoord
+      ? distanceKm(riderCoord, customerCoord)
+      : order.drop_km != null
+        ? Number(order.drop_km)
+        : null;
+  const eta = order.eta_minutes;
+  const onWay = order.status === 'out_for_delivery';
 
-function StatusHistory({ order }: { order: TrackedOrder }) {
-  const history = order.history.length
-    ? order.history
-    : [{ id: 0, status: order.status, changed_at: order.updated_at }];
   return (
-    <InfoCard icon="list-outline" title="Order updates">
-      <View style={styles.timeline}>
-        {history.map((entry, index) => {
-          const complete = entry.status !== 'cancelled';
-          return (
-            <View key={entry.id} style={styles.timelineRow}>
-              <View style={styles.timelineRail}>
-                <View style={[styles.timelineDot, complete && styles.timelineDotOn]} />
-                {index < history.length - 1 ? <View style={[styles.timelineLine, complete && styles.timelineLineOn]} /> : null}
-              </View>
-              <View style={styles.timelineCopy}>
-                <AppText weight="semibold">{ORDER_STATUS_META[entry.status].label}</AppText>
-                <AppText muted style={styles.note}>{formatTime(entry.changed_at)}</AppText>
-              </View>
+    <View style={styles.card}>
+      <View style={styles.riderTop}>
+        <View style={styles.riderAvatar}>
+          <AppText weight="bold" style={styles.riderInitial}>
+            {initial}
+          </AppText>
+        </View>
+        <View style={styles.riderCopy}>
+          <AppText weight="bold" style={styles.riderName}>
+            {name}
+          </AppText>
+          <AppText style={styles.bodyMuted}>Your delivery partner</AppText>
+          {rider?.vehicle_label || rider?.plate ? (
+            <AppText style={styles.riderMeta}>
+              {[rider.vehicle_label, rider.plate].filter(Boolean).join(' · ')}
+            </AppText>
+          ) : null}
+        </View>
+        {rider?.phone ? (
+          <Pressable
+            onPress={() => void Linking.openURL(`tel:${rider.phone}`)}
+            style={({ pressed }) => [styles.callBtn, pressed && styles.pressed]}
+            accessibilityLabel="Call rider">
+            <Ionicons name="call" size={15} color={colors.white} />
+            <AppText weight="bold" style={styles.callText}>
+              Call
+            </AppText>
+          </Pressable>
+        ) : null}
+      </View>
+
+      {(eta != null && order.status !== 'delivered' && order.status !== 'cancelled') || km != null ? (
+        <View style={styles.etaStrip}>
+          {eta != null && order.status !== 'delivered' && order.status !== 'cancelled' ? (
+            <View style={styles.etaItem}>
+              <Ionicons name="bicycle" size={16} color={ROUTE_ORANGE} />
+              <AppText weight="semibold" style={styles.etaText}>
+                Arriving in {eta} mins
+              </AppText>
             </View>
-          );
-        })}
-      </View>
-    </InfoCard>
+          ) : null}
+          {km != null ? (
+            <View style={styles.etaItem}>
+              <Ionicons name="location-outline" size={15} color={ROUTE_ORANGE} />
+              <AppText weight="semibold" style={styles.etaText}>
+                {formatKm(km)}
+              </AppText>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+
+      <AppText style={styles.riderHint}>
+        {onWay
+          ? 'Rider is on the way to your location'
+          : order.status === 'delivered'
+            ? 'Delivered — enjoy your meal'
+            : ORDER_STATUS_META[order.status].customerHint}
+      </AppText>
+    </View>
   );
 }
 
-function OrderSummary({ order }: { order: TrackedOrder }) {
-  const itemSubtotal = order.items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
+function OrderItemsCard({ order }: { order: TrackedOrder }) {
   return (
-    <InfoCard icon="receipt-outline" title={order.restaurant?.name ?? 'Order summary'}>
-      <View style={styles.items}>
+    <View style={styles.card}>
+      <AppText weight="bold" style={styles.sectionTitle}>
+        Order Items
+      </AppText>
+      <View style={styles.itemList}>
         {order.items.map((item) => (
-          <View key={item.id} style={styles.summaryRow}>
-            <AppText style={styles.summaryName}>{item.quantity}× {item.item_name}</AppText>
-            <AppText weight="semibold">{formatInr(item.unit_price * item.quantity)}</AppText>
+          <View key={item.id} style={styles.itemRow}>
+            {item.image_url ? (
+              <RemoteImage uri={item.image_url} slot="thumb" style={styles.itemImage} />
+            ) : (
+              <View style={[styles.itemImage, styles.itemFallback]}>
+                <AppText weight="bold" style={styles.itemFallbackText}>
+                  {item.item_name.slice(0, 1).toUpperCase()}
+                </AppText>
+              </View>
+            )}
+            <View style={styles.itemCopy}>
+              <View style={styles.itemNameRow}>
+                {item.is_veg != null ? <VegMark veg={item.is_veg} size={10} /> : null}
+                <AppText weight="semibold" numberOfLines={1} style={styles.itemName}>
+                  {item.item_name}
+                </AppText>
+              </View>
+              <AppText style={styles.itemMeta} numberOfLines={1}>
+                {order.restaurant?.name ?? 'Kitchen'}
+                {item.is_veg != null ? ` · ${item.is_veg ? 'Pure Veg' : 'Non Veg'}` : ''}
+              </AppText>
+              <AppText style={styles.itemQty}>{item.quantity}×</AppText>
+            </View>
+            <AppText weight="semibold" style={styles.itemPrice}>
+              {formatInr(item.unit_price * item.quantity)}
+            </AppText>
           </View>
         ))}
       </View>
-      <View style={styles.divider} />
-      <MoneyRow label="Item subtotal" value={itemSubtotal} />
-      <MoneyRow label="Delivery fee" value={order.delivery_fee} />
-      {order.tip_amount > 0 ? <MoneyRow label="Rider tip" value={order.tip_amount} /> : null}
-      <View style={styles.totalRow}>
-        <AppText weight="bold">Paid total</AppText>
-        <AppText weight="bold">{formatInr(order.total_amount)}</AppText>
+      <View style={styles.eco}>
+        <Ionicons name="leaf-outline" size={14} color={colors.success} />
+        <AppText style={styles.ecoText}>Eco-friendly delivery — Less carbon. A greener tomorrow.</AppText>
       </View>
-    </InfoCard>
-  );
-}
-
-function MoneyRow({ label, value }: { label: string; value: number }) {
-  return <View style={styles.summaryRow}><AppText muted>{label}</AppText><AppText>{formatInr(value)}</AppText></View>;
-}
-
-function SupportAction({ phone }: { phone: string | null }) {
-  const contact = () => {
-    if (phone) {
-      void Linking.openURL(`tel:${phone}`);
-      return;
-    }
-    Alert.alert('QuickBite support', 'Support contact details are not available yet. Please try again shortly.');
-  };
-  return <Button label="Get help with this order" variant="ghost" onPress={contact} />;
-}
-
-function InfoCard({ icon, title, children }: { icon: keyof typeof Ionicons.glyphMap; title: string; children: React.ReactNode }) {
-  return (
-    <View style={styles.card}>
-      <View style={styles.cardTitle}>
-        <View style={styles.smallIcon}><Ionicons name={icon} size={17} color={colors.primary} /></View>
-        <AppText weight="bold" style={styles.cardTitleText}>{title}</AppText>
-      </View>
-      {children}
     </View>
   );
 }
@@ -217,56 +384,163 @@ function coordinate(lat: number | null | undefined, lng: number | null | undefin
   return lat == null || lng == null ? null : { latitude: lat, longitude: lng };
 }
 
-function formatTime(value: string) {
-  return new Date(value).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+function orderCode(id: string) {
+  return `QB${id.replace(/-/g, '').slice(0, 5).toUpperCase()}`;
 }
 
-function statusIcon(status: OrderStatus): keyof typeof Ionicons.glyphMap {
-  if (status === 'placed') return 'receipt-outline';
-  if (status === 'preparing') return 'restaurant-outline';
-  if (status === 'ready') return 'bag-check-outline';
-  if (status === 'out_for_delivery') return 'bicycle';
-  if (status === 'delivered') return 'checkmark-circle-outline';
-  return 'close-circle-outline';
+function formatClock(value: string) {
+  return new Date(value).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  header: { height: 52, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12 },
-  headerButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { flex: 1, textAlign: 'center', fontSize: 18 },
-  content: { padding: 16, gap: 12 },
-  hero: { borderRadius: radii.xl, padding: 18, gap: 14 },
-  heroTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  heroCopy: { flex: 1, gap: 3 },
-  eyebrow: { fontSize: 11, letterSpacing: 0.8 },
-  heroTitle: { fontSize: 24 },
-  heroHint: { fontSize: 14, lineHeight: 20 },
-  statusIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  eta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  card: { backgroundColor: colors.surface, borderRadius: radii.lg, borderWidth: 1, borderColor: colors.border, padding: 15, gap: 10 },
-  cardTitle: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  smallIcon: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
-  cardTitleText: { flex: 1, fontSize: 15 },
-  body: { fontSize: 13, lineHeight: 19 },
-  note: { fontSize: 11 },
-  detailRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  liveBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: colors.successSoft, borderRadius: 99, paddingHorizontal: 8, paddingVertical: 4 },
-  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.success },
-  liveText: { color: colors.success, fontSize: 10 },
-  inlineAction: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: 2 },
-  actionText: { color: colors.primary, fontSize: 12 },
-  timeline: { gap: 0 },
-  timelineRow: { flexDirection: 'row', minHeight: 50 },
-  timelineRail: { width: 22, alignItems: 'center' },
-  timelineDot: { width: 11, height: 11, borderRadius: 6, marginTop: 4, backgroundColor: colors.border },
-  timelineDotOn: { backgroundColor: colors.primary },
-  timelineLine: { width: 2, flex: 1, backgroundColor: colors.border, marginVertical: 3 },
-  timelineLineOn: { backgroundColor: colors.primarySoft },
-  timelineCopy: { flex: 1, paddingBottom: 12, gap: 2 },
-  items: { gap: 8 },
-  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
-  summaryName: { flex: 1 },
-  divider: { height: 1, backgroundColor: colors.border },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 2 },
+  root: { flex: 1, backgroundColor: TRACK_BG },
+  loading: { paddingHorizontal: PAGE_PAD, paddingTop: 8, gap: 12 },
+  pageTitle: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 4,
+    paddingHorizontal: PAGE_PAD - 4,
+    paddingBottom: 10,
+  },
+  back: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
+  pageTitleCopy: { flex: 1, gap: 2 },
+  title: { fontSize: 22, color: TRACK_TEXT },
+  subtitle: { fontSize: 13, color: TRACK_MUTED },
+  content: { paddingHorizontal: PAGE_PAD, gap: 12 },
+  automationBanner: {
+    backgroundColor: '#FFF3ED',
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: '#FDBA74',
+    padding: 12,
+    gap: 4,
+  },
+  automationTitle: { color: ROUTE_ORANGE, fontSize: 14 },
+  automationBody: { fontSize: 13, lineHeight: 18, color: TRACK_MUTED },
+  mapHero: {
+    borderRadius: MAP_RADIUS,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: radii.lg,
+    padding: 16,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  orderCode: { fontSize: 17, color: TRACK_TEXT },
+  orderMeta: { fontSize: 12, color: TRACK_MUTED },
+  cancelledHint: { fontSize: 13, color: TRACK_MUTED, marginTop: 4 },
+  stepper: { flexDirection: 'row', marginTop: 8, gap: 0 },
+  step: { flex: 1, gap: 4 },
+  stepRail: { flexDirection: 'row', alignItems: 'center' },
+  stepDot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EEEEEE',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  stepDotOn: { backgroundColor: ROUTE_ORANGE, borderColor: ROUTE_ORANGE },
+  stepDotActive: { width: 28, height: 28, borderRadius: 14 },
+  stepLine: { flex: 1, height: 3, backgroundColor: '#E8E8E8', marginHorizontal: 2, borderRadius: 2 },
+  stepLineOn: { backgroundColor: ROUTE_ORANGE },
+  stepLabel: { fontSize: 10, color: TRACK_MUTED, lineHeight: 13 },
+  stepLabelOn: { color: TRACK_TEXT },
+  stepTime: { fontSize: 9, color: TRACK_MUTED },
+  sectionTitle: { fontSize: 16, color: TRACK_TEXT },
+  bodyMuted: { fontSize: 13, lineHeight: 18, color: TRACK_MUTED },
+  riderTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  riderAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFE8DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  riderInitial: { color: ROUTE_ORANGE, fontSize: 18 },
+  riderCopy: { flex: 1, gap: 1 },
+  riderName: { fontSize: 15, color: TRACK_TEXT },
+  riderMeta: { fontSize: 11, color: TRACK_MUTED, marginTop: 2 },
+  callBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: ROUTE_ORANGE,
+    borderRadius: radii.pill,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  callText: { color: colors.white, fontSize: 13 },
+  etaStrip: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 14,
+    backgroundColor: '#FFF4EE',
+    borderRadius: radii.md,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  etaItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  etaText: { fontSize: 13, color: TRACK_TEXT },
+  riderHint: { fontSize: 12, color: TRACK_MUTED },
+  itemList: { gap: 12 },
+  itemRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  itemImage: { width: 52, height: 52, borderRadius: radii.sm, backgroundColor: '#FFE8DC' },
+  itemFallback: { alignItems: 'center', justifyContent: 'center' },
+  itemFallbackText: { color: ROUTE_ORANGE, fontSize: 16 },
+  itemCopy: { flex: 1, gap: 2 },
+  itemNameRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  itemName: { flex: 1, fontSize: 14, color: TRACK_TEXT },
+  itemMeta: { fontSize: 11, color: TRACK_MUTED },
+  itemQty: { fontSize: 11, color: TRACK_MUTED },
+  itemPrice: { fontSize: 13, color: TRACK_TEXT },
+  eco: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.successSoft,
+    borderRadius: radii.md,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  ecoText: { flex: 1, fontSize: 11, color: colors.success, lineHeight: 15 },
+  support: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: colors.white,
+    borderRadius: radii.lg,
+    padding: 14,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  supportIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFE8DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  supportCopy: { flex: 1, gap: 2 },
+  supportTitle: { fontSize: 14, color: TRACK_TEXT },
+  supportBody: { fontSize: 12, color: TRACK_MUTED },
+  pressed: { opacity: 0.8 },
 });

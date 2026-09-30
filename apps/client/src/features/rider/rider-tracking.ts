@@ -5,6 +5,7 @@ import { useSyncExternalStore } from 'react';
 import { AppState, Platform, type AppStateStatus } from 'react-native';
 
 import { updateRiderLocation } from '@/api/rider';
+import { supabase } from '@/api/supabaseClient';
 import { isExpoGo } from '@/lib/runtime';
 
 const LOCATION_TASK = 'quickbite-rider-location';
@@ -59,20 +60,32 @@ TaskManager.defineTask<{ locations: Location.LocationObject[] }>(
 );
 
 async function startForegroundWatcher() {
-  foregroundWatcher?.remove();
-  foregroundWatcher = await Location.watchPositionAsync(
-    {
-      accuracy: Location.Accuracy.Balanced,
-      timeInterval: UPDATE_INTERVAL_MS,
-      distanceInterval: 0,
-    },
-    (location) => {
-      if (!activeOrderId) return;
-      void sendLocation(activeOrderId, location).catch((error: unknown) => {
-        emit({ error: error instanceof Error ? error.message : 'Location update failed.' });
-      });
-    },
-  );
+  try {
+    const permission = await Location.getForegroundPermissionsAsync();
+    if (!permission.granted) {
+      emit({ error: 'Location permission is required for active deliveries.' });
+      return;
+    }
+    foregroundWatcher?.remove();
+    foregroundWatcher = await Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.Balanced,
+        timeInterval: UPDATE_INTERVAL_MS,
+        distanceInterval: 0,
+      },
+      (location) => {
+        if (!activeOrderId) return;
+        void sendLocation(activeOrderId, location).catch((error: unknown) => {
+          emit({ error: error instanceof Error ? error.message : 'Location update failed.' });
+        });
+      },
+    );
+  } catch (error: unknown) {
+    foregroundWatcher = null;
+    emit({
+      error: error instanceof Error ? error.message : 'Location updates are unavailable.',
+    });
+  }
 }
 
 async function startNativeTracking(orderId: string) {
@@ -125,9 +138,34 @@ export async function startRiderTracking(orderId: string) {
   await startPromise;
 }
 
-export async function restoreRiderTracking() {
+export async function restoreRiderTracking(options?: { isRider?: boolean }) {
+  if (options?.isRider === false) {
+    await stopRiderTracking();
+    return;
+  }
   const orderId = await AsyncStorage.getItem(ACTIVE_ORDER_KEY);
-  if (orderId) await startRiderTracking(orderId);
+  if (!orderId) return;
+
+  // Confirm the order is still an active assignment for this rider before GPS starts.
+  const { data, error } = await supabase
+    .from('orders')
+    .select('id, status, rider_id')
+    .eq('id', orderId)
+    .maybeSingle();
+
+  const active =
+    !error &&
+    data &&
+    data.rider_id != null &&
+    data.status !== 'delivered' &&
+    data.status !== 'cancelled';
+
+  if (!active) {
+    await stopRiderTracking(orderId);
+    return;
+  }
+
+  await startRiderTracking(orderId);
 }
 
 export async function stopRiderTracking(orderId?: string) {
@@ -145,7 +183,9 @@ export async function stopRiderTracking(orderId?: string) {
 
 function onAppStateChange(state: AppStateStatus) {
   if (state === 'active' && activeOrderId && !foregroundWatcher) {
-    void startForegroundWatcher();
+    void startForegroundWatcher().catch(() => {
+      // Permission / GPS failures are surfaced via snapshot.error.
+    });
   } else if (state !== 'active') {
     foregroundWatcher?.remove();
     foregroundWatcher = null;

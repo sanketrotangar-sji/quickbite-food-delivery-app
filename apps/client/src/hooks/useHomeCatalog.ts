@@ -6,5 +6,7 @@ export function useHomeCatalog() {
   return useQuery({
     queryKey: ['home-catalog'],
     queryFn: fetchHomeCatalog,
+    staleTime: 45_000,
+    gcTime: 5 * 60_000,
   });
 }

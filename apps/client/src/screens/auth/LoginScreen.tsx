@@ -37,36 +37,9 @@ export function LoginScreen() {
 
   async function onGoogle() {
     setGoogleLoading(true);
-    console.log('[QB-DEBUG]', JSON.stringify({
-      sessionId: '151e86',
-      runId: 'google-oauth-post-fix',
-      hypothesisId: 'E',
-      location: 'LoginScreen.tsx:onGoogle',
-      message: 'google button pressed',
-      data: { supabaseConfigured },
-      timestamp: Date.now(),
-    }));
     try {
       await signInWithGoogle();
-      console.log('[QB-DEBUG]', JSON.stringify({
-        sessionId: '151e86',
-        runId: 'google-oauth-post-fix',
-        hypothesisId: 'E',
-        location: 'LoginScreen.tsx:onGoogle',
-        message: 'signInWithGoogle resolved without throw',
-        data: {},
-        timestamp: Date.now(),
-      }));
     } catch (error) {
-      console.log('[QB-DEBUG]', JSON.stringify({
-        sessionId: '151e86',
-        runId: 'google-oauth-post-fix',
-        hypothesisId: 'C',
-        location: 'LoginScreen.tsx:onGoogle',
-        message: 'signInWithGoogle threw',
-        data: { error: error instanceof Error ? error.message : String(error) },
-        timestamp: Date.now(),
-      }));
       Alert.alert('Google sign-in', error instanceof Error ? error.message : 'Try again.');
     } finally {
       setGoogleLoading(false);

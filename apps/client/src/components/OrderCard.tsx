@@ -1,10 +1,11 @@
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { OrderStatusBadge } from '@/components/OrderStatusBadge';
 import { ORDER_STATUS_META, ORDER_STATUS_ORDER, type OrderStatus } from '@/constants/orderStatus';
 import { colors, radii } from '@/constants/theme';
+import { RemoteImage } from '@/components/RemoteImage';
 
 export function OrderCard({
   variant,
@@ -119,7 +120,7 @@ export function OrderCard({
 
 function Thumb({ imageUrl, initial, size }: { imageUrl?: string | null; initial: string; size: number }) {
   if (imageUrl) {
-    return <Image source={{ uri: imageUrl }} style={[styles.thumb, { width: size, height: size }]} />;
+    return <RemoteImage uri={imageUrl} slot="thumb" style={[styles.thumb, { width: size, height: size }]} />;
   }
   return (
     <View style={[styles.thumb, styles.fallback, { width: size, height: size }]}>

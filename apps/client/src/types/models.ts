@@ -24,8 +24,8 @@ export type RestaurantBrowse = {
   lng: number | null;
   offer_percent: number | null;
   prep_minutes: number | null;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 };
 export type MenuItem = Tables<'menu_items'>;
 export type Order = Tables<'orders'>;

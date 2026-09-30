@@ -15,6 +15,7 @@ import { colors, radii, screenTopGap, tabBarInset } from '@/constants/theme';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useAuth } from '@/hooks/useAuth';
 import { displayNickname } from '@/lib/addresses';
+import { rememberRole } from '@/lib/last-role';
 import { hasRole, isPartner } from '@/types/models';
 
 function initialsFromName(name: string) {
@@ -135,6 +136,12 @@ export function EditProfileScreen() {
               subtitle="Active and past orders"
               onPress={() => router.push('/(customer)/(tabs)/reorder')}
             />
+            <ProfileListItem
+              icon="notifications-outline"
+              title="Notifications"
+              subtitle="Rider assigned, ETA updates, and alerts"
+              onPress={() => router.push('/(customer)/notifications')}
+            />
           </Group>
 
           <Group title="Payments and offers">
@@ -207,9 +214,13 @@ export function EditProfileScreen() {
                   ? 'You are a rider. Open deliveries to pick up orders.'
                   : 'Apply with your phone, city, and vehicle.'
               }
-              onPress={() =>
-                rider ? router.push('/(rider)/(tabs)') : router.push('/(customer)/careers?kind=rider')
-              }
+              onPress={() => {
+                if (!rider) {
+                  router.push('/(customer)/careers?kind=rider');
+                  return;
+                }
+                void rememberRole('rider').then(() => router.replace('/(rider)/(tabs)'));
+              }}
             />
             <ProfileListItem
               icon="storefront-outline"

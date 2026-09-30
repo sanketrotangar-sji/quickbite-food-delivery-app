@@ -10,6 +10,7 @@ type AuthValue = {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  profileError: string | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
@@ -47,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [sessionReady, setSessionReady] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -87,12 +89,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let cancelled = false;
     setLoading(true);
+    setProfileError(null);
     loadProfile(userId)
       .then((next) => {
-        if (!cancelled) setProfile(next);
+        if (cancelled) return;
+        setProfile(next);
+        if (!next) setProfileError('Could not load your profile. Check your connection and try again.');
       })
-      .catch(() => {
-        if (!cancelled) setProfile(null);
+      .catch((cause: unknown) => {
+        if (cancelled) return;
+        setProfile(null);
+        setProfileError(cause instanceof Error ? cause.message : 'Could not load your profile.');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -108,17 +115,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       profile,
       loading,
+      profileError,
       signOut: async () => {
         await apiSignOut();
         setProfile(null);
+        setProfileError(null);
       },
       refreshProfile: async () => {
         if (!session?.user.id) return;
-        const next = await getProfile(session.user.id);
-        if (next) setProfile(next);
+        setProfileError(null);
+        try {
+          const next = await getProfile(session.user.id);
+          if (next) {
+            setProfile(next);
+            setProfileError(null);
+          } else {
+            setProfileError('Could not load your profile. Check your connection and try again.');
+          }
+        } catch (cause: unknown) {
+          setProfileError(cause instanceof Error ? cause.message : 'Could not load your profile.');
+        }
       },
     }),
-    [session, profile, loading],
+    [session, profile, loading, profileError],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

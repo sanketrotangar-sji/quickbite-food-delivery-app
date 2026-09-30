@@ -38,6 +38,7 @@ export function useManagerMenu() {
       return rows.map((row) => toUiMenuItem(row, restaurantName));
     },
     enabled: Boolean(restaurantId),
+    staleTime: 60_000,
   });
 }
 

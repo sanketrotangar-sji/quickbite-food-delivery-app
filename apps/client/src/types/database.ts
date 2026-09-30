@@ -894,6 +894,31 @@ export type Database = {
         Args: { p_address_id: string }
         Returns: Database["public"]["Tables"]["customer_addresses"]["Row"]
       }
+      list_rider_delivery_pool: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          status: Database["public"]["Enums"]["order_status"]
+          total_amount: number
+          placed_at: string
+          restaurant_id: string
+          restaurant_name: string
+          restaurant_address: string
+          cuisine: string
+          image_url: string | null
+          restaurant_lat: number | null
+          restaurant_lng: number | null
+          items_summary: string
+          item_count: number
+          rider_earning: number | null
+          tip_amount: number | null
+          bonus_amount: number | null
+          pickup_km: number | null
+          drop_km: number | null
+          eta_minutes: number | null
+          area_hint: string | null
+        }[]
+      }
       register_push_device: {
         Args: {
           p_metadata?: Json

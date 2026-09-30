@@ -4,6 +4,7 @@ import { OrderCard } from "@/components/order-card";
 import { OrderDrawer } from "@/components/order-drawer";
 import { QuickBiteShell } from "@/components/quickbite-shell";
 import { Button } from "@/components/ui/button";
+import { ListShell } from "@/components/list-state";
 import { useAdvanceOrder, useManagerOrders } from "@/hooks/use-manager-orders";
 import type { Order } from "@/lib/quickbite-data";
 
@@ -35,7 +36,8 @@ export const Route = createFileRoute("/orders")({
 
 function OrdersPage() {
   const { q, status } = Route.useSearch();
-  const orders = useManagerOrders().data ?? [];
+  const ordersQuery = useManagerOrders();
+  const orders = ordersQuery.data ?? [];
   const advanceOrder = useAdvanceOrder();
   const [selected, setSelected] = useState<Order>();
   const [filter, setFilter] = useState<OrdersFilter>(status);
@@ -76,19 +78,38 @@ function OrdersPage() {
             </Button>
           ))}
         </div>
-        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {shown.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onOpen={() => setSelected(order)}
-              onAdvance={() => advance(order.id)}
-            />
-          ))}
-        </div>
-        {shown.length === 0 ? (
-          <p className="mt-8 text-sm text-muted-foreground">No orders match this search.</p>
-        ) : null}
+        <ListShell
+          loading={ordersQuery.isLoading}
+          error={
+            ordersQuery.isError
+              ? ordersQuery.error instanceof Error
+                ? ordersQuery.error.message
+                : "Could not load orders."
+              : null
+          }
+          onRetry={() => void ordersQuery.refetch()}
+          empty={
+            !ordersQuery.isLoading && !ordersQuery.isError && shown.length === 0
+              ? {
+                  title: orders.length === 0 ? "No orders yet" : "No orders match this filter",
+                  body:
+                    orders.length === 0
+                      ? "Incoming orders will appear here when customers place them."
+                      : "Try another status tab or clear your search.",
+                }
+              : null
+          }>
+          <div className="mt-5 grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {shown.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                onOpen={() => setSelected(order)}
+                onAdvance={() => advance(order.id)}
+              />
+            ))}
+          </div>
+        </ListShell>
         <OrderDrawer order={current} onClose={() => setSelected(undefined)} onAdvance={advance} />
       </div>
     </QuickBiteShell>

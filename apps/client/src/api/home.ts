@@ -84,6 +84,58 @@ function averageRatings(rows: RatingRow[]) {
   return averages;
 }
 
+/** Prefer one dish per kitchen first, then a second pass — avoids alphabetical mono-food rails. */
+export function diversifyMenuItems(items: MenuItem[], maxPerRestaurant = 2, maxTotal = 48): MenuItem[] {
+  const byKitchen = new Map<string, MenuItem[]>();
+  for (const item of items) {
+    const list = byKitchen.get(item.restaurant_id) ?? [];
+    list.push(item);
+    byKitchen.set(item.restaurant_id, list);
+  }
+
+  for (const [id, list] of byKitchen) {
+    const seenCategories = new Set<string>();
+    const diversified: MenuItem[] = [];
+    for (const item of list) {
+      const cat = (item.category ?? '').trim().toLowerCase() || 'other';
+      if (seenCategories.has(cat) && diversified.length > 0) continue;
+      seenCategories.add(cat);
+      diversified.push(item);
+      if (diversified.length >= maxPerRestaurant) break;
+    }
+    // Fill remaining slots from leftover dishes if category-filtered left us short.
+    if (diversified.length < maxPerRestaurant) {
+      for (const item of list) {
+        if (diversified.includes(item)) continue;
+        diversified.push(item);
+        if (diversified.length >= maxPerRestaurant) break;
+      }
+    }
+    byKitchen.set(id, diversified);
+  }
+
+  const picked: MenuItem[] = [];
+  const queues = [...byKitchen.values()];
+  let index = 0;
+  while (picked.length < maxTotal && queues.some((q) => q.length > 0)) {
+    const queue = queues[index % queues.length];
+    if (queue && queue.length > 0) {
+      const next = queue.shift();
+      if (next) picked.push(next);
+    }
+    index += 1;
+    if (index > queues.length * maxPerRestaurant + maxTotal) break;
+  }
+  return picked;
+}
+
+function pickFeaturedDish(kitchenDishes: HomeDish[], usedNames: Set<string>) {
+  const unique = kitchenDishes.find((dish) => !usedNames.has(dish.name.toLowerCase()));
+  const featured = unique ?? kitchenDishes[0];
+  if (featured) usedNames.add(featured.name.toLowerCase());
+  return featured;
+}
+
 export function buildHomeCatalog(
   restaurants: RestaurantBrowse[],
   menuItems: MenuItem[],
@@ -92,7 +144,11 @@ export function buildHomeCatalog(
 ): HomeCatalog {
   const restaurantById = new Map(restaurants.map((row) => [row.id, row]));
   const ratingByRestaurant = averageRatings(ratings);
-  const available = menuItems.filter((item) => item.is_available);
+  const available = diversifyMenuItems(
+    menuItems.filter((item) => item.is_available),
+    2,
+    48,
+  );
 
   const dishes: HomeDish[] = available.map((item) => {
     const kitchen = restaurantById.get(item.restaurant_id);
@@ -101,7 +157,7 @@ export function buildHomeCatalog(
       name: item.name,
       restaurantName: kitchen?.name ?? 'Kitchen',
       restaurantId: item.restaurant_id,
-      category: item.category?.trim() || 'Popular',
+      category: item.category?.trim() || 'Mains',
       price: Number(item.price),
       imageUrl: item.image_url ?? '',
       veg: Boolean(item.is_veg),
@@ -137,9 +193,10 @@ export function buildHomeCatalog(
     ...categoryMap.values(),
   ];
 
+  const usedFeaturedNames = new Set<string>();
   const places: HomePlace[] = restaurants.map((kitchen) => {
     const kitchenDishes = dishesByRestaurant.get(kitchen.id) ?? [];
-    const featured = kitchenDishes[0];
+    const featured = pickFeaturedDish(kitchenDishes, usedFeaturedNames);
     const categoryIds = [...new Set(kitchenDishes.map((dish) => categorySlug(dish.category)))];
     return {
       id: kitchen.id,
@@ -177,21 +234,41 @@ export function buildHomeCatalog(
 }
 
 export async function fetchHomeCatalog(): Promise<HomeCatalog> {
-  const [restaurants, menuItems, ratings, highlights, mine] = await Promise.all([
-    supabase.from('restaurant_browse').select('*').order('is_open', { ascending: false }).order('name'),
-    supabase.from('menu_items').select('*').eq('is_available', true).order('name'),
+  const [restaurants, ratings, highlights, mine] = await Promise.all([
+    supabase
+      .from('restaurant_browse')
+      .select(
+        'id, name, cuisine, description, image_url, is_open, offer_percent, prep_minutes, address, lat, lng, branch_name',
+      )
+      .order('is_open', { ascending: false })
+      .order('name')
+      .limit(40),
     supabase.from('restaurant_rating_public').select('restaurant_id, food_rating'),
     fetchHighlights(),
     supabase.rpc('list_my_restaurants'),
   ]);
 
   if (restaurants.error) throwApiError(restaurants.error, 'Could not load restaurants.');
-  if (menuItems.error) throwApiError(menuItems.error, 'Could not load dishes.');
   if (ratings.error) throwApiError(ratings.error, 'Could not load ratings.');
 
   const hidden = new Set((mine.error ? [] : mine.data ?? []).map((row) => row.id));
-  const visibleRestaurants = (restaurants.data ?? []).filter((row) => !hidden.has(row.id));
-  const visibleItems = (menuItems.data ?? []).filter((item) => !hidden.has(item.restaurant_id));
+  const visibleRestaurants = ((restaurants.data ?? []) as RestaurantBrowse[]).filter((row) => !hidden.has(row.id));
+  const restaurantIds = visibleRestaurants.map((row) => row.id);
+
+  // Pull a wider pool then diversify client-side (round-robin / category spread).
+  let menuItems: MenuItem[] = [];
+  if (restaurantIds.length > 0) {
+    const dishes = await supabase
+      .from('menu_items')
+      .select('id, restaurant_id, name, price, image_url, is_available, is_veg, category')
+      .eq('is_available', true)
+      .in('restaurant_id', restaurantIds)
+      .limit(240);
+    if (dishes.error) throwApiError(dishes.error, 'Could not load dishes.');
+    menuItems = (dishes.data ?? []) as MenuItem[];
+  }
+
+  const visibleItems = menuItems.filter((item) => !hidden.has(item.restaurant_id));
 
   return buildHomeCatalog(visibleRestaurants, visibleItems, ratings.data ?? [], highlights);
 }

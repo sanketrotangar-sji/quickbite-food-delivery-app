@@ -22,6 +22,29 @@ describe('routeFromNotification', () => {
     });
   });
 
+  it('routes accept and delivered customer pushes to tracking', () => {
+    expect(
+      routeFromNotification({
+        audience: 'customer',
+        type: 'order_accepted',
+        orderId: 'order-2',
+      }),
+    ).toEqual({
+      pathname: '/(customer)/orders/[id]',
+      params: { id: 'order-2' },
+    });
+    expect(
+      routeFromNotification({
+        audience: 'customer',
+        type: 'order_delivered',
+        orderId: 'order-3',
+      }),
+    ).toEqual({
+      pathname: '/(customer)/orders/[id]',
+      params: { id: 'order-3' },
+    });
+  });
+
   it('ignores payloads without a destination', () => {
     expect(routeFromNotification({ type: 'marketing' })).toBeNull();
   });

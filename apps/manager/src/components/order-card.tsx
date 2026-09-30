@@ -1,6 +1,7 @@
 import { ArrowRight, Bike, Clock3, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { areaFromAddress } from "@/lib/dashboard-stats";
+import { useMinuteTick } from "@/hooks/use-minute-tick";
+import { areaFromAddress, orderElapsed } from "@/lib/dashboard-stats";
 import type { Order } from "@/lib/quickbite-data";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ export function OrderCard({
   onOpen: () => void;
   onAdvance: () => void;
 }) {
+  const now = useMinuteTick();
   const labels: Record<string, string> = {
     placed: "New order",
     preparing: "Preparing",
@@ -43,7 +45,7 @@ export function OrderCard({
               </span>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Clock3 size={13} />
-                {order.elapsed}
+                {orderElapsed(order.placedAt, now)}
               </span>
             </div>
             <h3 className="mt-3 flex items-center gap-1.5 truncate text-lg font-extrabold">

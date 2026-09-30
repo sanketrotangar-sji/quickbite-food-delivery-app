@@ -9,22 +9,6 @@ const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 export const supabaseConfigured = Boolean(url && anonKey);
 
-// #region agent log
-fetch('http://127.0.0.1:7843/ingest/1b1f3c78-f59b-4280-a7ed-55237573431c', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '151e86' },
-  body: JSON.stringify({
-    sessionId: '151e86',
-    runId: 'google-oauth-1',
-    hypothesisId: 'C',
-    location: 'supabaseClient.ts:module',
-    message: 'supabase client module loaded',
-    data: { supabaseConfigured, platform: Platform.OS, hasWindow: typeof window !== 'undefined' },
-    timestamp: Date.now(),
-  }),
-}).catch(() => {});
-// #endregion
-
 const canUseNativeStorage = Platform.OS !== 'web' || typeof window !== 'undefined';
 
 const memoryStorage = {
@@ -32,6 +16,12 @@ const memoryStorage = {
   setItem: async (_key: string, _value: string) => {},
   removeItem: async (_key: string) => {},
 };
+
+if (!supabaseConfigured && !__DEV__) {
+  console.error(
+    'QuickBite release build is missing EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY. Set them in EAS env.',
+  );
+}
 
 export const supabase = createClient<Database>(
   url ?? 'https://placeholder.supabase.co',

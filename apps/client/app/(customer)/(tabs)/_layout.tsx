@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useSegments } from 'expo-router';
 import { useEffect, type ComponentProps } from 'react';
 
 import { setRiderDuty } from '@/api/rider';
@@ -7,22 +7,33 @@ import { colors } from '@/constants/theme';
 import { stopRiderTracking } from '@/features/rider/rider-tracking';
 import { useAuth } from '@/hooks/useAuth';
 import { useCustomerOrdersRealtime } from '@/hooks/useOrderTracking';
+import { rememberRole } from '@/lib/last-role';
 import { hasRole } from '@/types/models';
 
 export default function CustomerTabs() {
   const { profile, refreshProfile } = useAuth();
+  const segments = useSegments();
+  const onCustomerSide = segments[0] === '(customer)';
   useCustomerOrdersRealtime();
 
-  // Riders browsing as customers must stay off duty.
   useEffect(() => {
+    if (onCustomerSide) void rememberRole('customer');
+  }, [onCustomerSide]);
+
+  // Riders may order as customers, but only the active customer side may force duty off.
+  // A mounted-but-covered customer stack must not undo Start duty on the rider screens.
+  useEffect(() => {
+    if (!onCustomerSide) return;
     if (!profile?.id || !hasRole(profile, 'rider') || !profile.is_online) return;
-    void setRiderDuty(false).then(async () => {
-      await stopRiderTracking();
-      await refreshProfile();
-    }).catch(() => {
-      // The rider screen surfaces duty errors; customer browsing should remain usable.
-    });
-  }, [profile?.id, profile?.is_online, profile?.role, refreshProfile]);
+    void setRiderDuty(false)
+      .then(async () => {
+        await stopRiderTracking();
+        await refreshProfile();
+      })
+      .catch(() => {
+        // The rider screen surfaces duty errors; customer browsing should remain usable.
+      });
+  }, [onCustomerSide, profile, refreshProfile]);
 
   return (
     <Tabs
@@ -36,6 +47,8 @@ export default function CustomerTabs() {
       }}
       screenOptions={{
         headerShown: false,
+        freezeOnBlur: true,
+        lazy: true,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         sceneStyle: { backgroundColor: colors.background },

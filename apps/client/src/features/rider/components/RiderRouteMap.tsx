@@ -3,15 +3,20 @@ import { StyleSheet, View } from 'react-native';
 
 import type { DeliveryCoordinate } from '@/api/deliveries';
 import { AppText } from '@/components/AppText';
-import { colors } from '@/constants/theme';
+import { MAP_LAND } from '@/components/maps/quickbite-map-style';
+import { colors, radii } from '@/constants/theme';
 import { supportsNativeMaps } from '@/lib/runtime';
 
 type Props = {
   rider: DeliveryCoordinate | null;
   restaurant: DeliveryCoordinate | null;
   customer: DeliveryCoordinate | null;
-  destination: 'restaurant' | 'customer';
+  destination: 'restaurant' | 'customer' | 'auto';
   height?: number;
+  borderRadius?: number;
+  restaurantLabel?: string | null;
+  customerLabel?: string | null;
+  compact?: boolean;
 };
 
 export function RiderRouteMap(props: Props) {
@@ -19,6 +24,7 @@ export function RiderRouteMap(props: Props) {
     return (
       <MapUnavailable
         height={props.height ?? 260}
+        borderRadius={props.borderRadius ?? radii.lg}
         message="Live delivery maps need an EAS development or preview build. Expo Go cannot load MapLibre."
       />
     );
@@ -30,9 +36,17 @@ export function RiderRouteMap(props: Props) {
   return <NativeRouteMap {...props} />;
 }
 
-function MapUnavailable({ height, message }: { height: number; message: string }) {
+function MapUnavailable({
+  height,
+  message,
+  borderRadius,
+}: {
+  height: number;
+  message: string;
+  borderRadius: number;
+}) {
   return (
-    <View style={[styles.message, { height }]}>
+    <View style={[styles.message, { height, borderRadius }]}>
       <Ionicons name="phone-portrait-outline" size={24} color={colors.primary} />
       <AppText muted style={styles.messageText}>
         {message}
@@ -47,7 +61,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingHorizontal: 28,
-    backgroundColor: '#E7F0EA',
+    backgroundColor: MAP_LAND,
+    overflow: 'hidden',
   },
   messageText: { textAlign: 'center', fontSize: 13, lineHeight: 18 },
 });

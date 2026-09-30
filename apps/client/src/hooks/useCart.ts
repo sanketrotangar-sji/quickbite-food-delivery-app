@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Alert } from 'react-native';
 
 import { addCartItem, clearCart, listCart, setCartQuantity } from '@/api/cart';
 import { STANDARD_DELIVERY_FEE } from '@/constants/pricing';
@@ -16,6 +17,10 @@ export type CartItemPreview = {
   restaurantName: string;
   isOpen: boolean;
 };
+
+function alertCartError(error: unknown) {
+  Alert.alert('Cart update failed', error instanceof Error ? error.message : 'Try again.');
+}
 
 export function useCart() {
   const { session } = useAuth();
@@ -63,8 +68,9 @@ export function useCart() {
       queryClient.setQueryData(cartQueryKey, next);
       return { previous, skipped: false };
     },
-    onError: (_error, _input, context) => {
+    onError: (error, _input, context) => {
       if (context?.previous) queryClient.setQueryData(cartQueryKey, context.previous);
+      if (!context?.skipped) alertCartError(error);
     },
     onSettled: invalidate,
   });
@@ -81,8 +87,9 @@ export function useCart() {
       queryClient.setQueryData(cartQueryKey, next);
       return { previous };
     },
-    onError: (_error, _input, context) => {
+    onError: (error, _input, context) => {
       if (context?.previous) queryClient.setQueryData(cartQueryKey, context.previous);
+      alertCartError(error);
     },
     onSettled: invalidate,
   });
@@ -98,8 +105,9 @@ export function useCart() {
       queryClient.setQueryData(cartQueryKey, []);
       return { previous };
     },
-    onError: (_error, _input, context) => {
+    onError: (error, _input, context) => {
       if (context?.previous) queryClient.setQueryData(cartQueryKey, context.previous);
+      alertCartError(error);
     },
     onSettled: invalidate,
   });

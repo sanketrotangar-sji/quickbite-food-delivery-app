@@ -5,6 +5,9 @@
 supabase/.env
 supabase/functions/.env
 
+# ML local venv
+.venv-ml/
+
 # Expo / EAS
 .expo/
 dist/
@@ -42,3 +45,10 @@ Thumbs.db
 agent skills/* 
 
 docs/planning.md
+# Local delivery quarantine (moved unused files)
+_delivery_quarantine/
+
+# Generated seed with demo passwords — regenerate locally
+supabase/seed-data/generated/auth-users.csv
+supabase/seed-data/generated/seed-bundle.json
+supabase/seed-data/generated/manifest.json

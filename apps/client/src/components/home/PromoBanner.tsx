@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, useState } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors, radii } from '@/constants/theme';
 import type { HomeHighlight } from '@/lib/home-mock';
+import { RemoteImage } from '@/components/RemoteImage';
 
 const ROTATE_MS = 4000;
 
@@ -43,7 +44,7 @@ export function PromoBanner({
 
   return (
     <View style={styles.card}>
-      {offer.imageUrl ? <Image source={{ uri: offer.imageUrl }} style={styles.image} /> : <View style={styles.image} />}
+      {offer.imageUrl ? <RemoteImage uri={offer.imageUrl} slot="hero" style={styles.image} /> : <View style={styles.image} />}
       <View style={styles.scrim} />
       <View style={styles.body}>
         <View style={styles.copy}>

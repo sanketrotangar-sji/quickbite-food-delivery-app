@@ -131,11 +131,18 @@ export function AddressesProvider({ children }: { children: ReactNode }) {
 
   const add = useCallback(
     async (draft: AddressDraft) => {
-      if (!userId || !hydrated) return;
+      if (!userId) throw new Error('Sign in to save an address.');
+      if (!hydrated) throw new Error('Addresses are still loading. Try again in a moment.');
       const id = Crypto.randomUUID();
       await mutate(async () => {
+        // Insert only — DB trigger promotes the first address to default.
+        // Prefer the new row as default when an older default already exists.
         await createAddress(userId, id, draft);
-        await setDefaultAddress(id);
+        try {
+          await setDefaultAddress(id);
+        } catch {
+          // Address is saved; default selection can be fixed on next select/load.
+        }
       });
     },
     [hydrated, mutate, userId],
@@ -143,7 +150,8 @@ export function AddressesProvider({ children }: { children: ReactNode }) {
 
   const update = useCallback(
     async (id: string, draft: AddressDraft) => {
-      if (!userId || !hydrated) return;
+      if (!userId) throw new Error('Sign in to update an address.');
+      if (!hydrated) throw new Error('Addresses are still loading. Try again in a moment.');
       await mutate(async () => {
         await updateAddress(id, draft);
       });
@@ -153,7 +161,8 @@ export function AddressesProvider({ children }: { children: ReactNode }) {
 
   const remove = useCallback(
     async (id: string) => {
-      if (!userId || !hydrated) return;
+      if (!userId) throw new Error('Sign in to remove an address.');
+      if (!hydrated) throw new Error('Addresses are still loading. Try again in a moment.');
       await mutate(() => removeAddress(id));
     },
     [hydrated, mutate, userId],

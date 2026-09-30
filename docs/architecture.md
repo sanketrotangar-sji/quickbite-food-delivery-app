@@ -13,7 +13,13 @@
 
 ## Roles
 
-Everyone signs up as a **customer**. Extra roles are granted after approval (`user_roles`).
+Everyone signs up as a **customer**. Extra roles are granted after approval via `private.grant_role`.
+
+Authorization uses a **single** `profiles.role`. Grants **never downgrade** precedence:
+
+`admin > restaurant_owner > restaurant_manager > rider > customer`
+
+So an owner who accepts a manager invite stays `restaurant_owner`.
 
 | Role | App | How they get it |
 |------|-----|-----------------|
@@ -29,11 +35,39 @@ Same account cannot order from / deliver / kitchen-handle its own restaurant (RP
 
 | Path | Purpose |
 |------|---------|
-| `migrations/` | Schema, RLS, RPCs, grants, realtime |
-| `functions/notify-new-order` | Webhook on new orders |
+| `migrations/` | Schema, RLS, RPCs, grants, realtime, intelligence automations |
+| `functions/notify-new-order` | Orders UPDATE webhook → FCM on accept (`preparing`) + delivered |
+| `functions/rio` | Customer ordering assistant (tools + RAG grounding) |
+| `functions/_shared/llm.ts` | Chat via `llm_config` (Groq or Ollama) |
+| `functions/_shared/embeddings.ts` | Always Ollama `nomic-embed-text` (768-d) |
 | `config.toml` | Local + function settings |
 
 **One Supabase project** for all apps. Access control = RLS + RPCs, not separate databases.
+
+## Intelligence layer
+
+| Piece | What it does |
+|-------|----------------|
+| `embeddings` + `match_embeddings` | Vector index over menu items and rating comments; cosine retrieval for RIO |
+| RIO tools `retrieve_context`, `check_delivery_status`, `escalate_complaint` | Ground answers in DB rows; open `support_tickets` with urgency heuristics |
+| Auto rider assign | `BEFORE UPDATE` when status becomes `ready` and `rider_id` is null — nearest online rider |
+| Kitchen-load alerts | `pg_cron` every 5 min → `run_kitchen_load_alerts()` bumps `eta_minutes` past threshold |
+| `automation_events` / `automation_config` | Audit trail + tunables (threshold 8, bump 15 min, cooldown 30 min) |
+| Offline classifier | `scripts/classify_menu_category.py` — embeddings → `menu_items.category` metrics under `docs/ml/` |
+
+Plain language: RIO must not invent dishes; riders are claimed when the bag is ready (not while cooking); ETA bumps when a kitchen is slammed so customers are not left guessing.
+
+## Quality (Part 3)
+
+| Layer | Location |
+|-------|----------|
+| Unit tests | Vitest — `apps/client`, `apps/manager`, `packages/shared` |
+| Edge shared tests | Deno — `supabase/functions/_shared/*.test.ts` |
+| Order happy path | `tests/integration/order-happy-path.mjs` (service role) |
+| Web smoke | Playwright — `apps/manager/e2e/` |
+| RAG eval | `docs/rag/eval-queries.json` + `npm run rag:eval` |
+
+Run everything: `npm test` from the repo root (see [setup.md](./setup.md)).
 
 ## Frontends
 

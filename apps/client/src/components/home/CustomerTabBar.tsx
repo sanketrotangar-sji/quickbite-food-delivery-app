@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useKeyboardState } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/AppText';
@@ -33,12 +34,21 @@ export function CustomerTabBar({
   };
 }) {
   const insets = useSafeAreaInsets();
+  const keyboardVisible = useKeyboardState((state) => state.isVisible);
   const { activeOrder } = useActiveOrder();
   const activeRoute = state.routes[state.index]?.name;
   const showActiveOrder = !!activeOrder && (activeRoute === 'index' || activeRoute === 'picks' || activeRoute === 'reorder');
 
+  // Keep mounted while the keyboard is open — unmounting caused tab-switch lag and
+  // "state update on a component that hasn't mounted yet" races on remount.
   return (
-    <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+    <View
+      pointerEvents={keyboardVisible ? 'none' : 'auto'}
+      style={[
+        styles.wrap,
+        { paddingBottom: Math.max(insets.bottom, 8) },
+        keyboardVisible && styles.wrapHidden,
+      ]}>
       {showActiveOrder ? (
         <Pressable
           onPress={() => router.push(`/(customer)/orders/${activeOrder.id}`)}
@@ -102,6 +112,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
+  },
+  wrapHidden: {
+    opacity: 0,
+    transform: [{ translateY: 120 }],
   },
   activeOrder: {
     minHeight: ACTIVE_ORDER_BAR_HEIGHT,

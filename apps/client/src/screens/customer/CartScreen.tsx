@@ -22,10 +22,11 @@ import { displayNickname } from '@/lib/addresses';
 
 export function CartScreen() {
   const cart = useCart();
-  const { selected } = useAddresses();
+  const { selected, hydrated } = useAddresses();
   const [addressOpen, setAddressOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const closed = cart.items.some((line) => line.restaurants?.is_open === false);
+  const addressReady = Boolean(selected?.lat != null && selected?.lng != null);
 
   function changeQuantity(id: string, quantity: number) {
     cart.updateQuantity.mutate(
@@ -34,6 +35,14 @@ export function CartScreen() {
         onError: (error) => Alert.alert('Could not update', error instanceof Error ? error.message : 'Try again.'),
       },
     );
+  }
+
+  function onProceed() {
+    if (!hydrated || !addressReady) {
+      setAddressOpen(true);
+      return;
+    }
+    router.push('/(customer)/checkout');
   }
 
   if (cart.isLoading && cart.items.length === 0) {
@@ -154,12 +163,21 @@ export function CartScreen() {
 
         <Pressable
           onPress={() => setAddressOpen(true)}
-          style={({ pressed }) => [styles.card, styles.offer, pressed && styles.pressed]}>
+          style={({ pressed }) => [
+            styles.card,
+            styles.offer,
+            !addressReady && styles.addressNeeded,
+            pressed && styles.pressed,
+          ]}>
           <Ionicons name="location-outline" size={18} color={colors.primary} />
           <View style={styles.lineCopy}>
             <AppText weight="semibold">Delivery address</AppText>
             <AppText muted numberOfLines={2} style={styles.price}>
-              {selected ? `${displayNickname(selected)} · ${selected.line}` : 'Add where this order should go'}
+              {selected
+                ? selected.lat == null || selected.lng == null
+                  ? `${displayNickname(selected)} · Add a delivery pin to continue`
+                  : `${displayNickname(selected)} · ${selected.line}`
+                : 'Add where this order should go'}
             </AppText>
           </View>
           <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
@@ -183,13 +201,20 @@ export function CartScreen() {
             <Ionicons name="time-outline" size={16} color={colors.primaryDark} />
             <AppText style={styles.warnText}>This kitchen is closed right now, so the order cannot be placed.</AppText>
           </View>
+        ) : !addressReady ? (
+          <View style={styles.warn}>
+            <Ionicons name="location-outline" size={16} color={colors.primaryDark} />
+            <AppText style={styles.warnText}>
+              Select or add a delivery address with a map pin on this screen before checkout.
+            </AppText>
+          </View>
         ) : null}
       </ScrollView>
       <StickyAction
         leading={formatInr(cart.total)}
-        label="Proceed to Checkout"
+        label={addressReady ? 'Proceed to Checkout' : 'Add delivery address'}
         disabled={closed}
-        onPress={() => router.push('/(customer)/checkout')}
+        onPress={onProceed}
       />
       <AddressSheet visible={addressOpen} onClose={() => setAddressOpen(false)} />
       <PaymentSheet visible={paymentOpen} onClose={() => setPaymentOpen(false)} />
@@ -234,4 +259,5 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   warnText: { flex: 1, color: colors.primaryDark, fontSize: 13, lineHeight: 18 },
+  addressNeeded: { borderColor: colors.primarySoft, backgroundColor: '#FFF8F4' },
 });

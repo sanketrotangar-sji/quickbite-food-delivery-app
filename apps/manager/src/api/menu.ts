@@ -8,11 +8,11 @@ export type DbMenuItem = Database['public']['Tables']['menu_items']['Row'];
 export async function listMenuItems(restaurantId: string): Promise<DbMenuItem[]> {
   const { data, error } = await supabase
     .from('menu_items')
-    .select('*')
+    .select('id, restaurant_id, name, description, price, image_url, is_available, is_veg, category, created_at, updated_at')
     .eq('restaurant_id', restaurantId)
     .order('name');
   if (error) throwApiError(error, 'Could not load menu.');
-  return data ?? [];
+  return (data ?? []) as DbMenuItem[];
 }
 
 export async function setMenuItemAvailability(id: string, isAvailable: boolean): Promise<void> {

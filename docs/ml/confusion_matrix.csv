@@ -1,0 +1,14 @@
+,Asian,Beverages,Breakfast,Cafe,Desserts,Drinks,Healthy,Indian,Main Course,Mains,Snacks,South Indian,Starters
+Asian,2,0,0,0,0,0,0,0,0,0,0,0,0
+Beverages,0,3,0,0,0,0,0,0,0,0,0,0,0
+Breakfast,0,0,1,0,0,0,0,0,0,0,0,0,0
+Cafe,0,0,0,4,0,0,0,0,0,0,0,0,0
+Desserts,0,0,0,0,11,0,0,0,0,0,0,0,0
+Drinks,0,1,0,0,0,0,0,0,0,0,0,0,0
+Healthy,0,0,0,0,0,0,12,0,0,0,0,0,0
+Indian,0,0,0,0,0,0,0,10,0,0,0,0,0
+Main Course,0,0,0,0,0,0,0,0,1,0,0,0,0
+Mains,0,0,0,0,0,0,0,0,0,22,0,0,0
+Snacks,0,0,0,0,0,0,0,0,0,0,0,0,1
+South Indian,0,0,0,0,0,0,0,0,0,0,0,4,0
+Starters,0,0,0,0,0,0,0,0,0,0,0,0,5

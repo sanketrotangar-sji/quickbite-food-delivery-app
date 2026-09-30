@@ -28,13 +28,13 @@ export function CheckoutScreen() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [placeError, setPlaceError] = useState('');
   const closed = cart.items.some((line) => line.restaurants?.is_open === false);
-  const canPlace = Boolean(selected) && !closed && cart.itemCount > 0;
+  const canPlace = Boolean(selected?.lat != null && selected?.lng != null) && !closed && cart.itemCount > 0;
   const mapHeight = Math.round(height * 0.42);
   const kitchen = cart.restaurantName ?? 'Kitchen';
   const door = selected ? displayNickname(selected) : 'Your address';
 
   async function onPlace() {
-    if (!selected) {
+    if (!selected || selected.lat == null || selected.lng == null) {
       setSheetOpen(true);
       return;
     }

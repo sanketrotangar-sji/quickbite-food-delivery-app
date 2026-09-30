@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
+import { EmptyState } from '@/components/EmptyState';
 import { CartBar } from '@/components/CartBar';
 import { CategoryChips, type CuisineChip } from '@/components/home/CategoryChips';
 import { CravingCircle } from '@/components/home/CravingCircle';
@@ -15,10 +16,12 @@ import { PopularDishCard } from '@/components/home/PopularDishCard';
 import { PromoBanner } from '@/components/home/PromoBanner';
 import { RestaurantStripCard } from '@/components/home/RestaurantStripCard';
 import { ShortcutRow, type ShortcutId } from '@/components/home/ShortcutRow';
+import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { colors, tabBarInset } from '@/constants/theme';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useAddDish } from '@/hooks/useAddDish';
 import { useCart } from '@/hooks/useCart';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useHomeCatalog } from '@/hooks/useHomeCatalog';
 import { useActiveOrder } from '@/hooks/useOrderTracking';
 import { useSavedHearts } from '@/hooks/useSavedHearts';
@@ -26,6 +29,7 @@ import { placePresentation } from '@/lib/home-presentation';
 import {
   filterHomeDishes,
   filterHomePlaces,
+  pickPopularDishes,
   POPULAR_CATEGORY_ID,
   type DietFilter,
   type HomeHighlight,
@@ -44,6 +48,7 @@ export function HomeScreen() {
   const hearts = useSavedHearts();
   const catalog = useHomeCatalog();
   const [query, setQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(query, 300);
   const [categoryId, setCategoryId] = useState(POPULAR_CATEGORY_ID);
   const [diet, setDiet] = useState<DietFilter>('all');
   const [shortcut, setShortcut] = useState<ShortcutId | null>(null);
@@ -60,13 +65,16 @@ export function HomeScreen() {
     ];
   }, [categories]);
 
-  const dishes = useMemo(
-    () => filterHomeDishes(catalog.data?.dishes ?? [], categoryId, query, diet),
-    [catalog.data?.dishes, categoryId, query, diet],
-  );
+  const dishes = useMemo(() => {
+    const filtered = filterHomeDishes(catalog.data?.dishes ?? [], categoryId, debouncedQuery, diet);
+    if (categoryId === POPULAR_CATEGORY_ID && !debouncedQuery.trim()) {
+      return pickPopularDishes(filtered, { max: 16, maxPerRestaurant: 1, maxPerCategory: 4 });
+    }
+    return filtered.slice(0, 24);
+  }, [catalog.data?.dishes, categoryId, debouncedQuery, diet]);
   // Top restaurants ignore craving/cuisine chips — only search, diet, and shortcuts apply.
   const places = useMemo(() => {
-    const filtered = filterHomePlaces(catalog.data?.places ?? [], POPULAR_CATEGORY_ID, query, diet);
+    const filtered = filterHomePlaces(catalog.data?.places ?? [], POPULAR_CATEGORY_ID, debouncedQuery, diet);
     if (shortcut === 'healthy') return filtered.filter((place) => place.veg);
     if (shortcut === 'quick') {
       return [...filtered].sort((a, b) => placePresentation(a).minutesLow - placePresentation(b).minutesLow);
@@ -78,7 +86,7 @@ export function HomeScreen() {
       return [...filtered].sort((a, b) => placePresentation(b).discount - placePresentation(a).discount);
     }
     return filtered;
-  }, [catalog.data?.places, diet, query, shortcut]);
+  }, [catalog.data?.places, diet, debouncedQuery, shortcut]);
 
   const cravings = categories.filter((category) => category.id !== POPULAR_CATEGORY_ID);
   const offers = useMemo(
@@ -149,15 +157,21 @@ export function HomeScreen() {
                 />
               ))}
             </ScrollView>
+          ) : catalog.isError ? (
+            <EmptyState
+              icon="cloud-offline-outline"
+              title="Could not load kitchens"
+              body={catalog.error instanceof Error ? catalog.error.message : 'Check your connection and try again.'}
+              actionLabel="Retry"
+              onAction={() => void catalog.refetch()}
+            />
+          ) : catalog.isLoading ? (
+            <View style={styles.skeletonPad}>
+              <LoadingSkeleton variant="feature" rows={2} />
+            </View>
           ) : (
             <AppText muted style={styles.empty}>
-              {catalog.isLoading
-                ? 'Loading kitchens…'
-                : catalog.isError
-                  ? catalog.error instanceof Error
-                    ? catalog.error.message
-                    : 'Could not load kitchens.'
-                  : 'No kitchens match that yet.'}
+              No kitchens match that yet.
             </AppText>
           )}
         </View>
@@ -208,9 +222,13 @@ export function HomeScreen() {
                 />
               ))}
             </ScrollView>
+          ) : catalog.isLoading ? (
+            <View style={styles.skeletonPad}>
+              <LoadingSkeleton variant="feature" rows={2} />
+            </View>
           ) : (
             <AppText muted style={styles.empty}>
-              {catalog.isLoading ? 'Loading dishes…' : 'Nothing matches that craving yet.'}
+              Nothing matches that craving yet.
             </AppText>
           )}
         </View>
@@ -256,4 +274,5 @@ const styles = StyleSheet.create({
   seeAll: { color: colors.primary, fontSize: 13 },
   rail: { gap: RAIL_GAP, paddingLeft: PAGE_PAD, paddingRight: PAGE_PAD },
   empty: { paddingHorizontal: PAGE_PAD },
+  skeletonPad: { paddingHorizontal: PAGE_PAD },
 });

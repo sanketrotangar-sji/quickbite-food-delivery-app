@@ -1,4 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
+import { isKitchenStatus as sharedIsKitchenStatus, nextKitchenStatus as sharedNextKitchenStatus } from '@quickbite/shared';
 
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
@@ -75,6 +76,8 @@ export type DbOrder = {
 };
 
 export async function listRestaurantOrders(restaurantId: string): Promise<Order[]> {
+  const since = new Date();
+  since.setDate(since.getDate() - 7);
   const { data, error } = await supabase
     .from('orders')
     .select(
@@ -99,7 +102,9 @@ export async function listRestaurantOrders(restaurantId: string): Promise<Order[
     `,
     )
     .eq('restaurant_id', restaurantId)
-    .order('placed_at', { ascending: false });
+    .or(`status.in.(placed,preparing,ready),placed_at.gte.${since.toISOString()}`)
+    .order('placed_at', { ascending: false })
+    .limit(200);
   if (error) throwApiError(error, 'Could not load orders.');
   return ((data ?? []) as unknown as OrderQueryRow[]).map(toUiOrder);
 }
@@ -113,20 +118,29 @@ export type PerformanceOrder = {
 
 export async function listPerformanceOrders(restaurantIds: string[]): Promise<PerformanceOrder[]> {
   if (restaurantIds.length === 0) return [];
+  const since = new Date();
+  since.setDate(since.getDate() - 30);
   const { data, error } = await supabase
     .from('orders')
     .select('restaurant_id, status, total_amount, placed_at')
-    .in('restaurant_id', restaurantIds);
+    .in('restaurant_id', restaurantIds)
+    .gte('placed_at', since.toISOString())
+    .order('placed_at', { ascending: false })
+    .limit(2000);
   if (error) throwApiError(error, 'Could not load performance.');
   return data ?? [];
 }
 
 export async function listRestaurantOrderStats(restaurantId: string): Promise<DbOrder[]> {
+  const since = new Date();
+  since.setDate(since.getDate() - 30);
   const { data, error } = await supabase
     .from('orders')
     .select('id, status, total_amount, placed_at, delivered_at')
     .eq('restaurant_id', restaurantId)
-    .order('placed_at', { ascending: false });
+    .gte('placed_at', since.toISOString())
+    .order('placed_at', { ascending: false })
+    .limit(500);
   if (error) throwApiError(error, 'Could not load orders.');
   return data ?? [];
 }
@@ -140,11 +154,9 @@ export async function setRestaurantOrderStatus(orderId: string, status: 'prepari
 }
 
 export function isKitchenStatus(status: OrderStatus): status is 'placed' | 'preparing' | 'ready' {
-  return (KITCHEN_STATUSES as string[]).includes(status);
+  return sharedIsKitchenStatus(status);
 }
 
 export function nextKitchenStatus(status: OrderStatus): 'preparing' | 'ready' | null {
-  if (status === 'placed') return 'preparing';
-  if (status === 'preparing') return 'ready';
-  return null;
+  return sharedNextKitchenStatus(status);
 }

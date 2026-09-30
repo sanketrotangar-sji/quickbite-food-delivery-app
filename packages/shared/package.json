@@ -2,7 +2,13 @@
   "name": "@quickbite/shared",
   "private": true,
   "version": "0.0.1",
-  "description": "Shared types and constants for QuickBite apps (optional)",
+  "description": "Shared types and pure rules for QuickBite apps",
   "type": "module",
-  "main": "src/index.ts"
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.11"
+  }
 }

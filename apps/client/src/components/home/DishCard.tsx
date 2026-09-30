@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors, formatInr } from '@/constants/theme';
 import type { HomeDish } from '@/lib/home-mock';
+import { RemoteImage } from '@/components/RemoteImage';
 
 export function DishCard({
   dish,
@@ -22,7 +23,7 @@ export function DishCard({
     <Pressable onPress={onPress} style={[styles.card, { width }]}>
       <View>
         {dish.imageUrl ? (
-          <Image source={{ uri: dish.imageUrl }} style={styles.image} />
+          <RemoteImage uri={dish.imageUrl} slot="thumb" style={styles.image} />
         ) : (
           <View style={[styles.image, styles.fallback]}>
             <AppText weight="bold" style={styles.fallbackText}>

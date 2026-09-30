@@ -3,21 +3,32 @@ import { StyleSheet, View } from 'react-native';
 
 import type { DeliveryCoordinate } from '@/api/deliveries';
 import { AppText } from '@/components/AppText';
-import { colors } from '@/constants/theme';
+import { MAP_LAND } from '@/components/maps/quickbite-map-style';
+import { colors, radii } from '@/constants/theme';
 import { supportsNativeMaps } from '@/lib/runtime';
 
 type Props = {
   rider: DeliveryCoordinate | null;
   restaurant: DeliveryCoordinate | null;
   customer: DeliveryCoordinate | null;
-  height?: number;
+  height?: number | 'fill';
+  borderRadius?: number;
+  restaurantLabel?: string | null;
+  customerLabel?: string | null;
+  compact?: boolean;
+  showChrome?: boolean;
+  live?: boolean;
+  onViewFullMap?: () => void;
+  hideFullMapButton?: boolean;
 };
 
 export function CustomerOrderMap(props: Props) {
+  const height = props.height ?? 300;
   if (!supportsNativeMaps()) {
     return (
       <MapUnavailable
-        height={props.height ?? 300}
+        height={height === 'fill' ? undefined : height}
+        borderRadius={props.borderRadius ?? 20}
         message="Live order maps need an EAS development or preview build. Expo Go cannot load MapLibre."
       />
     );
@@ -31,13 +42,22 @@ export function CustomerOrderMap(props: Props) {
       {...props}
       destination="auto"
       waitingForRiderMessage="Rider location will appear after assignment"
+      customerLabel={props.customerLabel ?? 'Your location'}
     />
   );
 }
 
-function MapUnavailable({ height, message }: { height: number; message: string }) {
+function MapUnavailable({
+  height,
+  message,
+  borderRadius,
+}: {
+  height?: number;
+  message: string;
+  borderRadius: number;
+}) {
   return (
-    <View style={[styles.message, { height }]}>
+    <View style={[styles.message, height != null ? { height } : styles.fill, { borderRadius }]}>
       <Ionicons name="map-outline" size={26} color={colors.primary} />
       <AppText muted style={styles.messageText}>
         {message}
@@ -52,7 +72,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     padding: 28,
-    backgroundColor: '#E7F0EA',
+    backgroundColor: MAP_LAND,
+    overflow: 'hidden',
   },
+  fill: { flex: 1, width: '100%' },
   messageText: { textAlign: 'center', fontSize: 13, lineHeight: 18 },
 });

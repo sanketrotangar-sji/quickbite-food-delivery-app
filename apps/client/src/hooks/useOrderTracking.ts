@@ -2,12 +2,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { getTrackedOrder, type TrackedOrder } from '@/api/order-tracking';
+import { fetchActiveCustomerOrder } from '@/api/orders';
 import { supabase } from '@/api/supabaseClient';
-import { ordersQueryKey, useOrders } from '@/hooks/useOrders';
-import { pickActiveCustomerOrder } from '@/lib/customer-orders';
+import { ordersQueryKey } from '@/hooks/useOrders';
 import type { CustomerOrder } from '@/types/models';
 
 export const trackedOrderQueryKey = (id: string) => ['order-tracking', id] as const;
+export const activeOrderQueryKey = ['active-order'] as const;
 
 export function useTrackedOrder(id: string | undefined) {
   const queryClient = useQueryClient();
@@ -65,10 +66,14 @@ export function useCustomerOrdersRealtime() {
             current?.map((order) => (order.id === next.id ? { ...order, ...next } : order)),
           );
         }
-        void queryClient.invalidateQueries({ queryKey: ordersQueryKey });
+        void queryClient.invalidateQueries({ queryKey: activeOrderQueryKey });
+        // Patch-in-place above; only refetch list when structure may have changed.
+        if (payload.eventType === 'INSERT' || payload.eventType === 'DELETE') {
+          void queryClient.invalidateQueries({ queryKey: ordersQueryKey });
+        }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'order_status_history' }, () => {
-        void queryClient.invalidateQueries({ queryKey: ordersQueryKey });
+        void queryClient.invalidateQueries({ queryKey: activeOrderQueryKey });
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rider_locations' }, () => {
         void queryClient.invalidateQueries({ queryKey: ['order-tracking'] });
@@ -82,7 +87,10 @@ export function useCustomerOrdersRealtime() {
 }
 
 export function useActiveOrder() {
-  const orders = useOrders();
-  const activeOrder = orders.data ? pickActiveCustomerOrder(orders.data) : null;
-  return { ...orders, activeOrder };
+  const query = useQuery({
+    queryKey: activeOrderQueryKey,
+    queryFn: fetchActiveCustomerOrder,
+    staleTime: 15_000,
+  });
+  return { ...query, activeOrder: query.data ?? null };
 }

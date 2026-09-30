@@ -1,8 +1,9 @@
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors } from '@/constants/theme';
 import type { HomeCategory } from '@/lib/home-mock';
+import { RemoteImage } from '@/components/RemoteImage';
 
 export const CRAVING_SIZE = 64;
 
@@ -18,7 +19,7 @@ export function CravingCircle({
   return (
     <Pressable onPress={onPress} style={styles.item}>
       {category.imageUrl ? (
-        <Image source={{ uri: category.imageUrl }} style={[styles.image, selected && styles.imageOn]} />
+        <RemoteImage uri={category.imageUrl} slot="thumb" style={[styles.image, selected && styles.imageOn]} />
       ) : (
         <View style={[styles.image, styles.fallback, selected && styles.imageOn]}>
           <AppText weight="bold" style={styles.fallbackText}>

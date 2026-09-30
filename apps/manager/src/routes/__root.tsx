@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import { AuthGate } from "@/components/auth-gate";
 import { AuthProvider } from "@/hooks/use-auth";
+import { RestaurantProvider } from "@/hooks/use-restaurant";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -126,7 +127,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AuthGate>
-          <Outlet />
+          <RestaurantProvider>
+            <Outlet />
+          </RestaurantProvider>
         </AuthGate>
       </AuthProvider>
     </QueryClientProvider>

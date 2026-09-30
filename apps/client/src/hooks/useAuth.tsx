@@ -7,7 +7,7 @@ import { signOut as apiSignOut } from '@/api/auth';
 import { getProfile } from '@/api/profiles';
 import { supabase } from '@/api/supabaseClient';
 import { restoreRiderTracking, stopRiderTracking } from '@/features/rider/rider-tracking';
-import type { Profile } from '@/types/models';
+import { hasRole, type Profile } from '@/types/models';
 
 type AuthValue = {
   session: Session | null;
@@ -61,11 +61,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     let cancelled = false;
-    void restoreRiderTracking();
     setLoading(true);
     loadProfile(userId)
       .then((next) => {
-        if (!cancelled) setProfile(next);
+        if (cancelled) return;
+        setProfile(next);
+        if (hasRole(next, 'rider')) {
+          void restoreRiderTracking({ isRider: true }).catch(() => {
+            // GPS permission failures stay on the rider snapshot; boot should not crash.
+          });
+        } else {
+          void restoreRiderTracking({ isRider: false }).catch(() => {});
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

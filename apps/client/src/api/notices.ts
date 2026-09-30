@@ -9,13 +9,18 @@ export type RiderNotice = {
   readAt: string | null;
 };
 
-export async function listMyNotifications(): Promise<RiderNotice[]> {
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) throwApiError(userError ?? {}, 'Not signed in.');
+export async function listMyNotifications(userId?: string): Promise<RiderNotice[]> {
+  let uid = userId;
+  if (!uid) {
+    const { data } = await supabase.auth.getSession();
+    uid = data.session?.user.id;
+  }
+  if (!uid) throwApiError({}, 'Not signed in.');
+
   const { data, error } = await supabase
     .from('notifications')
     .select('id, title, body, created_at, read_at')
-    .eq('user_id', userData.user.id)
+    .eq('user_id', uid)
     .order('created_at', { ascending: false });
   if (error) throwApiError(error, 'Could not load notifications.');
   return (data ?? []).map((row) => ({

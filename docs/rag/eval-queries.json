@@ -1,0 +1,108 @@
+{
+  "k": 5,
+  "matching": [
+    {
+      "id": "m1",
+      "query": "vegetarian dishes under 200 rupees",
+      "expected_menu_item_ids": [
+        "3ee2e6c6-2270-4df5-b483-115fd4ee0b0b",
+        "1c735e96-24ea-46b5-9f26-c19add431cf1",
+        "9f43c9e9-242c-42cb-982a-83d00de4cfc3",
+        "995e7aae-b9eb-434d-8048-8f9c58610522"
+      ]
+    },
+    {
+      "id": "m2",
+      "query": "paneer tikka starter",
+      "expected_menu_item_ids": [
+        "995e7aae-b9eb-434d-8048-8f9c58610522",
+        "56798b14-166c-421c-aadf-ac3eebc8a7fd",
+        "9188cde8-bfe8-49a3-953c-62372f79fc82"
+      ]
+    },
+    {
+      "id": "m3",
+      "query": "mutton dum biryani",
+      "expected_menu_item_ids": [
+        "b421a2e8-7714-4ce6-a28c-527ef7e92515",
+        "d59b2b6e-74eb-4294-a428-6b5e58b6589c",
+        "02e2162e-7927-4945-bdd1-1f37c309d6f1"
+      ]
+    },
+    {
+      "id": "m4",
+      "query": "masala dosa south indian breakfast",
+      "expected_menu_item_ids": [
+        "5d33068c-0a3d-47fd-b500-e2cb008ac7f0",
+        "5601f606-691e-4b31-912e-18679e0ddc76",
+        "5983f62b-ce72-4f05-8e0e-15230be82f7f"
+      ]
+    },
+    {
+      "id": "m5",
+      "query": "filter coffee beverage",
+      "expected_menu_item_ids": ["3ee2e6c6-2270-4df5-b483-115fd4ee0b0b"]
+    },
+    {
+      "id": "m6",
+      "query": "spicy mutton biryani under 400",
+      "expected_menu_item_ids": [
+        "b421a2e8-7714-4ce6-a28c-527ef7e92515",
+        "d59b2b6e-74eb-4294-a428-6b5e58b6589c"
+      ]
+    },
+    {
+      "id": "m7",
+      "query": "bebinca dessert slice",
+      "expected_menu_item_ids": [
+        "5c6ced54-3d8d-4df7-877e-a53d04c9b9ee",
+        "783828a6-33c7-4f9a-acb8-82e4aeaadfc4"
+      ]
+    },
+    {
+      "id": "m8",
+      "query": "pure veg light snack under 150",
+      "expected_menu_item_ids": [
+        "3ee2e6c6-2270-4df5-b483-115fd4ee0b0b",
+        "1c735e96-24ea-46b5-9f26-c19add431cf1"
+      ]
+    }
+  ],
+  "extreme": [
+    {
+      "id": "e1",
+      "query": "vegan sushi rolls under 50 rupees gluten free",
+      "expected_menu_item_ids": []
+    },
+    {
+      "id": "e2",
+      "query": "something nice maybe food?",
+      "expected_menu_item_ids": []
+    },
+    {
+      "id": "e3",
+      "query": "extra spicy paneer tikka under 180 veg only no onion quick delivery rating 5 stars comment packaging",
+      "expected_menu_item_ids": [
+        "995e7aae-b9eb-434d-8048-8f9c58610522",
+        "56798b14-166c-421c-aadf-ac3eebc8a7fd"
+      ]
+    },
+    {
+      "id": "e4",
+      "query": "truffle wagyu steak well done",
+      "expected_menu_item_ids": []
+    }
+  ],
+  "noisy": [
+    { "id": "n1", "base_query_id": "m1", "query": "vegitarian dishs undr 200 rs pls !!!" },
+    { "id": "n2", "base_query_id": "m2", "query": "pnner tika strter lol asdf" },
+    { "id": "n3", "base_query_id": "m3", "query": "muton dum briyani xxxx" },
+    { "id": "n4", "base_query_id": "m4", "query": "masala dosa southindian brkfast zzz" },
+    { "id": "n5", "base_query_id": "m5", "query": "filtter coffe bevrage qwerty" },
+    { "id": "n6", "base_query_id": "m6", "query": "spicy mutton biryani undr 400 rupees !!!" },
+    { "id": "n7", "base_query_id": "m7", "query": "bebinca desrt slce yum" },
+    { "id": "n8", "base_query_id": "m8", "query": "pure veg lite snak undr 150 thx" },
+    { "id": "n9", "base_query_id": "e1", "query": "vegan suhsi rollz undr 50 rs glutenfreeeee" },
+    { "id": "n10", "base_query_id": "e3", "query": "xtra spicy paneer tikka undr 180 veg onlyyy" }
+  ]
+}

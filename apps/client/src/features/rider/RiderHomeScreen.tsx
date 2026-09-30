@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { setRiderDuty } from '@/api/rider';
 import { AppText } from '@/components/AppText';
 import { EmptyState } from '@/components/EmptyState';
-import { LogoLoader } from '@/components/LogoLoader';
+import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { SectionHeader } from '@/components/SectionHeader';
 import { colors, screenTopGap, tabBarInset } from '@/constants/theme';
 import { CurrentOrderCard } from '@/features/rider/components/CurrentOrderCard';
@@ -14,7 +14,7 @@ import { NearbyOrderCard } from '@/features/rider/components/NearbyOrderCard';
 import { RiderHeader } from '@/features/rider/components/RiderHeader';
 import { RiderHero } from '@/features/rider/components/RiderHero';
 import { RiderStatsRow } from '@/features/rider/components/RiderStatsRow';
-import { stopRiderTracking } from '@/features/rider/rider-tracking';
+import { stopRiderTracking, useRiderTracking } from '@/features/rider/rider-tracking';
 import { pickActive, todayStats, toCurrentOrder, toNearbyOrder, useClaimDelivery, useRiderOrders } from '@/features/rider/use-rider-live';
 import { useAuth } from '@/hooks/useAuth';
 import { greetingName } from '@/lib/home-mock';
@@ -24,6 +24,7 @@ export function RiderHomeScreen() {
   const { profile, refreshProfile } = useAuth();
   const orders = useRiderOrders();
   const claim = useClaimDelivery();
+  const tracking = useRiderTracking();
   const [dutyBusy, setDutyBusy] = useState(false);
   const online = Boolean(profile?.is_online);
   const firstName = greetingName(profile?.full_name, profile?.email);
@@ -46,10 +47,6 @@ export function RiderHomeScreen() {
     }
   }
 
-  if (orders.isLoading && !orders.data) {
-    return <LogoLoader />;
-  }
-
   return (
     <View style={styles.root}>
       <StatusBar style="dark" />
@@ -57,6 +54,23 @@ export function RiderHomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.scroll, { paddingTop: insets.top + screenTopGap }]}>
         <RiderHeader online={online} onChange={(next) => void setDuty(next)} />
+        {tracking.error ? (
+          <View style={styles.locationBanner}>
+            <AppText weight="semibold" style={styles.locationBannerText}>
+              {tracking.error}
+            </AppText>
+            <AppText muted style={styles.locationBannerHint}>
+              Allow location for QuickBite in system settings so live delivery GPS can share.
+            </AppText>
+          </View>
+        ) : null}
+        {orders.isLoading && !orders.data ? (
+          <>
+            <RiderHero name={firstName} />
+            <LoadingSkeleton variant="feature" rows={1} />
+            <LoadingSkeleton rows={2} />
+          </>
+        ) : null}
         {orders.isError ? (
           <EmptyState
             icon="cloud-offline-outline"
@@ -66,11 +80,11 @@ export function RiderHomeScreen() {
             onAction={() => void orders.refetch()}
           />
         ) : null}
-        {!orders.isError ? (
+        {!orders.isError && orders.data ? (
           <>
             <RiderHero name={firstName} />
             {active ? (
-              <CurrentOrderCard order={toCurrentOrder(active)} />
+              <CurrentOrderCard order={toCurrentOrder(active)} riderCoordinate={tracking.coordinate} />
             ) : (
               <AppText muted style={styles.none}>
                 No active delivery right now.
@@ -117,4 +131,14 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: tabBarInset + 20, gap: 14 },
   none: { fontSize: 13 },
   list: { gap: 10, marginTop: -4 },
+  locationBanner: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.primarySoft,
+    padding: 12,
+    gap: 4,
+  },
+  locationBannerText: { fontSize: 13, color: colors.text },
+  locationBannerHint: { fontSize: 12 },
 });

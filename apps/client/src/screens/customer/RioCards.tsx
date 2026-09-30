@@ -1,23 +1,25 @@
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import type { RioCard, RioMenuItem, RioRestaurant } from '@/api/rio';
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
-import { MenuItemRow } from '@/components/MenuItemRow';
 import { OrderCard } from '@/components/OrderCard';
 import { PriceRow } from '@/components/PriceRow';
+import { PopularDishCard } from '@/components/home/PopularDishCard';
 import { RestaurantStripCard } from '@/components/home/RestaurantStripCard';
 import { ORDER_STATUS_META, type OrderStatus } from '@/constants/orderStatus';
 import { colors, formatInr, radii } from '@/constants/theme';
-import type { HomePlace } from '@/lib/home-mock';
-import type { MenuItem } from '@/types/models';
+import type { HomeDish, HomePlace } from '@/lib/home-mock';
+
+const RAIL_GAP = 10;
+const PAGE_PAD = 16;
 
 export function RioCards({
   cards,
   liked,
   onToggleLike,
-  onAddItem,
+  onAddDish,
   onConfirm,
   onAddAddress,
   confirming,
@@ -26,54 +28,74 @@ export function RioCards({
   cards: RioCard[];
   liked: ReadonlySet<string>;
   onToggleLike: (id: string) => void;
-  onAddItem: (item: RioMenuItem) => void;
+  onAddDish: (dish: HomeDish) => void | Promise<void>;
   onConfirm: () => void;
   onAddAddress: () => void;
   confirming: boolean;
   confirmHidden: boolean;
 }) {
+  const { width } = useWindowDimensions();
+  const cardWidth = Math.min(168, Math.round((width - PAGE_PAD * 2 - RAIL_GAP * 2) / 2.15));
+  const placeWidth = Math.min(200, Math.round((width - PAGE_PAD * 2 - RAIL_GAP * 2) / 2.1));
+
   return (
     <View style={styles.stack}>
       {cards.map((card, index) => {
         if (card.kind === 'restaurants') {
           return (
-            <View key={`places-${index}`} style={styles.stack}>
+            <ScrollView
+              key={`places-${index}`}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.rail}>
               {card.places.map((place) => (
                 <RestaurantStripCard
                   key={place.id}
-                  layout="list"
+                  layout="rail"
+                  width={placeWidth}
                   place={toPlace(place)}
                   liked={liked.has(place.id)}
                   onToggleLike={() => onToggleLike(place.id)}
                   onPress={() => router.push(`/(customer)/restaurant/${place.id}`)}
                 />
               ))}
-            </View>
+            </ScrollView>
           );
         }
         if (card.kind === 'menu') {
           return (
-            <View key={`menu-${card.restaurantId}-${index}`} style={styles.panel}>
-              <AppText weight="semibold">{card.restaurantName}</AppText>
-              {card.items.map((item) => (
-                <MenuItemRow
-                  key={item.id}
-                  item={toMenuItem(item)}
-                  quantity={0}
-                  liked={liked.has(item.id)}
-                  onToggleLike={() => onToggleLike(item.id)}
-                  onAdd={() => onAddItem(item)}
-                  onIncrease={() => onAddItem(item)}
-                  onDecrease={() => undefined}
-                />
-              ))}
-              <Pressable
-                onPress={() => router.push(`/(customer)/restaurant/${card.restaurantId}`)}
-                style={({ pressed }) => [styles.link, pressed && styles.pressed]}>
-                <AppText weight="semibold" style={styles.linkText}>
-                  See full menu
-                </AppText>
-              </Pressable>
+            <ScrollView
+              key={`menu-${card.restaurantId}-${index}`}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.rail}>
+              {card.items.map((item) => {
+                const dish = toHomeDish(item, card.restaurantName);
+                return (
+                  <PopularDishCard
+                    key={item.id}
+                    width={cardWidth}
+                    dish={dish}
+                    liked={liked.has(item.id)}
+                    onToggleLike={() => onToggleLike(item.id)}
+                    onPress={() => router.push(`/(customer)/restaurant/${card.restaurantId}`)}
+                    onAdd={() => onAddDish(dish)}
+                  />
+                );
+              })}
+            </ScrollView>
+          );
+        }
+        if (card.kind === 'ticket') {
+          return (
+            <View key={`ticket-${card.id}-${index}`} style={styles.panel}>
+              <AppText weight="semibold">Support ticket opened</AppText>
+              <AppText muted>
+                {card.issueType} · {card.urgency} urgency · {card.status}
+              </AppText>
+              <AppText muted style={{ marginTop: 4 }}>
+                Order #{card.orderId.replace(/-/g, '').slice(0, 6).toUpperCase()}
+              </AppText>
             </View>
           );
         }
@@ -117,6 +139,7 @@ export function RioCards({
             status={status}
             when={when}
             address={card.address}
+            onPress={() => router.push(`/(customer)/orders/${card.id}`)}
           />
         );
       })}
@@ -142,19 +165,16 @@ function toPlace(place: RioRestaurant): HomePlace {
   };
 }
 
-function toMenuItem(item: RioMenuItem): MenuItem {
+function toHomeDish(item: RioMenuItem, restaurantName: string): HomeDish {
   return {
     id: item.id,
-    restaurant_id: item.restaurantId,
     name: item.name,
-    description: item.description,
+    restaurantName,
+    restaurantId: item.restaurantId,
+    category: item.category ?? 'Menu',
     price: item.price,
-    image_url: item.imageUrl,
-    is_available: item.isAvailable,
-    is_veg: item.isVeg,
-    category: item.category,
-    created_at: '',
-    updated_at: '',
+    imageUrl: item.imageUrl ?? '',
+    veg: item.isVeg,
   };
 }
 
@@ -165,6 +185,7 @@ function asStatus(status: string): OrderStatus {
 
 const styles = StyleSheet.create({
   stack: { gap: 8 },
+  rail: { gap: RAIL_GAP, paddingRight: PAGE_PAD },
   panel: {
     gap: 4,
     backgroundColor: colors.surface,
@@ -173,7 +194,4 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     padding: 12,
   },
-  link: { alignSelf: 'flex-start', paddingVertical: 6 },
-  linkText: { color: colors.primary, fontSize: 13 },
-  pressed: { opacity: 0.72 },
 });

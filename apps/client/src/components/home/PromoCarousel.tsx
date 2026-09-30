@@ -1,8 +1,9 @@
-import { Image, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors, radii } from '@/constants/theme';
 import type { MockPromo } from '@/lib/home-mock';
+import { RemoteImage } from '@/components/RemoteImage';
 
 export function PromoCarousel({ promos }: { promos: MockPromo[] }) {
   const { width } = useWindowDimensions();
@@ -36,7 +37,7 @@ export function PromoCarousel({ promos }: { promos: MockPromo[] }) {
               </AppText>
               <AppText style={styles.subtitle}>{promo.subtitle}</AppText>
             </View>
-            <Image source={{ uri: promo.imageUrl }} style={styles.image} />
+            <RemoteImage uri={promo.imageUrl} slot="thumb" style={styles.image} />
           </View>
         ))}
       </ScrollView>

@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors, radii } from '@/constants/theme';
 import type { HomePlace } from '@/lib/home-mock';
 import { placePresentation } from '@/lib/home-presentation';
+import { RemoteImage } from '@/components/RemoteImage';
 
 export function ExploreRestaurantCard({
   place,
@@ -31,7 +32,7 @@ export function ExploreRestaurantCard({
       style={({ pressed }) => [styles.card, pressed && styles.pressed, !place.isOpen && styles.closed]}>
       <View>
         {place.imageUrl ? (
-          <Image source={{ uri: place.imageUrl }} style={styles.image} />
+          <RemoteImage uri={place.imageUrl} slot="thumb" style={styles.image} />
         ) : (
           <View style={[styles.image, styles.fallback]}>
             <AppText weight="bold" style={styles.fallbackText}>

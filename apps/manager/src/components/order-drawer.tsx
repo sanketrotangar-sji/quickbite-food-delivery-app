@@ -1,6 +1,8 @@
 import { Check, Circle, Clock3, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useMinuteTick } from "@/hooks/use-minute-tick";
+import { orderElapsed } from "@/lib/dashboard-stats";
 import type { Order, OrderStatus } from "@/lib/quickbite-data";
 
 const TIMELINE: { status: OrderStatus; label: string }[] = [
@@ -43,6 +45,7 @@ function formatWhen(value: string) {
 }
 
 export function OrderDrawer({ order, onClose, onAdvance }: { order?: Order | undefined; onClose: () => void; onAdvance: (id: string) => void }) {
+  const now = useMinuteTick();
   const step = order ? statusStep[order.status] : 0;
   const subtotal = order ? order.items.reduce((sum, item) => sum + item.lineTotal, 0) : 0;
   const fee = order?.deliveryFee ?? 0;
@@ -60,7 +63,7 @@ export function OrderDrawer({ order, onClose, onAdvance }: { order?: Order | und
                 <span className="rounded-md bg-status px-2 py-1 text-[10px] font-extrabold uppercase text-status-foreground">
                   {order.status === "placed" ? "New order" : order.status.replaceAll("_", " ")}
                 </span>
-                <span className="text-xs text-muted-foreground">{order.elapsed}</span>
+                <span className="text-xs text-muted-foreground">{orderElapsed(order.placedAt, now)}</span>
               </div>
               <SheetTitle className="text-2xl">Order #{order.displayId}</SheetTitle>
               <SheetDescription>

@@ -69,6 +69,23 @@ eas env:create --name EXPO_PUBLIC_SUPABASE_ANON_KEY \
 
 Or set them in [expo.dev](https://expo.dev) → Project → Environment variables.
 
+For Android push (FCM), also upload the gitignored `google-services.json` as a **file** env var (required — EAS will not pick it up from disk otherwise):
+
+```bash
+cd apps/client
+# after placing google-services.json next to app.json
+eas env:create --name GOOGLE_SERVICES_JSON \
+  --type file --value ./google-services.json \
+  --environment development --visibility sensitive
+
+# repeat for preview / production when you build those profiles
+eas env:create --name GOOGLE_SERVICES_JSON \
+  --type file --value ./google-services.json \
+  --environment preview --visibility sensitive
+```
+
+`app.config.js` reads `GOOGLE_SERVICES_JSON` into `android.googleServicesFile`. Upload the Google **service account** JSON separately via `eas credentials` (Push → Google Service Account) so Expo can deliver pushes.
+
 ### 3. Build + download APK
 
 ```bash

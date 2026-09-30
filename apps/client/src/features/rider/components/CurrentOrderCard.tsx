@@ -1,57 +1,90 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { Image, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
+import type { DeliveryCoordinate } from '@/api/deliveries';
 import { AppText } from '@/components/AppText';
-import { Button } from '@/components/Button';
+import { ROUTE_ORANGE } from '@/components/maps/quickbite-map-style';
 import { colors, radii } from '@/constants/theme';
+import { RiderRouteMap } from '@/features/rider/components/RiderRouteMap';
 import type { RiderCurrentOrder } from '@/features/rider/rider-home';
 
-export function CurrentOrderCard({ order }: { order: RiderCurrentOrder }) {
+const TRACK_TEXT = colors.text;
+const TRACK_MUTED = colors.textMuted;
+
+export function CurrentOrderCard({
+  order,
+  riderCoordinate,
+}: {
+  order: RiderCurrentOrder;
+  riderCoordinate: DeliveryCoordinate | null;
+}) {
+  const distanceKm = order.statusLabel === 'On the way' ? order.drop.distanceKm : order.pickup.distanceKm;
+  const etaMins = order.minutesToPickup;
+
   return (
     <View style={styles.card}>
-      <View>
-        <Image source={order.image} style={styles.photo} />
-        <View style={styles.badge}>
-          <AppText weight="bold" style={styles.badgeText}>
-            {order.minutesToPickup} min to pickup
+      <View style={styles.top}>
+        <View style={styles.copy}>
+          <View style={styles.badge}>
+            <View style={styles.badgeDot} />
+            <AppText weight="semibold" style={styles.badgeText}>
+              {order.statusLabel}
+            </AppText>
+          </View>
+          <AppText weight="bold" style={styles.code}>
+            #{order.code}
           </AppText>
+          <AppText weight="bold" style={styles.restaurant}>
+            {order.restaurantName}
+          </AppText>
+          <View style={styles.metaRow}>
+            <Ionicons name="location-outline" size={13} color={TRACK_MUTED} />
+            <AppText style={styles.meta}>
+              {distanceKm.toFixed(1)} km · {etaMins} mins
+            </AppText>
+          </View>
+          {order.customerName || order.customerPhone ? (
+            <View style={styles.customer}>
+              <View style={styles.customerRow}>
+                <Ionicons name="person-outline" size={14} color={TRACK_MUTED} />
+                <AppText weight="semibold" style={styles.customerName}>
+                  {order.customerName ?? 'Customer'}
+                </AppText>
+              </View>
+              {order.customerPhone ? (
+                <View style={styles.customerRow}>
+                  <Ionicons name="call-outline" size={13} color={TRACK_MUTED} />
+                  <AppText style={styles.phone}>{order.customerPhone}</AppText>
+                </View>
+              ) : null}
+            </View>
+          ) : null}
+        </View>
+        <View style={styles.mapWrap}>
+          <RiderRouteMap
+            rider={riderCoordinate}
+            restaurant={order.pickup.coordinate}
+            customer={order.drop.coordinate}
+            destination="auto"
+            height={132}
+            borderRadius={radii.lg}
+            compact
+            restaurantLabel={order.restaurantName}
+            customerLabel="Drop"
+          />
         </View>
       </View>
-      <View style={styles.body}>
-        <AppText weight="semibold" style={styles.kicker}>
-          Current order · #{order.code}
+      <Pressable
+        onPress={() => router.push('/(rider)/delivery')}
+        style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
+        accessibilityRole="button"
+        accessibilityLabel="View order details">
+        <AppText weight="bold" style={styles.ctaText}>
+          View Order Details
         </AppText>
-        <AppText weight="bold" style={styles.name}>
-          {order.restaurantName}
-        </AppText>
-        <AppText muted style={styles.meta}>
-          {order.cuisine}
-        </AppText>
-        <View style={styles.route}>
-          <Stop label="Pickup" address={order.pickup.address} distance={`${order.pickup.distanceKm.toFixed(1)} km`} />
-          <View style={styles.connector} />
-          <Stop label="Drop" address={order.drop.address} distance={`${order.drop.distanceKm.toFixed(1)} km`} />
-        </View>
-        <Button label="Continue delivery" onPress={() => router.push('/(rider)/delivery')} />
-      </View>
-    </View>
-  );
-}
-
-function Stop({ label, address, distance }: { label: string; address: string; distance: string }) {
-  return (
-    <View style={styles.stop}>
-      <View style={styles.stopCopy}>
-        <AppText weight="semibold" style={styles.stopLabel}>
-          {label}
-        </AppText>
-        <AppText numberOfLines={2} style={styles.address}>
-          {address}
-        </AppText>
-      </View>
-      <AppText muted style={styles.distance}>
-        {distance}
-      </AppText>
+        <Ionicons name="arrow-forward" size={16} color={colors.white} />
+      </Pressable>
     </View>
   );
 }
@@ -60,30 +93,53 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
+    padding: 14,
+    gap: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
   },
-  photo: { width: '100%', height: 132, backgroundColor: colors.primarySoft },
+  top: { flexDirection: 'row', gap: 12 },
+  copy: { flex: 1, gap: 4, minWidth: 0 },
   badge: {
-    position: 'absolute',
-    left: 12,
-    bottom: 12,
-    backgroundColor: colors.surface,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FFE8DC',
     borderRadius: radii.pill,
     paddingHorizontal: 10,
     paddingVertical: 4,
+    marginBottom: 2,
   },
-  badgeText: { color: colors.primary, fontSize: 12 },
-  body: { padding: 14, gap: 6 },
-  kicker: { color: colors.textMuted, fontSize: 12 },
-  name: { fontSize: 18 },
-  meta: { fontSize: 13 },
-  route: { gap: 0, marginTop: 4, marginBottom: 6 },
-  stop: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-  stopCopy: { flex: 1, gap: 1 },
-  stopLabel: { fontSize: 12, color: colors.secondary },
-  address: { fontSize: 13, lineHeight: 18 },
-  distance: { fontSize: 12, marginTop: 2 },
-  connector: { marginLeft: 2, width: 2, height: 10, backgroundColor: colors.border },
+  badgeDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: ROUTE_ORANGE },
+  badgeText: { color: ROUTE_ORANGE, fontSize: 11 },
+  code: { fontSize: 20, color: TRACK_TEXT, letterSpacing: -0.3 },
+  restaurant: { fontSize: 15, color: TRACK_TEXT },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  meta: { fontSize: 12, color: TRACK_MUTED },
+  customer: { marginTop: 8, gap: 4 },
+  customerRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  customerName: { fontSize: 13, color: TRACK_TEXT },
+  phone: { fontSize: 12, color: TRACK_MUTED },
+  mapWrap: {
+    width: 132,
+    height: 132,
+    borderRadius: radii.lg,
+    overflow: 'hidden',
+  },
+  cta: {
+    backgroundColor: ROUTE_ORANGE,
+    borderRadius: radii.pill,
+    minHeight: 46,
+    paddingHorizontal: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  ctaPressed: { opacity: 0.88 },
+  ctaText: { color: colors.white, fontSize: 14 },
 });

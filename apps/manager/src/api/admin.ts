@@ -199,6 +199,41 @@ export async function deleteHighlight(id: string) {
   if (error) throw new Error(error.message);
 }
 
+export type LlmProvider = 'groq' | 'ollama';
+
+export type AdminLlmConfig = {
+  id: string;
+  provider: LlmProvider;
+  chat_model: string;
+  is_active: boolean;
+  updated_at: string;
+  updated_by: string | null;
+};
+
+export async function loadLlmConfigs(): Promise<AdminLlmConfig[]> {
+  const { data, error } = await supabase
+    .from('llm_config')
+    .select('id, provider, chat_model, is_active, updated_at, updated_by')
+    .order('provider');
+  if (error) throw new Error(error.message);
+  return (data ?? []) as AdminLlmConfig[];
+}
+
+export async function updateLlmChatModel(id: string, chatModel: string) {
+  const trimmed = chatModel.trim();
+  if (!trimmed) throw new Error('Chat model cannot be empty.');
+  const { error } = await supabase
+    .from('llm_config')
+    .update({ chat_model: trimmed })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function activateLlmConfig(id: string) {
+  const { error } = await supabase.rpc('activate_llm_config', { p_id: id });
+  if (error) throw new Error(error.message);
+}
+
 function asRecord(value: Json): Record<string, unknown> {
   if (value && typeof value === 'object' && !Array.isArray(value)) return value;
   return {};

@@ -1,11 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { QuantityStepper } from '@/components/QuantityStepper';
 import { VegMark } from '@/components/VegMark';
 import { colors, formatInr, radii } from '@/constants/theme';
 import type { MenuItem } from '@/types/models';
+import { RemoteImage } from '@/components/RemoteImage';
 
 export function MenuItemRow({
   item,
@@ -30,7 +31,7 @@ export function MenuItemRow({
   return (
     <View style={[styles.row, unavailable && styles.dim]}>
       {item.image_url ? (
-        <Image source={{ uri: item.image_url }} style={styles.image} />
+        <RemoteImage uri={item.image_url} slot="thumb" style={styles.image} />
       ) : (
         <View style={[styles.image, styles.fallback]}>
           <AppText weight="bold" style={styles.fallbackText}>

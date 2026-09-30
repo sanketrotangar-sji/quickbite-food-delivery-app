@@ -1,6 +1,7 @@
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
+import { RemoteImage } from '@/components/RemoteImage';
 import { colors, radii, spacing } from '@/constants/theme';
 import type { Restaurant } from '@/types/models';
 
@@ -16,7 +17,7 @@ export function RestaurantCard({
       onPress={onPress}
       style={({ pressed }) => [styles.card, !restaurant.is_open && styles.closed, pressed && styles.pressed]}>
       {restaurant.image_url ? (
-        <Image source={{ uri: restaurant.image_url }} style={styles.image} />
+        <RemoteImage uri={restaurant.image_url} slot="thumb" style={styles.image} />
       ) : (
         <View style={[styles.image, styles.placeholder]}>
           <AppText weight="bold" style={{ color: colors.white, fontSize: 22 }}>

@@ -3,15 +3,8 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
 const EXPO_RECEIPTS_URL = "https://exp.host/--/api/v2/push/getReceipts";
 const JSON_HEADERS = { "Content-Type": "application/json" };
-const STATUS_LABELS: Record<string, string> = {
-  placed: "placed",
-  preparing: "being prepared",
-  ready: "ready for pickup",
-  out_for_delivery: "on the way",
-  delivered: "delivered",
-  cancelled: "cancelled",
-};
 
+/** Demo FCM events only: kitchen accept (→ preparing) and delivery complete (→ delivered). */
 type OrderRecord = {
   id: string;
   customer_id: string;
@@ -179,84 +172,64 @@ Deno.serve(async (req) => {
     !["INSERT", "UPDATE"].includes(payload.type) ||
     (payload.table && payload.table !== "orders") ||
     (payload.schema && payload.schema !== "public") ||
-    !payload.record?.id ||
-    !payload.record.customer_id
+    !payload.record?.id
   ) {
     return json({ error: "invalid_webhook_payload" }, 400);
-  }
-
-  const order = payload.record;
-  const previous = payload.old_record ?? null;
-  const isInsert = payload.type === "INSERT";
-  const statusChanged = isInsert || previous?.status !== order.status;
-  const riderAssigned =
-    payload.type === "UPDATE" &&
-    previous?.rider_id !== order.rider_id &&
-    Boolean(order.rider_id);
-  const enteredPreparing =
-    order.status === "preparing" &&
-    (isInsert || previous?.status !== "preparing");
-
-  // An UPDATE that did not cross a relevant boundary must never fan out again.
-  if (!statusChanged && !riderAssigned && !enteredPreparing) {
-    return json({ ok: true, ignored: true });
   }
 
   const admin = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+
+  // Trust DB row only — never fan-out using forged customer_id / rider_id from the payload.
+  const { data: dbOrder, error: orderError } = await admin
+    .from("orders")
+    .select("id, customer_id, restaurant_id, rider_id, status")
+    .eq("id", payload.record.id)
+    .maybeSingle();
+  if (orderError) {
+    console.error("notify-new-order order lookup failed", orderError);
+    return json({ error: "order_lookup_failed" }, 500);
+  }
+  if (!dbOrder) {
+    return json({ error: "order_not_found" }, 404);
+  }
+
+  const order = dbOrder as OrderRecord;
+  const previousStatus = payload.old_record?.status ?? null;
+  const enteredPreparing =
+    payload.type === "UPDATE" &&
+    order.status === "preparing" &&
+    previousStatus !== "preparing";
+  const enteredDelivered =
+    payload.type === "UPDATE" &&
+    order.status === "delivered" &&
+    previousStatus !== "delivered";
+
+  // Demo scope: only accept (preparing) and delivered fire pushes / inbox rows.
+  if (!enteredPreparing && !enteredDelivered) {
+    return json({
+      ok: true,
+      ignored: true,
+      idempotencyKey: `${order.id}:${order.status}:${payload.type.toLowerCase()}`,
+    });
+  }
+
   const recipients: Recipient[] = [];
 
-  if (statusChanged) {
-    recipients.push({
-      userId: order.customer_id,
-      title: isInsert ? "Order placed" : "Order update",
-      body: isInsert
-        ? "Your order was placed successfully."
-        : `Your order is now ${STATUS_LABELS[order.status] ?? order.status}.`,
-      data: {
-        audience: "customer",
-        type: "order_status",
-        orderId: order.id,
-        status: order.status,
-      },
-    });
-  }
-
-  if (riderAssigned) {
-    recipients.push({
-      userId: order.customer_id,
-      title: "Rider assigned",
-      body: "A delivery rider has been assigned to your order.",
-      data: {
-        audience: "customer",
-        type: "rider_assigned",
-        orderId: order.id,
-      },
-    });
-  }
-
-  if (
-    statusChanged &&
-    order.rider_id &&
-    (order.status === "ready" || order.status === "cancelled")
-  ) {
-    recipients.push({
-      userId: order.rider_id,
-      title: order.status === "ready" ? "Order ready for pickup" : "Delivery cancelled",
-      body: order.status === "ready"
-        ? "The kitchen has marked your assigned order ready."
-        : "Your assigned delivery was cancelled.",
-      data: {
-        audience: "rider",
-        type: "assigned_order_status",
-        orderId: order.id,
-        status: order.status,
-      },
-    });
-  }
-
   if (enteredPreparing) {
+    recipients.push({
+      userId: order.customer_id,
+      title: "Order accepted",
+      body: "Restaurant accepted your order. It's being prepared.",
+      data: {
+        audience: "customer",
+        type: "order_accepted",
+        orderId: order.id,
+        status: order.status,
+      },
+    });
+
     const { data: riders, error } = await admin
       .from("profiles")
       .select("id")
@@ -277,6 +250,20 @@ Deno.serve(async (req) => {
         },
       });
     }
+  }
+
+  if (enteredDelivered) {
+    recipients.push({
+      userId: order.customer_id,
+      title: "Order delivered",
+      body: "Your order was delivered. Enjoy your meal!",
+      data: {
+        audience: "customer",
+        type: "order_delivered",
+        orderId: order.id,
+        status: order.status,
+      },
+    });
   }
 
   if (recipients.length === 0) return json({ ok: true, ignored: true });
@@ -317,6 +304,7 @@ Deno.serve(async (req) => {
 
   return json({
     ok: true,
+    idempotencyKey: `${order.id}:${order.status}:${enteredPreparing ? "preparing" : "delivered"}`,
     inboxRows: recipients.length,
     pushMessages: push.sent,
     disabledTokens: push.disabled,

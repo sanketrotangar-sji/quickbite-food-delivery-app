@@ -1,11 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef } from 'react';
-import { Animated, Image, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { VegMark } from '@/components/VegMark';
 import { colors, formatInr, radii } from '@/constants/theme';
 import type { HomeDish } from '@/lib/home-mock';
+import { RemoteImage } from '@/components/RemoteImage';
 
 export function PopularDishCard({
   dish,
@@ -14,6 +15,8 @@ export function PopularDishCard({
   onToggleLike,
   onAdd,
   onPress,
+  rating,
+  ratingLabel,
 }: {
   dish: HomeDish;
   width: number;
@@ -21,6 +24,8 @@ export function PopularDishCard({
   onToggleLike: () => void;
   onAdd: () => void | Promise<void>;
   onPress: () => void;
+  rating?: number | null;
+  ratingLabel?: string | null;
 }) {
   const scale = useRef(new Animated.Value(1)).current;
   const added = useRef(new Animated.Value(0)).current;
@@ -53,7 +58,7 @@ export function PopularDishCard({
     <Pressable onPress={onPress} style={[styles.card, { width }]}>
       <View>
         {dish.imageUrl ? (
-          <Image source={{ uri: dish.imageUrl }} style={styles.image} />
+          <RemoteImage uri={dish.imageUrl} slot="thumb" style={styles.image} />
         ) : (
           <View style={[styles.image, styles.fallback]}>
             <AppText weight="bold" style={styles.fallbackText}>
@@ -75,6 +80,15 @@ export function PopularDishCard({
         <AppText muted numberOfLines={1} style={styles.meta}>
           {dish.restaurantName}
         </AppText>
+        {rating != null || ratingLabel ? (
+          <View style={styles.ratingRow}>
+            <Ionicons name="star" size={10} color="#F5A623" />
+            <AppText muted style={styles.ratingText}>
+              {rating != null ? rating.toFixed(1) : ''}
+              {ratingLabel ? ` ${ratingLabel}` : ''}
+            </AppText>
+          </View>
+        ) : null}
         <View style={styles.priceRow}>
           <AppText weight="bold" style={styles.price}>
             {formatInr(dish.price)}
@@ -132,6 +146,8 @@ const styles = StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   name: { flex: 1, fontSize: 12 },
   meta: { fontSize: 10 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  ratingText: { fontSize: 9 },
   priceRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 },
   price: { color: colors.primary, fontSize: 12 },
   add: {

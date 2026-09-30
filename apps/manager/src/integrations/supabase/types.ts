@@ -166,6 +166,41 @@ export type Database = {
           },
         ]
       }
+      llm_config: {
+        Row: {
+          id: string
+          provider: 'groq' | 'ollama'
+          chat_model: string
+          is_active: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          provider: 'groq' | 'ollama'
+          chat_model: string
+          is_active?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          provider?: 'groq' | 'ollama'
+          chat_model?: string
+          is_active?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "llm_config_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           id: string
@@ -713,6 +748,17 @@ export type Database = {
           p_payload?: Json
         }
         Returns: Database["public"]["Tables"]["applications"]["Row"]
+      }
+      activate_llm_config: {
+        Args: { p_id: string }
+        Returns: {
+          id: string
+          provider: 'groq' | 'ollama'
+          chat_model: string
+          is_active: boolean
+          updated_at: string
+          updated_by: string | null
+        }
       }
       admin_review_application: {
         Args: {

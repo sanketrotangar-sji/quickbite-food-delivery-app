@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { Alert } from 'react-native';
 
 import {
   claimDelivery,
@@ -34,6 +35,14 @@ function orderCode(order: RiderDelivery) {
   return order.id.replace(/-/g, '').slice(-6).toUpperCase();
 }
 
+function statusLabelFor(status: OrderStatus) {
+  if (status === 'out_for_delivery') return 'On the way';
+  if (status === 'ready') return 'Ready for pickup';
+  if (status === 'preparing') return 'Preparing';
+  if (status === 'placed') return 'Assigned';
+  return 'Active';
+}
+
 export function toCurrentOrder(order: RiderDelivery): RiderCurrentOrder {
   return {
     id: order.id,
@@ -44,6 +53,9 @@ export function toCurrentOrder(order: RiderDelivery): RiderCurrentOrder {
     minutesToPickup: order.etaMinutes ?? 15,
     earning: order.earning + order.bonus + order.tip,
     itemCount: order.itemCount,
+    statusLabel: statusLabelFor(order.status),
+    customerName: order.customerName,
+    customerPhone: order.customerPhone,
     pickup: {
       address: order.restaurantAddress || order.restaurantName,
       distanceKm: order.pickupKm,
@@ -177,29 +189,67 @@ export function pickActive(mine: RiderDelivery[]) {
 
 export function useRiderOrders() {
   const { session } = useAuth();
+  const userId = session?.user.id;
   return useQuery({
     queryKey: riderOrdersKey,
     queryFn: async () => {
+      if (!userId) throw new Error('Not signed in.');
       const [available, mine, history] = await Promise.all([
         listAvailableDeliveries(),
-        listMyDeliveries(),
-        listDeliveryHistory(),
+        listMyDeliveries(userId),
+        listDeliveryHistory(userId),
       ]);
       const active = pickActive(mine);
       if (active) void startRiderTracking(active.id);
       else void stopRiderTracking();
       return { available, mine, history };
     },
-    enabled: !!session,
+    enabled: !!userId,
   });
 }
 
+type RiderOrdersCache = {
+  available: RiderDelivery[];
+  mine: RiderDelivery[];
+  history: RiderDelivery[];
+};
+
 export function useClaimDelivery() {
+  const { session } = useAuth();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: claimDelivery,
+    onMutate: async (orderId) => {
+      await queryClient.cancelQueries({ queryKey: riderOrdersKey });
+      const previous = queryClient.getQueryData<RiderOrdersCache>(riderOrdersKey);
+      if (previous) {
+        const claimed = previous.available.find((order) => order.id === orderId);
+        if (claimed) {
+          queryClient.setQueryData<RiderOrdersCache>(riderOrdersKey, {
+            ...previous,
+            available: previous.available.filter((order) => order.id !== orderId),
+            mine: [
+              {
+                ...claimed,
+                riderId: session?.user.id ?? claimed.riderId,
+                status: claimed.status === 'ready' ? 'ready' : 'preparing',
+                redacted: false,
+              },
+              ...previous.mine,
+            ],
+          });
+        }
+      }
+      return { previous };
+    },
+    onError: (error, _orderId, context) => {
+      if (context?.previous) queryClient.setQueryData(riderOrdersKey, context.previous);
+      Alert.alert('Could not claim', error instanceof Error ? error.message : 'Try again.');
+    },
     onSuccess: (_data, orderId) => {
       void startRiderTracking(orderId);
+    },
+    onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: riderOrdersKey });
     },
   });
@@ -212,20 +262,50 @@ export function useAdvanceRiderOrder() {
       if (input.action === 'start') await startDelivery(input.id);
       else await markDelivered(input.id);
     },
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: riderOrdersKey });
+      const previous = queryClient.getQueryData<RiderOrdersCache>(riderOrdersKey);
+      if (previous) {
+        if (input.action === 'start') {
+          queryClient.setQueryData<RiderOrdersCache>(riderOrdersKey, {
+            ...previous,
+            mine: previous.mine.map((order) =>
+              order.id === input.id ? { ...order, status: 'out_for_delivery' } : order,
+            ),
+          });
+        } else {
+          const delivered = previous.mine.find((order) => order.id === input.id);
+          queryClient.setQueryData<RiderOrdersCache>(riderOrdersKey, {
+            ...previous,
+            mine: previous.mine.filter((order) => order.id !== input.id),
+            history: delivered
+              ? [{ ...delivered, status: 'delivered', deliveredAt: new Date().toISOString() }, ...previous.history]
+              : previous.history,
+          });
+        }
+      }
+      return { previous };
+    },
+    onError: (error, _input, context) => {
+      if (context?.previous) queryClient.setQueryData(riderOrdersKey, context.previous);
+      Alert.alert('Could not update', error instanceof Error ? error.message : 'Try again.');
+    },
     onSuccess: (_data, input) => {
       if (input.action === 'deliver') void stopRiderTracking(input.id);
+    },
+    onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: riderOrdersKey });
     },
   });
 }
 
 export function useRiderOrdersRealtime() {
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const queryClient = useQueryClient();
 
   useEffect(() => {
     const userId = session?.user.id;
-    if (!userId) return;
+    if (!userId || profile?.role !== 'rider') return;
     const channel = supabase
       .channel(`rider-orders-${userId}`)
       .on(
@@ -244,15 +324,16 @@ export function useRiderOrdersRealtime() {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [queryClient, session?.user.id]);
+  }, [queryClient, profile?.role, session?.user.id]);
 }
 
 export function useRiderNotices() {
   const { session } = useAuth();
+  const userId = session?.user.id;
   return useQuery({
     queryKey: riderNoticesKey,
-    queryFn: listMyNotifications,
-    enabled: !!session,
+    queryFn: () => listMyNotifications(userId),
+    enabled: !!userId,
   });
 }
 

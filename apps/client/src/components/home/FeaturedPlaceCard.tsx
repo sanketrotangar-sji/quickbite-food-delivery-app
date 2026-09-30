@@ -1,15 +1,16 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors, radii } from '@/constants/theme';
 import type { HomePlace } from '@/lib/home-mock';
+import { RemoteImage } from '@/components/RemoteImage';
 
 export function FeaturedPlaceCard({ place, onPress }: { place: HomePlace; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={[styles.card, !place.isOpen && styles.closed]}>
       {place.imageUrl ? (
-        <Image source={{ uri: place.imageUrl }} style={styles.image} />
+        <RemoteImage uri={place.imageUrl} slot="thumb" style={styles.image} />
       ) : (
         <View style={[styles.image, styles.fallback]}>
           <AppText weight="bold" style={styles.fallbackText}>

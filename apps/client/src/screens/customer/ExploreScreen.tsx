@@ -23,6 +23,7 @@ import { SectionHeader } from '@/components/SectionHeader';
 import { tabBarInset } from '@/constants/theme';
 import { useAddDish } from '@/hooks/useAddDish';
 import { useCart } from '@/hooks/useCart';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useHomeCatalog } from '@/hooks/useHomeCatalog';
 import { useActiveOrder } from '@/hooks/useOrderTracking';
 import { useSavedHearts } from '@/hooks/useSavedHearts';
@@ -54,6 +55,7 @@ export function ExploreScreen() {
   const { activeOrder } = useActiveOrder();
   const { addDish, dialog: cartReplaceDialog } = useAddDish();
   const [query, setQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(query, 300);
   const [filters, setFilters] = useState<ExploreFilters>(DEFAULT_EXPLORE_FILTERS);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -64,14 +66,14 @@ export function ExploreScreen() {
   const allDishes = catalog.data?.dishes ?? [];
   const places = useMemo(
     () =>
-      filterExplorePlaces(allPlaces, allDishes, query, filters).sort(
+      filterExplorePlaces(allPlaces, allDishes, debouncedQuery, filters).sort(
         (a, b) => Number(b.isOpen) - Number(a.isOpen) || (b.rating ?? -1) - (a.rating ?? -1),
       ),
-    [allDishes, allPlaces, filters, query],
+    [allDishes, allPlaces, filters, debouncedQuery],
   );
   const matchedDishes = useMemo(
-    () => filterExploreDishes(allDishes, allPlaces, query, filters),
-    [allDishes, allPlaces, filters, query],
+    () => filterExploreDishes(allDishes, allPlaces, debouncedQuery, filters),
+    [allDishes, allPlaces, filters, debouncedQuery],
   );
   const dishes = matchedDishes.slice(0, 9);
   const offers = useMemo(

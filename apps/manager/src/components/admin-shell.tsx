@@ -1,5 +1,5 @@
 import { Link, useRouterState } from '@tanstack/react-router';
-import { Building2, ClipboardList, LayoutDashboard, LogOut, Menu, Sparkles, Users, X } from 'lucide-react';
+import { Bot, Building2, ClipboardList, LayoutDashboard, LogOut, Menu, Sparkles, Users, X } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { QuickBiteLogo } from '@/components/quickbite-logo';
@@ -24,6 +24,7 @@ const nav = [
   { to: '/admin/restaurants', label: 'Restaurants', icon: Building2, exact: false },
   { to: '/admin/users', label: 'Users', icon: Users, exact: false },
   { to: '/admin/highlights', label: 'Offers', icon: Sparkles, exact: false },
+  { to: '/admin/ai', label: 'AI', icon: Bot, exact: false },
 ] as const;
 
 function initials(name: string) {

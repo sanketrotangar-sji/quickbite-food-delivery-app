@@ -7,9 +7,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { FlowHeader } from '@/components/FlowHeader';
+import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { Screen } from '@/components/Screen';
 import { colors, formatInr, radii } from '@/constants/theme';
-import { LogoLoader } from '@/components/LogoLoader';
 import { pickActive, toCurrentOrder, useAdvanceRiderOrder, useRiderOrders } from '@/features/rider/use-rider-live';
 import {
   advanceDeliveryStep,
@@ -110,7 +110,11 @@ export function DeliveryScreen() {
   if (orders.isLoading && !orders.data) {
     return (
       <Screen>
-        <LogoLoader />
+        <FlowHeader title="Delivery" />
+        <View style={styles.loading}>
+          <LoadingSkeleton variant="feature" rows={1} />
+          <LoadingSkeleton rows={2} />
+        </View>
       </Screen>
     );
   }
@@ -157,12 +161,18 @@ export function DeliveryScreen() {
       <StatusBar style="dark" />
       <FlowHeader title={content.title} subtitle={`#${order.code}`} />
       {!content.done ? (
-        <RiderRouteMap
-          rider={tracking.coordinate}
-          restaurant={order.pickup.coordinate}
-          customer={order.drop.coordinate}
-          destination={destination}
-        />
+        <View style={styles.mapShell}>
+          <RiderRouteMap
+            rider={tracking.coordinate}
+            restaurant={order.pickup.coordinate}
+            customer={order.drop.coordinate}
+            destination={destination}
+            height={240}
+            borderRadius={radii.lg}
+            restaurantLabel={order.restaurantName}
+            customerLabel="Drop"
+          />
+        </View>
       ) : null}
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.track}>
@@ -232,6 +242,8 @@ export function DeliveryScreen() {
 
 const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 16, gap: 12 },
+  loading: { paddingHorizontal: 16, paddingTop: 12, gap: 12 },
+  mapShell: { marginHorizontal: 16, marginTop: 8, borderRadius: radii.lg, overflow: 'hidden' },
   missing: { padding: 16 },
   track: { flexDirection: 'row', gap: 4 },
   step: { flex: 1, gap: 4 },

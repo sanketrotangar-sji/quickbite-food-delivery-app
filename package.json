@@ -14,12 +14,33 @@
     "db:push": "supabase db push",
     "db:reset": "supabase db reset",
     "functions:serve": "supabase functions serve notify-new-order directions --no-verify-jwt",
-    "functions:deploy": "supabase functions deploy notify-new-order && supabase functions deploy directions",
+    "functions:deploy": "supabase functions deploy notify-new-order && supabase functions deploy directions && supabase functions deploy rio",
     "types:client": "supabase gen types typescript --project-id motqehtswgjbbvoazarh --schema public > apps/client/src/types/database.ts",
+    "images:optimize": "node scripts/optimize-menu-images.mjs",
+    "images:optimize:dry": "node scripts/optimize-menu-images.mjs --dry-run",
+    "seed:generate": "node scripts/generate-seed-data.mjs",
+    "seed:push": "node scripts/push-seed-data.mjs",
+    "seed:push:resume": "node scripts/push-seed-data.mjs --resume",
+    "seed:push:dry": "node scripts/push-seed-data.mjs --dry-run",
+    "embeddings:backfill": "node scripts/backfill-embeddings.mjs",
+    "intelligence:verify": "node scripts/verify-intelligence.mjs",
+    "push:verify": "node scripts/verify-push-demo.mjs",
+    "ml:classify-menu": "python3 scripts/classify_menu_category.py",
+    "rag:eval": "node scripts/eval-rag.mjs",
+    "test": "npm run test:unit && npm run test:edge && npm run test:integration && npm run test:e2e",
+    "test:unit": "npm run test --workspace=@quickbite/shared && npm run test --workspace=client && npm run test --workspace=dashboard",
+    "test:edge": "node scripts/test-edge.mjs",
+    "test:integration": "node tests/integration/order-happy-path.mjs",
+    "test:e2e": "node scripts/run-playwright.mjs",
     "client": "npm run start --workspace=client",
-    "dashboard": "npm run dev --workspace=dashboard"
+    "dashboard": "npm run dev --workspace=dashboard",
+    "landing": "npm run dev --workspace=landing"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5",
+    "ws": "^8.22.0"
   }
 }

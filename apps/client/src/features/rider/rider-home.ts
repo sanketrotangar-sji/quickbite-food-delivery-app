@@ -18,6 +18,9 @@ export type RiderCurrentOrder = {
   minutesToPickup: number;
   earning: number;
   itemCount: number;
+  statusLabel: string;
+  customerName: string | null;
+  customerPhone: string | null;
   pickup: RiderStop;
   drop: RiderStop;
 };
@@ -51,6 +54,9 @@ export const RIDER_CURRENT_ORDER: RiderCurrentOrder | null = {
   minutesToPickup: 12,
   earning: 126,
   itemCount: 3,
+  statusLabel: 'On the way',
+  customerName: 'Riya Sharma',
+  customerPhone: '+91 98765 43210',
   pickup: { address: '12, Green Park Rd, Sector 14', distanceKm: 2.1, coordinate: null },
   drop: { address: '45, Lake View Apartments', distanceKm: 4.8, coordinate: null },
 };

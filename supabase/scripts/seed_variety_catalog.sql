@@ -252,6 +252,6 @@ begin
       set status = 'active';
   end loop;
 
-  raise notice 'Variety catalog seeded: 8 kitchens, dishes upserted, 8 managers linked.';
+  raise notice 'Variety catalog seeded: 8 kitchens, dishes upserted, 8 managers linked (1 manager per kitchen).';
 end
 $$;

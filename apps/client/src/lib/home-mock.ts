@@ -115,3 +115,28 @@ export function filterHomePlaces(places: HomePlace[], categoryId: string, query:
     })
     .sort((a, b) => Number(b.isOpen) - Number(a.isOpen));
 }
+
+/** Cap popular rails: max one dish per restaurant, spread categories. */
+export function pickPopularDishes(
+  dishes: HomeDish[],
+  options?: { max?: number; maxPerRestaurant?: number; maxPerCategory?: number },
+) {
+  const max = options?.max ?? 16;
+  const maxPerRestaurant = options?.maxPerRestaurant ?? 1;
+  const maxPerCategory = options?.maxPerCategory ?? 4;
+  const perRestaurant = new Map<string, number>();
+  const perCategory = new Map<string, number>();
+  const picked: HomeDish[] = [];
+  for (const dish of dishes) {
+    const rCount = perRestaurant.get(dish.restaurantId) ?? 0;
+    if (rCount >= maxPerRestaurant) continue;
+    const cat = categorySlug(dish.category);
+    const cCount = perCategory.get(cat) ?? 0;
+    if (cCount >= maxPerCategory) continue;
+    picked.push(dish);
+    perRestaurant.set(dish.restaurantId, rCount + 1);
+    perCategory.set(cat, cCount + 1);
+    if (picked.length >= max) break;
+  }
+  return picked;
+}

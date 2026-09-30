@@ -5,7 +5,7 @@ import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { FlowHeader } from '@/components/FlowHeader';
-import { LogoLoader } from '@/components/LogoLoader';
+import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
 import { colors, radii } from '@/constants/theme';
@@ -141,7 +141,11 @@ export function NotificationsScreen() {
   return (
     <Screen>
       <FlowHeader title="Notifications" />
-      {notices.isLoading ? <LogoLoader /> : null}
+      {notices.isLoading ? (
+        <View style={styles.list}>
+          <LoadingSkeleton rows={3} />
+        </View>
+      ) : null}
       {!notices.isLoading && items.length === 0 ? (
         <EmptyState icon="notifications-outline" title="You're caught up" body="New requests and payout notes will show up here." />
       ) : null}

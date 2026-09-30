@@ -36,13 +36,20 @@ export async function listAddresses(): Promise<{ addresses: SavedAddress[]; sele
   const { data, error } = await supabase
     .from('customer_addresses')
     .select('*')
-    .order('is_default', { ascending: false })
-    .order('created_at');
+    .order('created_at', { ascending: true });
   if (error) throwApiError(error, 'Could not load saved addresses.');
   const rows = data ?? [];
+  // Prefer default, then oldest row (stable home-header selection).
   const defaultId = rows.find((row) => row.is_default)?.id ?? null;
   const selectedId = defaultId ?? rows[0]?.id ?? null;
-  if (!defaultId && selectedId) await setDefaultAddress(selectedId);
+  // Soft-heal missing default so a failed RPC never blocks listing.
+  if (!defaultId && selectedId) {
+    try {
+      await setDefaultAddress(selectedId);
+    } catch {
+      // Keep returning rows; UI can still pick selectedId locally.
+    }
+  }
   return {
     addresses: rows.map(fromRow),
     selectedId,
@@ -102,9 +109,15 @@ export async function importAddresses(
   }));
   const { error } = await supabase.from('customer_addresses').upsert(rows, { onConflict: 'id', ignoreDuplicates: true });
   if (error) throwApiError(error, 'Could not import saved addresses.');
-  await setDefaultAddress(
-    addresses.some((address) => address.id === selectedId) ? selectedId! : addresses[0].id,
-  );
+  const preferred =
+    addresses.some((address) => address.id === selectedId) && selectedId
+      ? selectedId
+      : addresses[0].id;
+  try {
+    await setDefaultAddress(preferred);
+  } catch {
+    // Import succeeded; default can be healed on next list/select.
+  }
 }
 
 export function subscribeToAddresses(userId: string, onChange: () => void): RealtimeChannel {

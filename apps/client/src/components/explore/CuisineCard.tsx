@@ -1,8 +1,9 @@
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors } from '@/constants/theme';
 import type { HomeCategory } from '@/lib/home-mock';
+import { RemoteImage } from '@/components/RemoteImage';
 
 export function CuisineCard({
   category,
@@ -22,7 +23,7 @@ export function CuisineCard({
       style={styles.item}>
       <View style={[styles.frame, selected && styles.frameOn]}>
         {category.imageUrl ? (
-          <Image source={{ uri: category.imageUrl }} style={styles.image} resizeMode="contain" />
+          <RemoteImage uri={category.imageUrl} slot="thumb" style={styles.image} />
         ) : (
           <View style={styles.image}>
             <AppText weight="bold" style={styles.fallback}>

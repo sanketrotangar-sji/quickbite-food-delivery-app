@@ -66,6 +66,10 @@ export function AddressForm({
       setError('Give this address a short name, like Hostel or Parents.');
       return;
     }
+    if (lat == null || lng == null) {
+      setError('Set a delivery pin with “Use current location” so riders can find you.');
+      return;
+    }
     setError('');
     setSaving(true);
     try {
@@ -153,7 +157,7 @@ export function AddressForm({
           <AppText muted style={styles.locationMeta}>
             {lat != null && lng != null
               ? `Delivery pin set · ${lat.toFixed(5)}, ${lng.toFixed(5)}`
-              : 'No precise delivery pin set'}
+              : 'Required for delivery — tap to set your pin'}
           </AppText>
         </View>
       </Pressable>

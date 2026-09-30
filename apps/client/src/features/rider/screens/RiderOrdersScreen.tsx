@@ -6,7 +6,7 @@ import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { EmptyState } from '@/components/EmptyState';
-import { LogoLoader } from '@/components/LogoLoader';
+import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { Screen } from '@/components/Screen';
 import { colors, formatInr, radii, tabBarInset } from '@/constants/theme';
 import { deliveryStatusLabel, useDeliveryStep } from '@/features/rider/delivery-session';
@@ -27,7 +27,12 @@ export function RiderOrdersScreen() {
   if (orders.isLoading && !orders.data) {
     return (
       <Screen>
-        <LogoLoader />
+        <View style={styles.loading}>
+          <AppText heading weight="semibold" style={styles.title}>
+            Orders
+          </AppText>
+          <LoadingSkeleton rows={3} />
+        </View>
       </Screen>
     );
   }
@@ -146,6 +151,7 @@ export function RiderOrdersScreen() {
 
 const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 16, paddingBottom: tabBarInset + 24, gap: 12 },
+  loading: { paddingHorizontal: 16, paddingTop: 8, gap: 12 },
   title: { fontSize: 22 },
   segment: {
     flexDirection: 'row',

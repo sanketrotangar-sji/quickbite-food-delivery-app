@@ -1,9 +1,10 @@
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors, radii } from '@/constants/theme';
 import type { HomePlace } from '@/lib/home-mock';
 import { placePresentation } from '@/lib/home-presentation';
+import { RemoteImage } from '@/components/RemoteImage';
 
 export function OfferCard({ place, width, onPress }: { place: HomePlace; width: number; onPress: () => void }) {
   const offer = placePresentation(place);
@@ -14,7 +15,7 @@ export function OfferCard({ place, width, onPress }: { place: HomePlace; width: 
       accessibilityLabel={`${offer.discount}% off at ${place.name}`}
       style={({ pressed }) => [styles.card, { width }, pressed && styles.pressed]}>
       {place.imageUrl ? (
-        <Image source={{ uri: place.imageUrl }} style={styles.image} />
+        <RemoteImage uri={place.imageUrl} slot="thumb" style={styles.image} />
       ) : (
         <View style={[styles.image, styles.fallback]}>
           <AppText weight="bold" style={styles.fallbackText}>

@@ -23,8 +23,9 @@ import { OrderCard } from "@/components/order-card";
 import { OrderDrawer } from "@/components/order-drawer";
 import { QuickBiteShell } from "@/components/quickbite-shell";
 import { useAuth } from "@/hooks/use-auth";
-import { useAdvanceOrder, useManagerOrders } from "@/hooks/use-manager-orders";
+import { useAdvanceOrder, useManagerOrders, useManagerOrderStats } from "@/hooks/use-manager-orders";
 import { useManagerMenu, useToggleMenuAvailability } from "@/hooks/use-manager-menu";
+import { useMinuteTick } from "@/hooks/use-minute-tick";
 import { useOwnedRestaurant, useRestaurantRatings } from "@/hooks/use-restaurant";
 import {
   areaFromAddress,
@@ -32,11 +33,12 @@ import {
   compactRupee,
   formatRupee,
   greetingFor,
-  hourlyPace,
+  hourlyPaceFromStats,
   kitchenLoad,
-  ordersOnDay,
+  orderElapsed,
   percentChangeLabel,
-  revenueOf,
+  statsOnDay,
+  statsRevenue,
 } from "@/lib/dashboard-stats";
 import type { MenuItem, Order } from "@/lib/quickbite-data";
 
@@ -69,12 +71,16 @@ export const Route = createFileRoute("/")({
 
 function Dashboard() {
   const now = new Date();
+  const tick = useMinuteTick();
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
   const { profile } = useAuth();
-  const { data: restaurant } = useOwnedRestaurant();
+  const { data: restaurant, isLoading: restaurantLoading } = useOwnedRestaurant();
   const { data: ratings } = useRestaurantRatings(restaurant?.id);
-  const allOrders = useManagerOrders().data ?? EMPTY_ORDERS;
+  const ordersQuery = useManagerOrders();
+  const statsQuery = useManagerOrderStats();
+  const allOrders = ordersQuery.data ?? EMPTY_ORDERS;
+  const statsRows = statsQuery.data ?? [];
   const menuItems = useManagerMenu().data ?? EMPTY_MENU;
   const advanceOrder = useAdvanceOrder();
   const toggleAvailability = useToggleMenuAvailability();
@@ -87,13 +93,13 @@ function Dashboard() {
   const preparing = orders.filter((order) => order.status === "preparing").length;
   const placed = orders.filter((order) => order.status === "placed");
   const unavailable = menuItems.filter((item) => !item.available);
-  const todayOrders = ordersOnDay(allOrders, now);
-  const yesterdayOrders = ordersOnDay(allOrders, yesterday);
-  const todayRevenue = revenueOf(todayOrders);
-  const yesterdayRevenue = revenueOf(yesterdayOrders);
+  const todayStats = statsOnDay(statsRows, now);
+  const yesterdayStats = statsOnDay(statsRows, yesterday);
+  const todayRevenue = statsRevenue(todayStats);
+  const yesterdayRevenue = statsRevenue(yesterdayStats);
   const load = kitchenLoad(preparing);
   const prep = avgPrepLabel(allOrders, now);
-  const pace = hourlyPace(allOrders, now);
+  const pace = hourlyPaceFromStats(statsRows, now);
   const selectedFresh = useMemo(
     () =>
       orders.find((order) => order.id === selected?.id) ??
@@ -110,6 +116,9 @@ function Dashboard() {
   const attentionCount =
     (oldestPlaced ? 1 : 0) + (riderOrder ? 1 : 0) + (unavailable.length > 0 ? 1 : 0);
   const firstName = profile?.full_name?.trim() || profile?.email || "";
+  const kitchenName = restaurant?.name ?? "this kitchen";
+  const statsLoading = restaurantLoading || statsQuery.isLoading;
+  const liveLoading = restaurantLoading || ordersQuery.isLoading;
 
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -128,17 +137,25 @@ function Dashboard() {
   const statCards = [
     {
       label: "Orders today",
-      value: String(todayOrders.length),
-      change: percentChangeLabel(todayOrders.length, yesterdayOrders.length),
+      value: statsLoading ? "…" : String(todayStats.length),
+      change: statsLoading
+        ? "Loading…"
+        : todayStats.length === 0 && yesterdayStats.length === 0
+          ? `No orders yet for ${kitchenName}`
+          : percentChangeLabel(todayStats.length, yesterdayStats.length),
       icon: PackageCheck,
     },
     {
       label: "Today’s revenue",
-      value: formatRupee(todayRevenue),
-      change: percentChangeLabel(todayRevenue, yesterdayRevenue),
+      value: statsLoading ? "…" : formatRupee(todayRevenue),
+      change: statsLoading
+        ? "Loading…"
+        : todayRevenue === 0 && yesterdayRevenue === 0
+          ? `No sales yet for ${kitchenName}`
+          : percentChangeLabel(todayRevenue, yesterdayRevenue),
       icon: ReceiptIndianRupee,
     },
-    { label: "In preparation", value: String(preparing), change: load.label, icon: Clock3 },
+    { label: "In preparation", value: liveLoading ? "…" : String(preparing), change: load.label, icon: Clock3 },
     { label: "Average prep", value: prep.value, change: prep.change, icon: CircleDollarSign },
   ];
   const statuses = ["placed", "preparing", "ready"] as const;
@@ -169,7 +186,11 @@ function Dashboard() {
               <div className="min-w-0">
                 <h1 className="text-xl font-extrabold">Live orders</h1>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {orders.length} orders need the team’s attention
+                  {liveLoading
+                    ? `Loading live orders for ${kitchenName}…`
+                    : orders.length === 0
+                      ? `No live orders for ${kitchenName}`
+                      : `${orders.length} orders need the team’s attention`}
                 </p>
               </div>
               <Button asChild variant="ghost" size="sm">
@@ -205,7 +226,7 @@ function Dashboard() {
                         <button type="button" onClick={() => setSelected(order)} className="min-w-0 text-left">
                           <span className="block truncate text-sm font-extrabold">#{order.displayId}</span>
                           <span className="block truncate text-xs text-muted-foreground">
-                            {areaFromAddress(order.address, order.customer)} · {order.elapsed}
+                            {areaFromAddress(order.address, order.customer)} · {orderElapsed(order.placedAt, tick)}
                           </span>
                         </button>
                         <button
@@ -292,7 +313,7 @@ function Dashboard() {
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
                     {oldestPlaced
-                      ? `${areaFromAddress(oldestPlaced.address, `#${oldestPlaced.displayId}`)} · ${oldestPlaced.elapsed}`
+                      ? `${areaFromAddress(oldestPlaced.address, `#${oldestPlaced.displayId}`)} · ${orderElapsed(oldestPlaced.placedAt, tick)}`
                       : "Queue is clear"}
                   </p>
                 </div>
@@ -312,7 +333,7 @@ function Dashboard() {
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
                     {riderOrder
-                      ? `${areaFromAddress(riderOrder.address, `#${riderOrder.displayId}`)} · ${riderOrder.elapsed}`
+                      ? `${areaFromAddress(riderOrder.address, `#${riderOrder.displayId}`)} · ${orderElapsed(riderOrder.placedAt, tick)}`
                       : "Waiting on kitchen"}
                   </p>
                 </div>
@@ -460,7 +481,7 @@ function Dashboard() {
               </p>
               <div className="mt-4 grid grid-cols-3 divide-x divide-border border-y border-border py-3 text-center">
                 <div>
-                  <strong className="block text-sm">{yesterdayOrders.length}</strong>
+                  <strong className="block text-sm">{yesterdayStats.length}</strong>
                   <span className="text-[10px] text-muted-foreground">Orders</span>
                 </div>
                 <div>

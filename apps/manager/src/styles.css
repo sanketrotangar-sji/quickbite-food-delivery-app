@@ -80,6 +80,7 @@
 }
 
 :root {
+  /* Parity with packages/shared/src/brand-tokens.ts (brandHex / brandOklchNotes). */
   --radius: 0.75rem;
   --background: oklch(0.9678 0.0086 84.57);
   --foreground: oklch(0.2565 0.004 84.58);

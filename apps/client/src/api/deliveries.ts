@@ -26,6 +26,10 @@ export type RiderDelivery = {
   notes: string | null;
   restaurantCoordinate: DeliveryCoordinate | null;
   customerCoordinate: DeliveryCoordinate | null;
+  customerName: string | null;
+  customerPhone: string | null;
+  /** True when drop details are redacted (unclaimed pool). */
+  redacted?: boolean;
 };
 
 export type DeliveryCoordinate = {
@@ -62,14 +66,9 @@ const ORDER_COLUMNS = `
   order_items (item_name, quantity)
 `;
 
-async function loadOrders(): Promise<OrderRow[]> {
-  const { data, error } = await supabase.from('orders').select(ORDER_COLUMNS).order('placed_at', { ascending: false });
-  if (error) throwApiError(error, 'Could not load deliveries.');
-  return (data ?? []) as OrderRow[];
-}
-
 async function withKitchens(rows: OrderRow[]): Promise<RiderDelivery[]> {
   const ids = [...new Set(rows.map((row) => row.restaurant_id))];
+  const customerIds = [...new Set(rows.map((row) => row.customer_id))];
   const kitchens = new Map<
     string,
     {
@@ -80,6 +79,7 @@ async function withKitchens(rows: OrderRow[]): Promise<RiderDelivery[]> {
       coordinate: DeliveryCoordinate | null;
     }
   >();
+  const customers = new Map<string, { name: string | null; phone: string | null }>();
   if (ids.length > 0) {
     const browse = await supabase
       .from('restaurant_browse')
@@ -99,8 +99,17 @@ async function withKitchens(rows: OrderRow[]): Promise<RiderDelivery[]> {
       });
     }
   }
+  if (customerIds.length > 0) {
+    const profiles = await supabase.from('profiles').select('id, full_name, phone').in('id', customerIds);
+    if (!profiles.error) {
+      for (const row of profiles.data ?? []) {
+        customers.set(row.id, { name: row.full_name, phone: row.phone });
+      }
+    }
+  }
   return rows.map((row) => {
     const kitchen = kitchens.get(row.restaurant_id);
+    const customer = customers.get(row.customer_id);
     const items = row.order_items ?? [];
     return {
       id: row.id,
@@ -128,45 +137,64 @@ async function withKitchens(rows: OrderRow[]): Promise<RiderDelivery[]> {
         row.delivery_lat == null || row.delivery_lng == null
           ? null
           : { latitude: Number(row.delivery_lat), longitude: Number(row.delivery_lng) },
+      customerName: customer?.name ?? null,
+      customerPhone: customer?.phone ?? null,
     };
   });
 }
 
-async function currentUserId() {
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) throwApiError(error ?? {}, 'Not signed in.');
-  return data.user.id;
+async function loadAssignedOrders(userId: string, statuses: OrderStatus[]): Promise<OrderRow[]> {
+  const { data, error } = await supabase
+    .from('orders')
+    .select(ORDER_COLUMNS)
+    .eq('rider_id', userId)
+    .in('status', statuses)
+    .order('placed_at', { ascending: false });
+  if (error) throwApiError(error, 'Could not load deliveries.');
+  return (data ?? []) as OrderRow[];
 }
 
 export async function listAvailableDeliveries(): Promise<RiderDelivery[]> {
-  const userId = await currentUserId();
-  const rows = await loadOrders();
-  return withKitchens(
-    rows.filter(
-      (row) =>
-        row.rider_id == null &&
-        row.customer_id !== userId &&
-        (row.status === 'preparing' || row.status === 'ready'),
-    ),
-  );
+  const { data, error } = await supabase.rpc('list_rider_delivery_pool');
+  if (error) throwApiError(error, 'Could not load available deliveries.');
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    status: row.status as OrderStatus,
+    totalAmount: Number(row.total_amount),
+    address: row.area_hint ? `Drop near ${row.area_hint.trim()}` : 'Drop area revealed after claim',
+    placedAt: row.placed_at,
+    deliveredAt: null,
+    riderId: null,
+    restaurantName: row.restaurant_name,
+    restaurantAddress: row.restaurant_address,
+    cuisine: row.cuisine,
+    imageUrl: row.image_url,
+    itemsSummary: row.items_summary,
+    itemCount: Number(row.item_count ?? 0),
+    earning: Number(row.rider_earning ?? 0),
+    tip: Number(row.tip_amount ?? 0),
+    bonus: Number(row.bonus_amount ?? 0),
+    pickupKm: Number(row.pickup_km ?? 0),
+    dropKm: Number(row.drop_km ?? 0),
+    etaMinutes: row.eta_minutes,
+    notes: null,
+    restaurantCoordinate:
+      row.restaurant_lat == null || row.restaurant_lng == null
+        ? null
+        : { latitude: Number(row.restaurant_lat), longitude: Number(row.restaurant_lng) },
+    customerCoordinate: null,
+    customerName: null,
+    customerPhone: null,
+    redacted: true,
+  }));
 }
 
-export async function listMyDeliveries(): Promise<RiderDelivery[]> {
-  const userId = await currentUserId();
-  const rows = await loadOrders();
-  return withKitchens(
-    rows.filter(
-      (row) => row.rider_id === userId && row.status !== 'delivered' && row.status !== 'cancelled',
-    ),
-  );
+export async function listMyDeliveries(userId: string): Promise<RiderDelivery[]> {
+  return withKitchens(await loadAssignedOrders(userId, ['preparing', 'ready', 'out_for_delivery', 'placed']));
 }
 
-export async function listDeliveryHistory(): Promise<RiderDelivery[]> {
-  const userId = await currentUserId();
-  const rows = await loadOrders();
-  return withKitchens(
-    rows.filter((row) => row.rider_id === userId && (row.status === 'delivered' || row.status === 'cancelled')),
-  );
+export async function listDeliveryHistory(userId: string): Promise<RiderDelivery[]> {
+  return withKitchens(await loadAssignedOrders(userId, ['delivered', 'cancelled']));
 }
 
 export async function claimDelivery(orderId: string) {

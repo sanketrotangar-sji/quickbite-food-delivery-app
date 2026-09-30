@@ -93,6 +93,57 @@ export function areaFromAddress(address: string, fallback: string) {
   return area || fallback;
 }
 
+/** Live relative time from placedAt (recompute at render; pair with useMinuteTick). */
+export function orderElapsed(placedAt: string, nowMs = Date.now()) {
+  const minutes = Math.max(0, Math.round((nowMs - new Date(placedAt).getTime()) / 60_000));
+  if (minutes < 1) return "just now";
+  if (minutes === 1) return "1 minute ago";
+  if (minutes < 60) return `${minutes} minutes ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours === 1) return "1 hour ago";
+  if (hours < 24) return `${hours} hours ago`;
+  const days = Math.floor(hours / 24);
+  return days === 1 ? "1 day ago" : `${days} days ago`;
+}
+
+export function statsOnDay(
+  rows: { status: string; placed_at: string; total_amount: number }[],
+  day: Date,
+) {
+  return rows.filter((row) => row.status !== "cancelled" && isSameDay(row.placed_at, day));
+}
+
+export function statsRevenue(rows: { total_amount: number }[]) {
+  return rows.reduce((sum, row) => sum + Number(row.total_amount), 0);
+}
+
+export function hourlyPaceFromStats(
+  rows: { placed_at: string; status: string }[],
+  now: Date,
+) {
+  const hours = Array.from({ length: 16 }, (_, index) => 8 + index);
+  const counts = hours.map(
+    (hour) =>
+      rows.filter((row) => {
+        if (row.status === "cancelled") return false;
+        const date = new Date(row.placed_at);
+        return isSameDay(row.placed_at, now) && date.getHours() === hour;
+      }).length,
+  );
+  const max = Math.max(...counts, 1);
+  return hours.map((hour, index) => {
+    const count = counts[index] ?? 0;
+    const suffix = hour < 12 ? "AM" : "PM";
+    const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+    return {
+      hour,
+      label: `${hour12} ${suffix}`,
+      count,
+      height: Math.round((count / max) * 100),
+    };
+  });
+}
+
 export function longestWaitLabel(placed: Order[], now: Date) {
   if (placed.length === 0) return "No waiting orders";
   const oldest = placed.reduce((min, order) => (order.placedAt < min.placedAt ? order : min));

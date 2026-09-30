@@ -1,11 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { VegMark } from '@/components/VegMark';
 import { colors, radii } from '@/constants/theme';
 import type { HomePlace } from '@/lib/home-mock';
 import { placePresentation } from '@/lib/home-presentation';
+import { RemoteImage } from '@/components/RemoteImage';
 
 export function RestaurantStripCard({
   place,
@@ -32,7 +33,7 @@ export function RestaurantStripCard({
         style={({ pressed }) => [styles.listCard, pressed && styles.pressed, !place.isOpen && styles.closed]}>
         <View>
           {place.imageUrl ? (
-            <Image source={{ uri: place.imageUrl }} style={styles.listImage} />
+            <RemoteImage uri={place.imageUrl} slot="thumb" style={styles.listImage} />
           ) : (
             <View style={[styles.listImage, styles.fallback]}>
               <AppText weight="bold" style={styles.fallbackText}>
@@ -78,7 +79,7 @@ export function RestaurantStripCard({
     <Pressable onPress={onPress} style={[styles.card, width ? { width } : null, !place.isOpen && styles.closed]}>
       <View>
         {place.imageUrl ? (
-          <Image source={{ uri: place.imageUrl }} style={styles.image} />
+          <RemoteImage uri={place.imageUrl} slot="thumb" style={styles.image} />
         ) : (
           <View style={[styles.image, styles.fallback]}>
             <AppText weight="bold" style={styles.fallbackText}>

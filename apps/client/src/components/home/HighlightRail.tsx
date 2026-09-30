@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Image, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors } from '@/constants/theme';
 import type { HomeHighlight } from '@/lib/home-mock';
+import { RemoteImage } from '@/components/RemoteImage';
 
 export const HIGHLIGHT_HEIGHT = 236;
 
@@ -26,7 +27,7 @@ export function HighlightRail({
       snapToAlignment="start">
       {highlights.map((item) => (
         <Pressable key={item.id} style={{ width, height: HIGHLIGHT_HEIGHT }}>
-          <Image source={{ uri: item.imageUrl }} style={styles.image} />
+          <RemoteImage uri={item.imageUrl} slot="thumb" style={styles.image} />
           <View style={styles.scrim} />
           {item.kind === 'video' ? (
             <View style={[styles.playWrap, { top: contentTop }]} pointerEvents="none">

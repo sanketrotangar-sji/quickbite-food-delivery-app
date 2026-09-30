@@ -60,7 +60,6 @@ export async function registerCurrentDeviceForPush() {
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#E85D04',
-      sound: 'default',
     });
   }
 
@@ -113,12 +112,13 @@ export async function setPushNotificationsEnabled(enabled: boolean) {
     const token = await registerCurrentDeviceForPush();
     return Boolean(token);
   }
-  const { data } = await supabase.auth.getUser();
-  if (!data.user) return false;
+  const { data } = await supabase.auth.getSession();
+  const userId = data.session?.user.id;
+  if (!userId) return false;
   const { error } = await supabase
     .from('push_device_tokens')
     .update({ enabled: false })
-    .eq('user_id', data.user.id);
+    .eq('user_id', userId);
   if (error) throw new Error(error.message);
   return false;
 }
@@ -197,6 +197,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         if (!cancelled) tokenRef.current = token;
       })
       .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        // Dev builds without google-services.json / FCM still boot; keep this quiet.
+        if (/Firebase|googleServicesFile|FCM|Default FirebaseApp/i.test(message)) {
+          if (__DEV__) {
+            console.info('Push skipped: FCM credentials not configured for this build.');
+          }
+          return;
+        }
         console.warn('Push registration failed.', error);
       });
 
