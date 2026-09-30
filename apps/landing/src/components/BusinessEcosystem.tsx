@@ -30,7 +30,7 @@ const roles = [
 
 export function BusinessEcosystem() {
   return (
-    <section id="business" className="qb-section scroll-mt-24 border-y border-qb-border/80 bg-white">
+    <section id="business" className="qb-section scroll-mt-24 border-y border-qb-border bg-qb-surface">
       <div className="qb-container">
         <div className="mx-auto max-w-2xl text-center">
           <p className="qb-eyebrow justify-center">Business ecosystem</p>
@@ -50,8 +50,8 @@ export function BusinessEcosystem() {
               <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-qb-primary-soft text-qb-primary">
                 <Icon className="h-5 w-5" />
               </div>
-              <h3 className="mt-5 font-heading text-lg font-semibold">{title}</h3>
-              <div className="mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs font-bold text-qb-forest">
+              <h3 className="mt-5 font-heading text-lg font-semibold text-qb-primary">{title}</h3>
+              <div className="mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs font-bold text-qb-primary">
                 {flow.map((step, i) => (
                   <span key={step} className="inline-flex items-center gap-1.5">
                     {i > 0 ? <span className="text-qb-muted/50">→</span> : null}

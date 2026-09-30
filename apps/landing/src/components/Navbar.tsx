@@ -17,16 +17,17 @@ export function Navbar() {
       className={[
         'sticky top-0 z-50 transition-[background,border-color,box-shadow]',
         scrolled
-          ? 'border-b border-qb-border/90 bg-qb-bg/95 shadow-soft backdrop-blur-md'
-          : 'border-b border-transparent bg-qb-bg/80 backdrop-blur-sm',
+          ? 'border-b border-qb-border bg-qb-bg/95 shadow-soft backdrop-blur-md'
+          : 'border-b border-transparent bg-qb-bg/70 backdrop-blur-sm',
       ].join(' ')}
     >
-      <div className="qb-container flex h-[4.25rem] items-center justify-between gap-6">
-        <a href="#home" className="flex shrink-0 items-center gap-2.5">
-          <img src="/logo.png" alt="" className="h-9 w-9 rounded-xl object-cover" />
-          <span className="font-heading text-[1.15rem] font-bold tracking-tight">
-            Quick<span className="text-qb-primary">Bite</span>
-          </span>
+      <div className="qb-container flex h-[4.5rem] items-center justify-between gap-6">
+        <a href="#home" className="relative z-10 shrink-0" aria-label="QuickBite home">
+          <img
+            src="/logo2.png"
+            alt="QuickBite"
+            className="h-11 w-auto object-contain sm:h-12"
+          />
         </a>
 
         <nav
@@ -37,14 +38,14 @@ export function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="text-[0.9rem] font-semibold text-qb-muted transition hover:text-qb-charcoal"
+              className="text-[0.9rem] font-semibold text-qb-muted transition hover:text-qb-text"
             >
               {link.label}
             </a>
           ))}
         </nav>
 
-        <div className="hidden shrink-0 items-center gap-2.5 md:flex">
+        <div className="relative z-10 hidden shrink-0 items-center gap-2.5 md:flex">
           <a href="#download" className="qb-btn-primary h-10 px-4 text-[0.8125rem]">
             Download App
           </a>
@@ -55,15 +56,15 @@ export function Navbar() {
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-qb-border bg-white md:hidden"
+          className="relative z-10 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-qb-border bg-qb-surface md:hidden"
           aria-expanded={open}
           aria-label="Toggle menu"
           onClick={() => setOpen((v) => !v)}
         >
           <div className="flex w-4 flex-col gap-1.5">
-            <span className="block h-0.5 rounded-full bg-qb-charcoal" />
-            <span className="block h-0.5 rounded-full bg-qb-charcoal" />
-            <span className="block h-0.5 rounded-full bg-qb-charcoal" />
+            <span className="block h-0.5 rounded-full bg-qb-text" />
+            <span className="block h-0.5 rounded-full bg-qb-text" />
+            <span className="block h-0.5 rounded-full bg-qb-text" />
           </div>
         </button>
       </div>
@@ -75,7 +76,7 @@ export function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                className="rounded-xl px-3 py-2.5 text-sm font-semibold text-qb-charcoal hover:bg-white"
+                className="rounded-xl px-3 py-2.5 text-sm font-semibold text-qb-text hover:bg-qb-surface"
                 onClick={() => setOpen(false)}
               >
                 {link.label}

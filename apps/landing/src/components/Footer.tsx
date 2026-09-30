@@ -16,16 +16,17 @@ const social = [
 
 export function Footer() {
   return (
-    <footer className="mt-4 bg-qb-charcoal text-white">
+    <footer className="mt-4 bg-[#171717] text-white">
       <div className="qb-container grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
         <div className="lg:pr-6">
-          <a href="#home" className="flex items-center gap-2.5">
-            <img src="/logo2.png" alt="" className="h-9 w-9 rounded-xl object-cover" />
-            <span className="font-heading text-lg font-bold">
-              Quick<span className="text-qb-primary">Bite</span>
-            </span>
+          <a href="#home" aria-label="QuickBite home">
+            <img
+              src="/logo2.png"
+              alt="QuickBite"
+              className="h-11 w-auto object-contain"
+            />
           </a>
-          <p className="mt-4 font-script text-2xl text-qb-primary">
+          <p className="mt-5 text-sm font-semibold text-qb-primary">
             Good Food. Brighter Days.
           </p>
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/60">
@@ -34,7 +35,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="text-sm font-bold">Quick Links</h3>
+          <h3 className="text-sm font-bold text-white">Quick Links</h3>
           <ul className="mt-4 space-y-3">
             {NAV_LINKS.map((link) => (
               <li key={link.href}>
@@ -52,7 +53,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="text-sm font-bold">Support</h3>
+          <h3 className="text-sm font-bold text-white">Support</h3>
           <ul className="mt-4 space-y-3">
             {supportLinks.map((link) => (
               <li key={link.label}>
@@ -70,13 +71,13 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="text-sm font-bold">Follow Us</h3>
+          <h3 className="text-sm font-bold text-white">Follow Us</h3>
           <ul className="mt-4 flex flex-wrap gap-2">
             {social.map((item) => (
               <li key={item.label}>
                 <a
                   href={item.href}
-                  className="inline-flex h-9 items-center rounded-full border border-white/12 px-3.5 text-xs font-semibold text-white/70 transition hover:border-white/30 hover:text-white"
+                  className="inline-flex h-9 items-center rounded-full border border-white/12 px-3.5 text-xs font-semibold text-white/70 transition hover:border-white/35 hover:text-white"
                 >
                   {item.label}
                 </a>

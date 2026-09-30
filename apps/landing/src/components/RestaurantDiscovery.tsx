@@ -34,7 +34,7 @@ export function RestaurantDiscovery() {
                 />
                 <span
                   className={[
-                    'absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold shadow-soft',
+                    'absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-qb-surface/95 px-2.5 py-1 text-[11px] font-bold shadow-soft',
                     r.veg ? 'text-qb-success' : 'text-qb-primary',
                   ].join(' ')}
                 >
@@ -48,10 +48,10 @@ export function RestaurantDiscovery() {
                 </span>
               </div>
               <div className="p-5">
-                <h3 className="font-heading text-[1.05rem] font-semibold">{r.name}</h3>
+                <h3 className="font-heading text-[1.05rem] font-semibold text-qb-primary">{r.name}</h3>
                 <p className="mt-1 text-sm text-qb-muted">{r.cuisine}</p>
                 <div className="mt-4 flex items-center gap-4 border-t border-qb-border/80 pt-4 text-sm font-semibold">
-                  <span className="inline-flex items-center gap-1.5 text-qb-charcoal">
+                  <span className="inline-flex items-center gap-1.5 text-qb-text">
                     <Star className="h-3.5 w-3.5 fill-qb-primary text-qb-primary" />
                     {r.rating.toFixed(1)}
                     <span className="font-medium text-qb-muted">({r.reviews})</span>

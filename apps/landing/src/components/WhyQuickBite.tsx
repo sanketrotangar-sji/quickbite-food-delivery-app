@@ -11,25 +11,25 @@ const benefits = [
     title: 'Fresh & Hygienic',
     copy: 'Partner kitchens you can trust — prepared when you order.',
     icon: Leaf,
-    tone: 'bg-[#e7f3ee] text-qb-success',
+    tone: 'bg-qb-success-soft text-qb-success',
   },
   {
     title: 'Local Restaurants',
     copy: 'Discover neighbourhood favourites and regional specialties.',
     icon: Heart,
-    tone: 'bg-[#eee8ff] text-[#6b4fd8]',
+    tone: 'bg-qb-forest text-qb-forest-fg',
   },
   {
     title: 'Great Offers',
     copy: 'App-only deals, festival specials, and everyday value.',
     icon: Star,
-    tone: 'bg-[#fff4d6] text-[#c48900]',
+    tone: 'bg-qb-primary-soft text-qb-primary-dark',
   },
 ] as const;
 
 export function WhyQuickBite() {
   return (
-    <section className="qb-section border-y border-qb-border/80 bg-white">
+    <section className="qb-section border-y border-qb-border bg-qb-surface">
       <div className="qb-container">
         <div className="mx-auto max-w-2xl text-center">
           <p className="qb-eyebrow justify-center">Why QuickBite</p>
@@ -50,7 +50,7 @@ export function WhyQuickBite() {
               >
                 <Icon className="h-5 w-5" strokeWidth={2.25} />
               </div>
-              <h3 className="mt-5 font-heading text-base font-semibold">{title}</h3>
+              <h3 className="mt-5 font-heading text-base font-semibold text-qb-primary">{title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-qb-muted">{copy}</p>
             </article>
           ))}

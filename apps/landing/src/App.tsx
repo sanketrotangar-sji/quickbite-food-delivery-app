@@ -10,7 +10,7 @@ import { WhyQuickBite } from './components/WhyQuickBite';
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-qb-bg text-qb-charcoal antialiased">
+    <div className="min-h-screen bg-qb-bg text-qb-text antialiased">
       <Navbar />
       <main>
         <Hero />

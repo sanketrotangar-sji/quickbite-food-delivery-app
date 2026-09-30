@@ -7,26 +7,26 @@ export function FinalCta() {
       <div className="qb-container">
         <div className="grid overflow-hidden rounded-[1.75rem] bg-qb-forest lg:grid-cols-[1.15fr_0.85fr]">
           <div className="flex flex-col justify-center px-6 py-12 sm:px-10 lg:px-14 lg:py-16">
-            <h2 className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h2 className="font-heading text-3xl font-bold tracking-tight text-qb-forest-fg sm:text-4xl">
               Good Food is Just a Click Away.
             </h2>
-            <p className="mt-4 max-w-md text-base leading-relaxed text-white/75">
+            <p className="mt-4 max-w-md text-base leading-relaxed text-qb-forest-fg/75">
               Download QuickBite when the stores go live — or jump into the web
               dashboard if you already run with us.
             </p>
 
             <div className="mt-8">
-              <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-white/55">
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-qb-forest-fg/55">
                 Download QuickBite
               </p>
               <StoreBadges dark />
             </div>
 
-            <p className="mt-8 text-sm text-white/75">
+            <p className="mt-8 text-sm text-qb-forest-fg/75">
               Already using QuickBite?{' '}
               <a
                 href={DASHBOARD_URL}
-                className="font-bold text-white underline decoration-white/35 underline-offset-4 transition hover:decoration-white"
+                className="font-bold text-qb-forest-fg underline decoration-qb-forest-fg/35 underline-offset-4 transition hover:decoration-qb-forest-fg"
               >
                 Dashboard Login
               </a>
