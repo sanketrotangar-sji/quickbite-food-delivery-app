@@ -889,7 +889,14 @@ async function retrieveContextUncached(
 
   try {
     const { retrieveContext } = await import("../_shared/embeddings.ts");
-    const chunks = await retrieveContext(db, query, Math.min(topK * 2, 20), ["menu_items", "ratings"]);
+    // Food + reviews for recommendations; order history grounds support / past-order questions.
+    const chunks = await retrieveContext(db, query, Math.min(topK * 2, 20), [
+      "menu_items",
+      "ratings",
+      "orders",
+      "order_items",
+      "order_status_history",
+    ]);
     const filtered = chunks.filter((c) => {
       if (c.source_table !== "menu_items") return true;
       if (c.meta && typeof c.meta === "object" && "is_available" in c.meta) {

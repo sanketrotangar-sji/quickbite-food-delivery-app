@@ -6,9 +6,11 @@ import {
   isAdmin,
   isPartner,
   nextKitchenStatus,
+  nextRiderStatus,
   pickNearestRider,
   shouldRunKitchenLoadBump,
   ticketUrgency,
+  validateAuthForm,
 } from "./index.ts";
 
 describe("auth roles", () => {
@@ -54,6 +56,29 @@ describe("nextKitchenStatus", () => {
     expect(nextKitchenStatus("placed")).toBe("preparing");
     expect(nextKitchenStatus("preparing")).toBe("ready");
     expect(nextKitchenStatus("ready")).toBeNull();
+  });
+});
+
+describe("nextRiderStatus", () => {
+  it("advances ready → out_for_delivery → delivered", () => {
+    expect(nextRiderStatus("ready")).toBe("out_for_delivery");
+    expect(nextRiderStatus("out_for_delivery")).toBe("delivered");
+    expect(nextRiderStatus("preparing")).toBeNull();
+  });
+});
+
+describe("validateAuthForm", () => {
+  it("rejects bad email and short password", () => {
+    expect(validateAuthForm({ email: "x", password: "123456" })).toMatch(/email/i);
+    expect(validateAuthForm({ email: "a@b.co", password: "123" })).toMatch(/password/i);
+  });
+  it("requires name on signup", () => {
+    expect(validateAuthForm({ email: "a@b.co", password: "123456", requireName: true, fullName: "  " })).toMatch(
+      /name/i,
+    );
+  });
+  it("accepts valid login fields", () => {
+    expect(validateAuthForm({ email: "a@b.co", password: "123456" })).toBeNull();
   });
 });
 

@@ -48,12 +48,14 @@ Same account cannot order from / deliver / kitchen-handle its own restaurant (RP
 
 | Piece | What it does |
 |-------|----------------|
-| `embeddings` + `match_embeddings` | Vector index over menu items and rating comments; cosine retrieval for RIO |
+| `embeddings` + `match_embeddings` | Vector index over **menu items, rating comments, orders, order lines, and status history**; cosine retrieval for RIO |
 | RIO tools `retrieve_context`, `check_delivery_status`, `escalate_complaint` | Ground answers in DB rows; open `support_tickets` with urgency heuristics |
 | Auto rider assign | `BEFORE UPDATE` when status becomes `ready` and `rider_id` is null — nearest online rider |
 | Kitchen-load alerts | `pg_cron` every 5 min → `run_kitchen_load_alerts()` bumps `eta_minutes` past threshold |
 | `automation_events` / `automation_config` | Audit trail + tunables (threshold 8, bump 15 min, cooldown 30 min) |
 | Offline classifier | `scripts/classify_menu_category.py` — embeddings → `menu_items.category` metrics under `docs/ml/` |
+
+**RAG counts (Assessment 2):** domain seed ≥5k rows; embedding backfill `--source all` targets ≈5.6k vectors (menu + ratings + order history). See [`docs/rag/README.md`](./rag/README.md) and [`docs/seed-data-spec.md`](./seed-data-spec.md) §9.
 
 Plain language: RIO must not invent dishes; riders are claimed when the bag is ready (not while cooking); ETA bumps when a kitchen is slammed so customers are not left guessing.
 

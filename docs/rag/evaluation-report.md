@@ -1,6 +1,6 @@
 # RAG evaluation report
 
-Generated: 2026-09-29T19:46:09.049Z
+Generated: 2026-09-30T19:30:03.979Z
 Model: nomic-embed-text · k=5
 
 ## Summary
@@ -9,12 +9,12 @@ Model: nomic-embed-text · k=5
 |-----|----------------|-----------------|
 | matching | 25.0% | 12.5% |
 | extreme | 0.0% | 0.0% |
-| noisy | 10.0% | 5.0% |
+| noisy | 0.0% | 0.0% |
 
 ## Clean vs noisy delta
 
-- Matching: hit-rate 25.0% → noisy 10.0% (noisy set includes matching-derived queries)
-- Matching precision: 12.5% vs noisy 5.0%
+- Matching: hit-rate 25.0% → noisy 0.0% (noisy set includes matching-derived queries)
+- Matching precision: 12.5% vs noisy 0.0%
 
 ## matching
 
@@ -92,7 +92,7 @@ Hit: no · precision@5: 0.000
 
 ### n6
 Query: spicy mutton biryani undr 400 rupees !!!
-Hit: yes · precision@5: 0.400
+Hit: no · precision@5: 0.000
 
 ### n7
 Query: bebinca desrt slce yum

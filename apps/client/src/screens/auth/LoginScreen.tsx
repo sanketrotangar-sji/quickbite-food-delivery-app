@@ -5,10 +5,11 @@ import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } f
 import { signInWithEmail, signInWithGoogle } from '@/api/auth';
 import { supabaseConfigured } from '@/api/supabaseClient';
 import { AppText } from '@/components/AppText';
+import { AuthFrame, GoogleMark } from '@/components/auth/AuthFrame';
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
-import { colors, spacing } from '@/constants/theme';
+import { colors, fonts, spacing } from '@/constants/theme';
 
 export function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -47,34 +48,67 @@ export function LoginScreen() {
   }
 
   return (
-    <Screen>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <View style={styles.hero}>
-            <AppText weight="bold" style={styles.logo}>
-              QuickBite
+    <Screen style={styles.screen}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          <AuthFrame>
+            <AppText heading weight="bold" style={styles.title}>
+              Welcome back
             </AppText>
-            <AppText muted>Food from nearby kitchens, delivered warm.</AppText>
-          </View>
+            <AppText muted style={styles.subtitle}>
+              Sign in to order from nearby kitchens or deliver with QuickBite.
+            </AppText>
 
-          <View style={styles.form}>
-            <TextField
-              label="Email"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
+            <View style={styles.form}>
+              <TextField
+                label="Email"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoComplete="email"
+                textContentType="emailAddress"
+                value={email}
+                onChangeText={setEmail}
+              />
+              <TextField
+                label="Password"
+                secureTextEntry
+                autoComplete="password"
+                textContentType="password"
+                value={password}
+                onChangeText={setPassword}
+              />
+              <Button label="Sign in" onPress={onLogin} loading={loading} style={styles.authBtn} />
+            </View>
+
+            <View style={styles.dividerWrap}>
+              <View style={styles.dividerLine} />
+              <AppText weight="semibold" muted style={styles.dividerLabel}>
+                or
+              </AppText>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <Button
+              label={googleLoading ? 'Redirecting…' : 'Continue with Google'}
+              variant="google"
+              onPress={onGoogle}
+              loading={googleLoading}
+              leading={<GoogleMark />}
+              style={styles.authBtn}
             />
-            <TextField label="Password" secureTextEntry value={password} onChangeText={setPassword} />
-            <Button label="Sign in" onPress={onLogin} loading={loading} />
-            <Button label="Continue with Google" variant="google" onPress={onGoogle} loading={googleLoading} />
-          </View>
 
-          <Link href="/(auth)/signup">
-            <AppText weight="medium" style={styles.link}>
-              New here? Create an account
-            </AppText>
-          </Link>
+            <Link href="/(auth)/signup" style={styles.footerLink}>
+              <AppText muted style={styles.footer}>
+                New here?{' '}
+                <AppText weight="bold" style={styles.footerAccent}>
+                  Create an account
+                </AppText>
+              </AppText>
+            </Link>
+          </AuthFrame>
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
@@ -82,9 +116,51 @@ export function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: spacing.lg, gap: spacing.xl, flexGrow: 1, justifyContent: 'center' },
-  hero: { gap: 8 },
-  logo: { fontSize: 36, color: colors.primary },
-  form: { gap: spacing.md },
-  link: { textAlign: 'center', color: colors.secondary },
+  screen: { paddingTop: 0 },
+  flex: { flex: 1 },
+  scroll: { flexGrow: 1 },
+  title: {
+    fontSize: 24,
+    textAlign: 'center',
+    fontFamily: fonts.heading,
+  },
+  subtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  form: {
+    marginTop: spacing.md,
+    gap: spacing.md,
+  },
+  authBtn: { minHeight: 44 },
+  dividerWrap: {
+    marginVertical: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.border,
+  },
+  dividerLabel: {
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  footerLink: {
+    marginTop: spacing.md,
+    alignSelf: 'center',
+  },
+  footer: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  footerAccent: {
+    color: colors.primary,
+    fontSize: 14,
+  },
 });

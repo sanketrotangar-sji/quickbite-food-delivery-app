@@ -26,9 +26,11 @@ export {
   isKitchenStatus,
   isPartner,
   nextKitchenStatus,
+  nextRiderStatus,
   pickNearestRider,
   shouldRunKitchenLoadBump,
   ticketUrgency,
+  validateAuthForm,
   type RiderCandidate,
   type TicketUrgency,
 } from "../../../supabase/functions/_shared/rules.ts";

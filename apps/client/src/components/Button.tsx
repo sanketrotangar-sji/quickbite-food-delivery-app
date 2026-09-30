@@ -1,4 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet, type ViewStyle } from 'react-native';
+import type { ReactNode } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors, radii, spacing } from '@/constants/theme';
@@ -12,10 +13,14 @@ type Props = {
   disabled?: boolean;
   variant?: Variant;
   style?: ViewStyle;
+  /** Optional leading icon (e.g. Google mark on outline buttons). */
+  leading?: ReactNode;
 };
 
-export function Button({ label, onPress, loading, disabled, variant = 'primary', style }: Props) {
+export function Button({ label, onPress, loading, disabled, variant = 'primary', style, leading }: Props) {
   const isDisabled = disabled || loading;
+  const labelColor =
+    variant === 'primary' || variant === 'secondary' ? colors.white : colors.text;
   return (
     <Pressable
       onPress={onPress}
@@ -30,18 +35,12 @@ export function Button({ label, onPress, loading, disabled, variant = 'primary',
       {loading ? (
         <ActivityIndicator color={variant === 'primary' ? colors.white : colors.primary} />
       ) : (
-        <AppText
-          weight="semibold"
-          style={{
-            color:
-              variant === 'primary'
-                ? colors.white
-                : variant === 'secondary'
-                  ? colors.white
-                  : colors.text,
-          }}>
-          {label}
-        </AppText>
+        <View style={styles.content}>
+          {leading}
+          <AppText weight="semibold" style={{ color: labelColor }}>
+            {label}
+          </AppText>
+        </View>
       )}
     </Pressable>
   );
@@ -54,6 +53,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   pressed: { opacity: 0.88, transform: [{ scale: 0.99 }] },
   disabled: { opacity: 0.5 },

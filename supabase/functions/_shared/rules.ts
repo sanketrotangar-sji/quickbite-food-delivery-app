@@ -55,6 +55,28 @@ export function nextKitchenStatus(status: OrderStatus): "preparing" | "ready" | 
   return null;
 }
 
+/** Rider-legal advance: ready → out_for_delivery → delivered. */
+export function nextRiderStatus(status: OrderStatus): "out_for_delivery" | "delivered" | null {
+  if (status === "ready") return "out_for_delivery";
+  if (status === "out_for_delivery") return "delivered";
+  return null;
+}
+
+/** Client-side auth form checks before calling Supabase Auth. */
+export function validateAuthForm(input: {
+  email: string;
+  password: string;
+  fullName?: string;
+  requireName?: boolean;
+}): string | null {
+  const email = input.email.trim();
+  const password = input.password;
+  if (!email || !email.includes("@")) return "Enter a valid email.";
+  if (password.length < 6) return "Password must be at least 6 characters.";
+  if (input.requireName && !input.fullName?.trim()) return "Name is required.";
+  return null;
+}
+
 /** Mirrors kitchen-load cron: skip restaurant when still in cooldown. */
 export function shouldRunKitchenLoadBump(
   openOrderCount: number,

@@ -69,9 +69,11 @@ supabase functions deploy rio
 ### Intelligence / RAG (after seed)
 
 1. Install Ollama and pull embeddings: `ollama pull nomic-embed-text`
-2. Backfill vectors: `npm run embeddings:backfill -- --source menu_items` then `--source ratings`
-3. Smoke-test: `npm run intelligence:verify`
-4. Optional offline classifier: see [`docs/ml/README.md`](./ml/README.md)
+2. Apply migrations (includes `match_embeddings` for order history): `npm run db:push`
+3. Backfill vectors (≥5k on full seed): `npm run embeddings:backfill -- --source all`
+4. Smoke-test: `npm run intelligence:verify`
+5. Optional offline classifier: see [`docs/ml/README.md`](./ml/README.md)
+6. RAG eval report: `npm run rag:eval` → [`docs/rag/evaluation-report.md`](./rag/evaluation-report.md)
 
 Cloud edge functions cannot reach `127.0.0.1` on your laptop — set `OLLAMA_BASE_URL` to a host the edge runtime can call. Local `supabase functions serve` can use `http://host.docker.internal:11434` (see `.env.example`).
 

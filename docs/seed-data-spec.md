@@ -394,24 +394,36 @@ limit 20;
 
 Requires local Ollama with `nomic-embed-text` pulled, plus `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`.
 
+Assessment 2 RAG needs a **≥5,000-row embedding corpus**. On the seed contract that is approximately:
+
+| source_table | Approx rows | Text used |
+|--------------|------------:|-----------|
+| `menu_items` | 350 | `name · category · description` |
+| `ratings` | 450 | `comment`, else `Food rating N/5` |
+| `orders` | 750 | status · kitchen · delivery address |
+| `order_items` | 1,900 | dish line · qty · price · kitchen · order status |
+| `order_status_history` | ~2,200 | status · kitchen · timestamp |
+| **Total** | **~5,650** | |
+
+Domain seed (all tables) is still **~6.5k–7k** rows including profiles, carts, etc. Live order tools also read Postgres directly; vectors ground RIO `retrieve_context`.
+
 ```bash
-# Preferred (Node — no Deno required)
+# Preferred (Node — no Deno required). One shot for all RAG sources:
+npm run embeddings:backfill -- --source all
+
+# Or per table:
 npm run embeddings:backfill -- --source menu_items
 npm run embeddings:backfill -- --source ratings
-
-# Optional Deno twin
-# deno run --allow-net --allow-env supabase/scripts/backfill_embeddings.ts --source menu_items
+npm run embeddings:backfill -- --source orders
+npm run embeddings:backfill -- --source order_items
+npm run embeddings:backfill -- --source order_status_history
 ```
-
-| source_table | Text used |
-|--------------|-----------|
-| `menu_items` | `name · category · description` |
-| `ratings` | `comment`, else `Food rating N/5` |
 
 Model fixed: Ollama **`nomic-embed-text`** → **768** dims. Spot-check:
 
 ```sql
 select source_table, count(*) from embeddings group by 1;
+-- expect sum(count) >= 5000 after a full seed + backfill
 ```
 
 Then verify intelligence RPCs/automations: `npm run intelligence:verify`.

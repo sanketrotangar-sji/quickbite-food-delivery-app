@@ -198,8 +198,12 @@ cp .env.example apps/manager/.env       # VITE_SUPABASE_* from dashboard
 cp apps/client/.env.example apps/client/.env
 
 npm test                                # offline unit + edge; integration if .env set; Playwright skips without browsers
-npm run rag:eval                        # needs Ollama + embeddings backfill — see docs/rag/README.md
+npm run embeddings:backfill -- --source all   # menu + ratings + order history → ≥5k vectors on seed
+npm run rag:eval                        # needs Ollama + embeddings — see docs/rag/README.md
+npm run dct:artifacts                   # refresh docs/dct/ test-run + checklist pointers
 ```
+
+**Assessment 2 RAG story:** domain seed is ≥5,000 rows; the vector index covers menu items, reviews, **and order history** (`orders`, `order_items`, `order_status_history`). Metrics live in [`docs/rag/evaluation-report.md`](./docs/rag/evaluation-report.md) and classifier evidence in [`docs/ml/`](./docs/ml/). Submission packet: [`docs/dct/SUBMISSION.md`](./docs/dct/SUBMISSION.md).
 
 RAG numbers live only in the generated report (do not copy stale metrics into this file).
 
@@ -214,11 +218,13 @@ RAG numbers live only in the generated report (do not copy stale metrics into th
 | `npm run db:push` | Push migrations to linked cloud DB |
 | `npm run functions:serve` | Serve edge functions locally |
 | `npm run functions:deploy` | Deploy notify-new-order, directions, rio |
-| `npm run embeddings:backfill` | Embed menu/ratings into `embeddings` (needs Ollama) |
+| `npm run embeddings:backfill` | Embed menu/ratings/**order history** into `embeddings` (`--source all` for ≥5k on seed; needs Ollama) |
 | `npm run intelligence:verify` | Smoke-test RAG, tickets, auto-assign, kitchen-load |
 | `npm run ml:classify-menu` | Offline sklearn category classifier → `docs/ml/` |
 | `npm run test` | Unit (Vitest) + edge (Deno) + integration + Playwright smoke |
+| `npm run dct:artifacts` | Capture test logs + evidence index → `docs/dct/` |
 | `npm run rag:eval` | RAG retrieval report → [`docs/rag/evaluation-report.md`](./docs/rag/evaluation-report.md) |
+| `npm run dct:artifacts` | Capture unit/edge/integration logs → [`docs/dct/`](./docs/dct/) for DCT submit |
 | `npm run types:client` | Regenerate Expo `database.ts` from cloud schema |
 | `npm run landing` | Start marketing site (`apps/landing`) |
 | `npm run dashboard` | Start web dashboard (`apps/manager`) |

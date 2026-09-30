@@ -1,25 +1,17 @@
 /**
- * Batch-embed rows from a source table into public.embeddings.
+ * Deno twin of scripts/backfill-embeddings.mjs — prefer the Node script for full sources.
  *
- * Always uses Ollama nomic-embed-text (768-d) — independent of chat provider.
- * Run after seed data exists:
+ *   deno run --allow-net --allow-env --allow-read supabase/scripts/backfill_embeddings.ts --source menu_items
  *
- *   OLLAMA_BASE_URL=http://127.0.0.1:11434 \
- *   SUPABASE_URL=... \
- *   SUPABASE_SERVICE_ROLE_KEY=... \
- *   deno run --allow-net --allow-env supabase/scripts/backfill_embeddings.ts --source menu_items
- *
- * Supported --source: menu_items | ratings
+ * Supported: menu_items | ratings | orders | order_items | order_status_history | all
  */
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { createHash } from "node:crypto";
-import {
-  EMBEDDING_DIMENSIONS,
-  embedText,
-} from "../functions/_shared/embeddings.ts";
+import { EMBEDDING_DIMENSIONS, embedText } from "../functions/_shared/embeddings.ts";
 
-type Source = "menu_items" | "ratings";
+type Source = "menu_items" | "ratings" | "orders" | "order_items" | "order_status_history";
+const SOURCES: Source[] = ["menu_items", "ratings", "orders", "order_items", "order_status_history"];
 
 function argValue(flag: string): string | null {
   const idx = Deno.args.indexOf(flag);
@@ -31,113 +23,139 @@ function hashContent(text: string) {
   return createHash("sha256").update(text).digest("hex");
 }
 
-function menuText(row: {
-  name: string;
-  category: string | null;
-  description: string | null;
-}) {
-  return [row.name, row.category, row.description].filter(Boolean).join(" · ").trim();
-}
-
-function ratingText(row: { comment: string | null; food_rating: number }) {
-  const comment = row.comment?.trim();
-  if (comment) return comment;
-  return `Food rating ${row.food_rating}/5`;
-}
-
-async function loadExisting(
-  db: ReturnType<typeof createClient>,
-  source: Source,
-) {
-  const { data, error } = await db
-    .from("embeddings")
-    .select("source_id, content_hash")
-    .eq("source_table", source);
+async function loadExisting(db: ReturnType<typeof createClient>, source: Source) {
+  const { data, error } = await db.from("embeddings").select("source_id, content_hash").eq("source_table", source);
   if (error) throw new Error(error.message);
   const map = new Map<string, string>();
-  for (const row of data ?? []) {
-    map.set(row.source_id as string, row.content_hash as string);
-  }
+  for (const row of data ?? []) map.set(String(row.source_id), row.content_hash as string);
   return map;
 }
 
-async function backfillMenuItems(db: ReturnType<typeof createClient>) {
-  const existing = await loadExisting(db, "menu_items");
-  const { data, error } = await db
-    .from("menu_items")
-    .select("id, name, category, description");
-  if (error) throw new Error(error.message);
-
+async function upsertRows(
+  db: ReturnType<typeof createClient>,
+  source: Source,
+  rows: { id: string | number; text: string }[],
+) {
+  const existing = await loadExisting(db, source);
   let upserted = 0;
   let skipped = 0;
-  for (const row of data ?? []) {
-    const text = menuText(row);
-    if (!text) {
+  for (const row of rows) {
+    if (!row.text) {
       skipped += 1;
       continue;
     }
-    const contentHash = hashContent(text);
-    if (existing.get(row.id) === contentHash) {
+    const contentHash = hashContent(row.text);
+    const sid = String(row.id);
+    if (existing.get(sid) === contentHash) {
       skipped += 1;
       continue;
     }
-    const embedding = await embedText(text);
+    const embedding = await embedText(row.text);
     if (embedding.length !== EMBEDDING_DIMENSIONS) {
-      throw new Error(`Bad embedding length for menu_items ${row.id}`);
+      throw new Error(`Bad embedding length for ${source} ${sid}`);
     }
-    const { error: upsertError } = await db.from("embeddings").upsert(
+    const { error } = await db.from("embeddings").upsert(
       {
-        source_table: "menu_items",
-        source_id: row.id,
+        source_table: source,
+        source_id: sid,
         content_hash: contentHash,
         embedding: `[${embedding.join(",")}]`,
       },
       { onConflict: "source_table,source_id" },
     );
-    if (upsertError) throw new Error(upsertError.message);
+    if (error) throw new Error(error.message);
     upserted += 1;
-    console.log(`menu_items ${row.id} upserted`);
   }
-  return { upserted, skipped, total: data?.length ?? 0 };
+  return { upserted, skipped, total: rows.length };
 }
 
-async function backfillRatings(db: ReturnType<typeof createClient>) {
-  const existing = await loadExisting(db, "ratings");
+async function backfill(db: ReturnType<typeof createClient>, source: Source) {
+  if (source === "menu_items") {
+    const { data, error } = await db.from("menu_items").select("id, name, category, description");
+    if (error) throw new Error(error.message);
+    return upsertRows(
+      db,
+      source,
+      (data ?? []).map((r) => ({
+        id: r.id as string,
+        text: [r.name, r.category, r.description].filter(Boolean).join(" · ").trim(),
+      })),
+    );
+  }
+  if (source === "ratings") {
+    const { data, error } = await db.from("ratings").select("id, comment, food_rating");
+    if (error) throw new Error(error.message);
+    return upsertRows(
+      db,
+      source,
+      (data ?? []).map((r) => ({
+        id: r.id as string,
+        text: (r.comment as string | null)?.trim() || `Food rating ${r.food_rating}/5`,
+      })),
+    );
+  }
+  if (source === "orders") {
+    const { data, error } = await db.from("orders").select("id, status, delivery_address, notes, restaurants(name)");
+    if (error) throw new Error(error.message);
+    return upsertRows(
+      db,
+      source,
+      (data ?? []).map((r: any) => ({
+        id: r.id,
+        text: [
+          `Order ${String(r.id).replace(/-/g, "").slice(0, 6)}`,
+          r.status,
+          r.restaurants?.name,
+          r.delivery_address,
+          r.notes,
+        ]
+          .filter(Boolean)
+          .join(" · ")
+          .trim(),
+      })),
+    );
+  }
+  if (source === "order_items") {
+    const { data, error } = await db
+      .from("order_items")
+      .select("id, item_name, quantity, unit_price, orders(status, restaurants(name))");
+    if (error) throw new Error(error.message);
+    return upsertRows(
+      db,
+      source,
+      (data ?? []).map((r: any) => ({
+        id: r.id,
+        text: [r.item_name, `x${r.quantity}`, `₹${r.unit_price}`, r.orders?.restaurants?.name, r.orders?.status]
+          .filter(Boolean)
+          .join(" · ")
+          .trim(),
+      })),
+    );
+  }
   const { data, error } = await db
-    .from("ratings")
-    .select("id, comment, food_rating");
+    .from("order_status_history")
+    .select("id, status, changed_at, orders(restaurants(name))");
   if (error) throw new Error(error.message);
-
-  let upserted = 0;
-  let skipped = 0;
-  for (const row of data ?? []) {
-    const text = ratingText(row);
-    const contentHash = hashContent(text);
-    if (existing.get(row.id) === contentHash) {
-      skipped += 1;
-      continue;
-    }
-    const embedding = await embedText(text);
-    const { error: upsertError } = await db.from("embeddings").upsert(
-      {
-        source_table: "ratings",
-        source_id: row.id,
-        content_hash: contentHash,
-        embedding: `[${embedding.join(",")}]`,
-      },
-      { onConflict: "source_table,source_id" },
-    );
-    if (upsertError) throw new Error(upsertError.message);
-    upserted += 1;
-    console.log(`ratings ${row.id} upserted`);
-  }
-  return { upserted, skipped, total: data?.length ?? 0 };
+  return upsertRows(
+    db,
+    source,
+    (data ?? []).map((r: any) => ({
+      id: r.id,
+      text: [`Status ${r.status}`, r.orders?.restaurants?.name, String(r.changed_at ?? "").slice(0, 16)]
+        .filter(Boolean)
+        .join(" · ")
+        .trim(),
+    })),
+  );
 }
 
-const source = (argValue("--source") ?? "menu_items") as Source;
-if (source !== "menu_items" && source !== "ratings") {
-  console.error("Usage: --source menu_items|ratings");
-  Deno.exit(1);
+const sourceArg = argValue("--source") ?? "menu_items";
+const sources: Source[] = sourceArg === "all" ? SOURCES : [sourceArg as Source];
+for (const s of sources) {
+  if (!SOURCES.includes(s)) {
+    console.error(`Usage: --source ${SOURCES.join("|")}|all`);
+    Deno.exit(1);
+  }
 }
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -155,9 +173,8 @@ const db = createClient(supabaseUrl, serviceKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-console.log(`Backfilling embeddings for ${source}…`);
-const result =
-  source === "menu_items" ? await backfillMenuItems(db) : await backfillRatings(db);
-console.log(
-  `Done. total=${result.total} upserted=${result.upserted} skipped=${result.skipped}`,
-);
+for (const source of sources) {
+  console.log(`Backfilling embeddings for ${source}…`);
+  const result = await backfill(db, source);
+  console.log(`Done. total=${result.total} upserted=${result.upserted} skipped=${result.skipped}`);
+}

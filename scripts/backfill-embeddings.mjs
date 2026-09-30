@@ -6,7 +6,9 @@
  *   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... \
  *   node scripts/backfill-embeddings.mjs --source menu_items
  *
- *   node scripts/backfill-embeddings.mjs --source ratings
+ * Sources: menu_items | ratings | orders | order_items | order_status_history | all
+ *
+ * Seed targets ≈ 350 + 450 + 750 + 1900 + ~2200 ≈ 5,650 embedding rows (Assessment 2 RAG ≥5k).
  */
 
 import { createHash } from 'node:crypto';
@@ -24,6 +26,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const EMBEDDING_MODEL = 'nomic-embed-text';
 const EMBEDDING_DIMENSIONS = 768;
+
+const SOURCES = ['menu_items', 'ratings', 'orders', 'order_items', 'order_status_history'];
 
 function loadEnvFile(path) {
   if (!existsSync(path)) return;
@@ -65,6 +69,35 @@ function ratingText(row) {
   return `Food rating ${row.food_rating}/5`;
 }
 
+function orderText(row) {
+  const kitchen = row.restaurants?.name ?? row.restaurant_name ?? '';
+  return [
+    `Order ${String(row.id).replace(/-/g, '').slice(0, 6)}`,
+    row.status,
+    kitchen,
+    row.delivery_address,
+    row.notes,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+    .trim();
+}
+
+function orderItemText(row) {
+  const kitchen = row.orders?.restaurants?.name ?? row.restaurant_name ?? '';
+  const status = row.orders?.status ?? '';
+  return [row.item_name, `x${row.quantity}`, `₹${row.unit_price}`, kitchen, status]
+    .filter(Boolean)
+    .join(' · ')
+    .trim();
+}
+
+function statusHistoryText(row) {
+  const kitchen = row.orders?.restaurants?.name ?? '';
+  const when = row.changed_at ? String(row.changed_at).slice(0, 16) : '';
+  return [`Status ${row.status}`, kitchen, when].filter(Boolean).join(' · ').trim();
+}
+
 async function embedText(text) {
   const base = (process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434').replace(/\/+$/, '');
   const response = await fetch(`${base}/api/embed`, {
@@ -88,13 +121,100 @@ async function embedText(text) {
   return vector.map(Number);
 }
 
-const source = argValue('--source') || 'menu_items';
-if (source !== 'menu_items' && source !== 'ratings') {
-  console.error('Usage: --source menu_items|ratings');
-  process.exit(1);
+async function loadRows(db, source) {
+  if (source === 'menu_items') {
+    const { data, error } = await db.from('menu_items').select('id, name, category, description');
+    if (error) throw new Error(error.message);
+    return { rows: data || [], textOf: menuText };
+  }
+  if (source === 'ratings') {
+    const { data, error } = await db.from('ratings').select('id, comment, food_rating');
+    if (error) throw new Error(error.message);
+    return { rows: data || [], textOf: ratingText };
+  }
+  if (source === 'orders') {
+    const { data, error } = await db
+      .from('orders')
+      .select('id, status, delivery_address, notes, restaurants(name)');
+    if (error) throw new Error(error.message);
+    return { rows: data || [], textOf: orderText };
+  }
+  if (source === 'order_items') {
+    const { data, error } = await db
+      .from('order_items')
+      .select('id, item_name, quantity, unit_price, orders(status, restaurants(name))');
+    if (error) throw new Error(error.message);
+    return { rows: data || [], textOf: orderItemText };
+  }
+  if (source === 'order_status_history') {
+    const { data, error } = await db
+      .from('order_status_history')
+      .select('id, status, changed_at, orders(restaurants(name))');
+    if (error) throw new Error(error.message);
+    return { rows: data || [], textOf: statusHistoryText };
+  }
+  throw new Error(`Unknown source ${source}`);
 }
 
-const url = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL || '').replace(/\/$/, '');
+async function backfillSource(db, source) {
+  const { data: existingRows, error: exErr } = await db
+    .from('embeddings')
+    .select('source_id, content_hash')
+    .eq('source_table', source);
+  if (exErr) throw new Error(exErr.message);
+  const existing = new Map((existingRows || []).map((r) => [String(r.source_id), r.content_hash]));
+
+  const { rows, textOf } = await loadRows(db, source);
+  console.log(`Backfilling ${source}: ${rows.length} rows…`);
+  let upserted = 0;
+  let skipped = 0;
+
+  for (const row of rows) {
+    const text = textOf(row);
+    if (!text) {
+      skipped += 1;
+      continue;
+    }
+    const contentHash = hashContent(text);
+    const sourceId = String(row.id);
+    if (existing.get(sourceId) === contentHash) {
+      skipped += 1;
+      continue;
+    }
+    const embedding = await embedText(text);
+    const { error } = await db.from('embeddings').upsert(
+      {
+        source_table: source,
+        source_id: sourceId,
+        content_hash: contentHash,
+        embedding: `[${embedding.join(',')}]`,
+      },
+      { onConflict: 'source_table,source_id' },
+    );
+    if (error) throw new Error(error.message);
+    upserted += 1;
+    if (upserted % 25 === 0) console.log(`  upserted ${upserted}…`);
+  }
+
+  console.log(`Done ${source}. total=${rows.length} upserted=${upserted} skipped=${skipped}`);
+  return { total: rows.length, upserted, skipped };
+}
+
+const sourceArg = argValue('--source') || 'menu_items';
+const sources = sourceArg === 'all' ? SOURCES : [sourceArg];
+for (const s of sources) {
+  if (!SOURCES.includes(s)) {
+    console.error(`Usage: --source ${SOURCES.join('|')}|all`);
+    process.exit(1);
+  }
+}
+
+const url = (
+  process.env.SUPABASE_URL ||
+  process.env.VITE_SUPABASE_URL ||
+  process.env.EXPO_PUBLIC_SUPABASE_URL ||
+  ''
+).replace(/\/$/, '');
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !key) {
   console.error('Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
@@ -106,52 +226,13 @@ const db = createClient(url, key, {
   realtime: { transport: WebSocket },
 });
 
-const { data: existingRows, error: exErr } = await db
-  .from('embeddings')
-  .select('source_id, content_hash')
-  .eq('source_table', source);
-if (exErr) throw new Error(exErr.message);
-const existing = new Map((existingRows || []).map((r) => [r.source_id, r.content_hash]));
-
-let rows = [];
-if (source === 'menu_items') {
-  const { data, error } = await db.from('menu_items').select('id, name, category, description');
-  if (error) throw new Error(error.message);
-  rows = data || [];
-} else {
-  const { data, error } = await db.from('ratings').select('id, comment, food_rating');
-  if (error) throw new Error(error.message);
-  rows = data || [];
+let grand = { total: 0, upserted: 0, skipped: 0 };
+for (const source of sources) {
+  const result = await backfillSource(db, source);
+  grand.total += result.total;
+  grand.upserted += result.upserted;
+  grand.skipped += result.skipped;
 }
-
-console.log(`Backfilling ${source}: ${rows.length} rows…`);
-let upserted = 0;
-let skipped = 0;
-
-for (const row of rows) {
-  const text = source === 'menu_items' ? menuText(row) : ratingText(row);
-  if (!text) {
-    skipped += 1;
-    continue;
-  }
-  const contentHash = hashContent(text);
-  if (existing.get(row.id) === contentHash) {
-    skipped += 1;
-    continue;
-  }
-  const embedding = await embedText(text);
-  const { error } = await db.from('embeddings').upsert(
-    {
-      source_table: source,
-      source_id: row.id,
-      content_hash: contentHash,
-      embedding: `[${embedding.join(',')}]`,
-    },
-    { onConflict: 'source_table,source_id' },
-  );
-  if (error) throw new Error(error.message);
-  upserted += 1;
-  if (upserted % 25 === 0) console.log(`  upserted ${upserted}…`);
+if (sources.length > 1) {
+  console.log(`All sources. total=${grand.total} upserted=${grand.upserted} skipped=${grand.skipped}`);
 }
-
-console.log(`Done. total=${rows.length} upserted=${upserted} skipped=${skipped}`);

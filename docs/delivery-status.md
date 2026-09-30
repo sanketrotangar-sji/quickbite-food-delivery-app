@@ -39,7 +39,7 @@ npx eas-cli build:list -p android --limit 5
 
 ## Quarantine (root `_delivery_quarantine/`)
 
-Moved here instead of deleting: Playwright `test-results`, `REMAINING.md`, root `assets/`, `tmp/`, seed CSV/bundle with demo passwords, assignment notes.
+Moved here instead of deleting: Playwright `test-results`, `REMAINING.md`, `tmp/`, seed CSV/bundle with demo passwords, assignment notes. Root `assets/` (README screenshots + `image.png`) stays in-repo — do not quarantine.
 
 ## Accepted gaps
 

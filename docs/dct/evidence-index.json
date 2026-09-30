@@ -1,0 +1,10 @@
+{
+  "captured_at": "2026-09-30T19:03:10.723Z",
+  "unit_exit_code": 0,
+  "edge_exit_code": 0,
+  "integration_exit_code": 0,
+  "rag_evaluation_report": "docs/rag/evaluation-report.md",
+  "ml_metrics": "docs/ml/classification-metrics.json",
+  "ml_confusion_matrix_png": "docs/ml/confusion_matrix.png",
+  "ml_accuracy": 0.974
+}

@@ -27,6 +27,7 @@
     "push:verify": "node scripts/verify-push-demo.mjs",
     "ml:classify-menu": "python3 scripts/classify_menu_category.py",
     "rag:eval": "node scripts/eval-rag.mjs",
+    "dct:artifacts": "node scripts/capture-dct-artifacts.mjs",
     "test": "npm run test:unit && npm run test:edge && npm run test:integration && npm run test:e2e",
     "test:unit": "npm run test --workspace=@quickbite/shared && npm run test --workspace=client && npm run test --workspace=dashboard",
     "test:edge": "node scripts/test-edge.mjs",
