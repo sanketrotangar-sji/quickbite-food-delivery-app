@@ -1,0 +1,107 @@
+/* Landing tokens + utilities (Tailwind already loaded via styles.css). */
+
+@theme {
+  --color-qb-bg: #fbf7f2;
+  --color-qb-surface: #ffffff;
+  --color-qb-primary: #f15a24;
+  --color-qb-primary-dark: #d44812;
+  --color-qb-primary-soft: #ffe8dc;
+  --color-qb-text: #1f1c19;
+  --color-qb-muted: #8d877f;
+  --color-qb-border: #efe8e0;
+  --color-qb-forest: #2d4a42;
+  --color-qb-forest-muted: #3f6358;
+  --color-qb-forest-fg: #f7f3ea;
+  --color-qb-success: #4a8b6f;
+  --color-qb-success-soft: #dcece4;
+  --color-qb-danger: #b42318;
+  --radius-card: 1.375rem;
+  --shadow-card: 0 18px 48px rgba(31, 28, 25, 0.1);
+  --shadow-soft: 0 6px 20px rgba(31, 28, 25, 0.06);
+}
+
+.qb-container {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .qb-container {
+    padding-inline: 1.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .qb-container {
+    padding-inline: 2rem;
+  }
+}
+
+.qb-section {
+  padding-block: 5rem;
+}
+
+@media (min-width: 1024px) {
+  .qb-section {
+    padding-block: 6.5rem;
+  }
+}
+
+.qb-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-qb-primary);
+}
+
+.qb-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding-inline: 1.35rem;
+  border-radius: 0.875rem;
+  background: var(--color-qb-primary);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(241, 90, 36, 0.28);
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.qb-btn-primary:hover {
+  background: var(--color-qb-primary-dark);
+}
+
+.qb-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding-inline: 1.35rem;
+  border-radius: 0.875rem;
+  border: 1.5px solid color-mix(in srgb, var(--color-qb-text) 14%, transparent);
+  background: var(--color-qb-surface);
+  color: var(--color-qb-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.qb-btn-secondary:hover {
+  border-color: color-mix(in srgb, var(--color-qb-text) 32%, transparent);
+}
+
+.qb-card {
+  border: 1px solid var(--color-qb-border);
+  border-radius: var(--radius-card);
+  background: var(--color-qb-surface);
+  box-shadow: var(--shadow-soft);
+}

@@ -22,6 +22,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { OrderCard } from "@/components/order-card";
 import { OrderDrawer } from "@/components/order-drawer";
 import { QuickBiteShell } from "@/components/quickbite-shell";
+import { LandingPage } from "@/features/landing/LandingPage";
 import { useAuth } from "@/hooks/use-auth";
 import { useAdvanceOrder, useManagerOrders, useManagerOrderStats } from "@/hooks/use-manager-orders";
 import { useManagerMenu, useToggleMenuAvailability } from "@/hooks/use-manager-menu";
@@ -50,24 +51,42 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Restaurant Dashboard — QuickBite" },
+      { title: "QuickBite — Good Food. Brighter Days." },
       {
         name: "description",
         content:
-          "Monitor live orders, restaurant performance, and menu availability with QuickBite.",
+          "Discover local restaurants, order your favourites, and track every delivery in real time — or manage your kitchen on the QuickBite dashboard.",
       },
-      { property: "og:title", content: "Restaurant Dashboard — QuickBite" },
+      { property: "og:title", content: "QuickBite — Good Food. Brighter Days." },
       {
         property: "og:description",
         content:
-          "Monitor live orders, restaurant performance, and menu availability with QuickBite.",
+          "Discover local restaurants, order your favourites, and track every delivery in real time.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Dashboard,
+  component: IndexPage,
 });
+
+function IndexPage() {
+  const { session, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground">
+        Loading QuickBite…
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <LandingPage />;
+  }
+
+  return <Dashboard />;
+}
 
 function Dashboard() {
   const now = new Date();

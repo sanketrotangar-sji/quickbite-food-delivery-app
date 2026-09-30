@@ -5,6 +5,8 @@ import { isAdmin, isPartner } from '@/api/profiles';
 import { useAuth } from '@/hooks/use-auth';
 
 const AUTH_PATHS = new Set(['/login', '/signup']);
+/** Public marketing home + auth screens — no session required. */
+const PUBLIC_PATHS = new Set(['/', '/login', '/signup']);
 
 function isAdminPath(pathname: string) {
   return pathname === '/admin' || pathname.startsWith('/admin/');
@@ -15,6 +17,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isAuthRoute = AUTH_PATHS.has(pathname);
+  const isPublicRoute = PUBLIC_PATHS.has(pathname);
   const isBlocked = pathname === '/blocked';
   const adminRoute = isAdminPath(pathname);
   const partner = isPartner(profile);
@@ -23,7 +26,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading) return;
     if (!session) {
-      if (!isAuthRoute) void navigate({ to: '/login' });
+      if (!isPublicRoute) void navigate({ to: '/login' });
       return;
     }
     // Network/profile failure — do not treat as "no access".
@@ -37,7 +40,19 @@ export function AuthGate({ children }: { children: ReactNode }) {
       return;
     }
     if (!isBlocked) void navigate({ to: '/blocked' });
-  }, [admin, adminRoute, isAuthRoute, isBlocked, loading, navigate, partner, profile, profileError, session]);
+  }, [
+    admin,
+    adminRoute,
+    isAuthRoute,
+    isBlocked,
+    isPublicRoute,
+    loading,
+    navigate,
+    partner,
+    profile,
+    profileError,
+    session,
+  ]);
 
   if (loading) {
     return (
@@ -62,7 +77,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!session) return isAuthRoute ? children : null;
+  if (!session) return isPublicRoute ? children : null;
   if (admin) return adminRoute ? children : null;
   if (partner) return isAuthRoute || isBlocked || adminRoute ? null : children;
   return isBlocked ? children : null;
