@@ -15,6 +15,8 @@ web-build/
 *.jks
 *.keystore
 credentials.json
+# Packed into EAS local/remote builds when present on disk; never commit.
+# (Keep untracked — do not `git add` this file.)
 google-services.json
 
 # Dependencies & builds

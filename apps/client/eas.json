@@ -17,6 +17,9 @@
       "environment": "preview",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EAS_BUILD_DISABLE_EXPO_DOCTOR_PHASE": "1"
       }
     },
     "production": {

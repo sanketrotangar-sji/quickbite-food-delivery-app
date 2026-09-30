@@ -37,10 +37,6 @@
         }
       ]
     },
-    "androidNavigationBar": {
-      "backgroundColor": "#F4F1EB",
-      "barStyle": "dark-content"
-    },
     "web": {
       "bundler": "metro",
       "output": "single",
