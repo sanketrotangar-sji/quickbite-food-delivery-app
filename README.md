@@ -221,7 +221,7 @@ RAG numbers live only in the generated report (do not copy stale metrics into th
 | `npm run embeddings:backfill` | Embed menu/ratings/**order history** into `embeddings` (`--source all` for ≥5k on seed; needs Ollama) |
 | `npm run intelligence:verify` | Smoke-test RAG, tickets, auto-assign, kitchen-load |
 | `npm run ml:classify-menu` | Offline sklearn category classifier → `docs/ml/` |
-| `npm run test` | Unit (Vitest) + edge (Deno) + integration + Playwright smoke |
+| `npm run test` | Unit (Vitest) + edge (Deno) + integration + Playwright (login + kitchen happy-path when `PLAYWRIGHT=1`) |
 | `npm run dct:artifacts` | Capture test logs + evidence index → `docs/dct/` |
 | `npm run rag:eval` | RAG retrieval report → [`docs/rag/evaluation-report.md`](./docs/rag/evaluation-report.md) |
 | `npm run dct:artifacts` | Capture unit/edge/integration logs → [`docs/dct/`](./docs/dct/) for DCT submit |

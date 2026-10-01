@@ -54,3 +54,5 @@ _delivery_quarantine/
 supabase/seed-data/generated/auth-users.csv
 supabase/seed-data/generated/seed-bundle.json
 supabase/seed-data/generated/manifest.json
+
+apps/manager/test-results/

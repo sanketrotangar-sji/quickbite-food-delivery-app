@@ -121,48 +121,70 @@ async function embedText(text) {
   return vector.map(Number);
 }
 
+const PAGE_SIZE = 1000;
+
+/** Supabase PostgREST defaults to max 1000 rows — page until exhausted. */
+async function fetchAllPages(buildQuery) {
+  const rows = [];
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const to = from + PAGE_SIZE - 1;
+    const { data, error } = await buildQuery().range(from, to);
+    if (error) throw new Error(error.message);
+    const page = data || [];
+    rows.push(...page);
+    if (page.length < PAGE_SIZE) break;
+  }
+  return rows;
+}
+
 async function loadRows(db, source) {
   if (source === 'menu_items') {
-    const { data, error } = await db.from('menu_items').select('id, name, category, description');
-    if (error) throw new Error(error.message);
-    return { rows: data || [], textOf: menuText };
+    const rows = await fetchAllPages(() =>
+      db.from('menu_items').select('id, name, category, description').order('id'),
+    );
+    return { rows, textOf: menuText };
   }
   if (source === 'ratings') {
-    const { data, error } = await db.from('ratings').select('id, comment, food_rating');
-    if (error) throw new Error(error.message);
-    return { rows: data || [], textOf: ratingText };
+    const rows = await fetchAllPages(() =>
+      db.from('ratings').select('id, comment, food_rating').order('id'),
+    );
+    return { rows, textOf: ratingText };
   }
   if (source === 'orders') {
-    const { data, error } = await db
-      .from('orders')
-      .select('id, status, delivery_address, notes, restaurants(name)');
-    if (error) throw new Error(error.message);
-    return { rows: data || [], textOf: orderText };
+    const rows = await fetchAllPages(() =>
+      db
+        .from('orders')
+        .select('id, status, delivery_address, notes, restaurants(name)')
+        .order('id'),
+    );
+    return { rows, textOf: orderText };
   }
   if (source === 'order_items') {
-    const { data, error } = await db
-      .from('order_items')
-      .select('id, item_name, quantity, unit_price, orders(status, restaurants(name))');
-    if (error) throw new Error(error.message);
-    return { rows: data || [], textOf: orderItemText };
+    const rows = await fetchAllPages(() =>
+      db
+        .from('order_items')
+        .select('id, item_name, quantity, unit_price, orders(status, restaurants(name))')
+        .order('id'),
+    );
+    return { rows, textOf: orderItemText };
   }
   if (source === 'order_status_history') {
-    const { data, error } = await db
-      .from('order_status_history')
-      .select('id, status, changed_at, orders(restaurants(name))');
-    if (error) throw new Error(error.message);
-    return { rows: data || [], textOf: statusHistoryText };
+    const rows = await fetchAllPages(() =>
+      db
+        .from('order_status_history')
+        .select('id, status, changed_at, orders(restaurants(name))')
+        .order('id'),
+    );
+    return { rows, textOf: statusHistoryText };
   }
   throw new Error(`Unknown source ${source}`);
 }
 
 async function backfillSource(db, source) {
-  const { data: existingRows, error: exErr } = await db
-    .from('embeddings')
-    .select('source_id, content_hash')
-    .eq('source_table', source);
-  if (exErr) throw new Error(exErr.message);
-  const existing = new Map((existingRows || []).map((r) => [String(r.source_id), r.content_hash]));
+  const existingRows = await fetchAllPages(() =>
+    db.from('embeddings').select('source_id, content_hash').eq('source_table', source).order('source_id'),
+  );
+  const existing = new Map(existingRows.map((r) => [String(r.source_id), r.content_hash]));
 
   const { rows, textOf } = await loadRows(db, source);
   console.log(`Backfilling ${source}: ${rows.length} rows…`);

@@ -25,8 +25,8 @@ npm run dct:artifacts
    - [`test-run-edge.md`](./test-run-edge.md) — Deno `_shared` tests (needs local `deno` or network for `npx deno`)
    - [`test-run-integration.md`](./test-run-integration.md) — service-role order happy path (needs seeded ready/unassigned orders + `SUPABASE_SERVICE_ROLE_KEY`)
    - Index: [`evidence-index.json`](./evidence-index.json)
-   - Playwright: `PLAYWRIGHT=1 npm run test:e2e` (login smoke + Google CTA)
-6. **Credentials** — sample role logins in [`supabase/seed-data/generated/manifest.json`](../../supabase/seed-data/generated/manifest.json) (`sample_logins`).
+   - Playwright: `PLAYWRIGHT=1 npm run test:e2e` (login smoke + kitchen Accept→Ready; needs `SUPABASE_SERVICE_ROLE_KEY`)
+6. **Credentials** — sample role logins in [`sample-credentials.md`](./sample-credentials.md).
 
 ## RAG ≥5,000 records (how we meet Track 3)
 
@@ -48,5 +48,5 @@ Operator: `supabase db push` (migration `20261001120000_match_embeddings_order_h
 ## Known gaps (honest)
 
 - Customer rating **submit** UI still missing (schema ready).
-- Playwright E2E is login smoke; full UI order path is covered by `tests/integration/order-happy-path.mjs` (service role).
-- RAG food hit-rate on the fixed eval set was ~25% historically — regenerate after backfill.
+- Playwright kitchen E2E covers Accept→Ready on the manager board; full customer app order UI is not Playwright-covered (Expo). API order→delivered is `tests/integration/order-happy-path.mjs`.
+- RAG food hit-rate on the fixed eval set was moderate historically — regenerate after backfill.
