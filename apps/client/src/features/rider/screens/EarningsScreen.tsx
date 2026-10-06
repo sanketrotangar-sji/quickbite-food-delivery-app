@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { Screen } from '@/components/Screen';
 import { colors, formatInr, radii, tabBarInset } from '@/constants/theme';
-import { earningsBars, earningsSnapshot, recentEarnings, useRiderOrders } from '@/features/rider/use-rider-live';
+import { earningsBars, earningsSnapshot, recentEarnings, useRiderHistory } from '@/features/rider/use-rider-live';
 import type { EarningsRange } from '@/features/rider/rider-content';
 
 const RANGES: { id: EarningsRange; label: string }[] = [
@@ -15,9 +15,9 @@ const RANGES: { id: EarningsRange; label: string }[] = [
 ];
 
 export function EarningsScreen() {
-  const orders = useRiderOrders();
+  const historyQuery = useRiderHistory();
   const [range, setRange] = useState<EarningsRange>('today');
-  const history = orders.data?.history ?? [];
+  const history = historyQuery.data ?? [];
   const snapshot = earningsSnapshot(history, range);
   const bars = earningsBars(history, range);
   const recent = recentEarnings(history);

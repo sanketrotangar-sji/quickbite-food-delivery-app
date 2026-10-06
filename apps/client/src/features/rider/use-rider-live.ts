@@ -22,6 +22,7 @@ import { riderTrackingAction } from '@/features/rider/tracking-policy';
 import type { OrderStatus } from '@/constants/orderStatus';
 
 export const riderOrdersKey = ['rider-orders'] as const;
+export const riderHistoryKey = ['rider-history'] as const;
 export const riderNoticesKey = ['rider-notices'] as const;
 
 const FALLBACK_IMAGE = require('../../../assets/images/misal_pav.png');
@@ -196,26 +197,38 @@ export function useRiderOrders() {
     queryKey: [...riderOrdersKey, online] as const,
     queryFn: async () => {
       if (!userId) throw new Error('Not signed in.');
-      const [available, mine, history] = await Promise.all([
-        listAvailableDeliveries(),
-        listMyDeliveries(userId),
-        listDeliveryHistory(userId),
-      ]);
+      const mine = await listMyDeliveries(userId);
+      const available = online ? await listAvailableDeliveries() : [];
       const active = pickActive(mine);
       if (active && online) void startRiderTracking(active.id);
       else void stopRiderTracking();
-      return { available, mine, history };
+      return { available, mine };
     },
     enabled: !!userId,
+    staleTime: 10_000,
     // Pool updates without listening to every orders row globally.
     refetchInterval: online ? 20_000 : false,
+  });
+}
+
+/** Delivered/cancelled history for earnings — not loaded on home. */
+export function useRiderHistory() {
+  const { session } = useAuth();
+  const userId = session?.user.id;
+  return useQuery({
+    queryKey: riderHistoryKey,
+    queryFn: async () => {
+      if (!userId) throw new Error('Not signed in.');
+      return listDeliveryHistory(userId);
+    },
+    enabled: !!userId,
+    staleTime: 30_000,
   });
 }
 
 type RiderOrdersCache = {
   available: RiderDelivery[];
   mine: RiderDelivery[];
-  history: RiderDelivery[];
 };
 
 export function useClaimDelivery() {
@@ -225,29 +238,31 @@ export function useClaimDelivery() {
     mutationFn: claimDelivery,
     onMutate: async (orderId) => {
       await queryClient.cancelQueries({ queryKey: riderOrdersKey });
-      const previous = queryClient.getQueryData<RiderOrdersCache>(riderOrdersKey);
-      if (previous) {
+      const previousEntries = queryClient.getQueriesData<RiderOrdersCache>({ queryKey: riderOrdersKey });
+      queryClient.setQueriesData<RiderOrdersCache>({ queryKey: riderOrdersKey }, (previous) => {
+        if (!previous) return previous;
         const claimed = previous.available.find((order) => order.id === orderId);
-        if (claimed) {
-          queryClient.setQueryData<RiderOrdersCache>(riderOrdersKey, {
-            ...previous,
-            available: previous.available.filter((order) => order.id !== orderId),
-            mine: [
-              {
-                ...claimed,
-                riderId: session?.user.id ?? claimed.riderId,
-                status: claimed.status === 'ready' ? 'ready' : 'preparing',
-                redacted: false,
-              },
-              ...previous.mine,
-            ],
-          });
-        }
-      }
-      return { previous };
+        if (!claimed) return previous;
+        return {
+          ...previous,
+          available: previous.available.filter((order) => order.id !== orderId),
+          mine: [
+            {
+              ...claimed,
+              riderId: session?.user.id ?? claimed.riderId,
+              status: claimed.status === 'ready' ? 'ready' : 'preparing',
+              redacted: false,
+            },
+            ...previous.mine,
+          ],
+        };
+      });
+      return { previousEntries };
     },
     onError: (error, _orderId, context) => {
-      if (context?.previous) queryClient.setQueryData(riderOrdersKey, context.previous);
+      for (const [key, data] of context?.previousEntries ?? []) {
+        queryClient.setQueryData(key, data);
+      }
       Alert.alert('Could not claim', userFacingMessage(error));
     },
     onSuccess: (_data, orderId) => {
@@ -268,30 +283,31 @@ export function useAdvanceRiderOrder() {
     },
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: riderOrdersKey });
-      const previous = queryClient.getQueryData<RiderOrdersCache>(riderOrdersKey);
-      if (previous) {
+      const previousEntries = queryClient.getQueriesData<RiderOrdersCache>({ queryKey: riderOrdersKey });
+      queryClient.setQueriesData<RiderOrdersCache>({ queryKey: riderOrdersKey }, (previous) => {
+        if (!previous) return previous;
         if (input.action === 'start') {
-          queryClient.setQueryData<RiderOrdersCache>(riderOrdersKey, {
+          return {
             ...previous,
             mine: previous.mine.map((order) =>
               order.id === input.id ? { ...order, status: 'out_for_delivery' } : order,
             ),
-          });
-        } else {
-          const delivered = previous.mine.find((order) => order.id === input.id);
-          queryClient.setQueryData<RiderOrdersCache>(riderOrdersKey, {
-            ...previous,
-            mine: previous.mine.filter((order) => order.id !== input.id),
-            history: delivered
-              ? [{ ...delivered, status: 'delivered', deliveredAt: new Date().toISOString() }, ...previous.history]
-              : previous.history,
-          });
+          };
         }
+        return {
+          ...previous,
+          mine: previous.mine.filter((order) => order.id !== input.id),
+        };
+      });
+      if (input.action === 'deliver') {
+        void queryClient.invalidateQueries({ queryKey: riderHistoryKey });
       }
-      return { previous };
+      return { previousEntries };
     },
     onError: (error, _input, context) => {
-      if (context?.previous) queryClient.setQueryData(riderOrdersKey, context.previous);
+      for (const [key, data] of context?.previousEntries ?? []) {
+        queryClient.setQueryData(key, data);
+      }
       Alert.alert('Could not update', userFacingMessage(error));
     },
     onSuccess: (_data, input) => {

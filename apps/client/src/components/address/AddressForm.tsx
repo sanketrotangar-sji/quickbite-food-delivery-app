@@ -7,6 +7,7 @@ import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
 import { colors, radii, spacing } from '@/constants/theme';
+import { ensureForegroundLocationPermission, openSystemAppSettings } from '@/lib/permissions';
 import { defaultNickname, type AddressDraft, type AddressLabel, type SavedAddress } from '@/lib/addresses';
 
 const LABELS: { id: AddressLabel; title: string }[] = [
@@ -39,9 +40,9 @@ export function AddressForm({
     setError('');
     setLocating(true);
     try {
-      const permission = await Location.requestForegroundPermissionsAsync();
-      if (permission.status !== 'granted') {
-        setError('Allow location access to attach a precise delivery pin.');
+      const permission = await ensureForegroundLocationPermission();
+      if (permission !== 'granted') {
+        setError('Location is required for a delivery pin. Enable it in Settings, or enter the address manually.');
         return;
       }
       const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
@@ -162,6 +163,13 @@ export function AddressForm({
         </View>
       </Pressable>
       {error ? <AppText style={styles.error}>{error}</AppText> : null}
+      {error.includes('Settings') ? (
+        <Pressable onPress={() => void openSystemAppSettings()}>
+          <AppText weight="semibold" style={{ color: colors.primary, fontSize: 13 }}>
+            Open system settings
+          </AppText>
+        </Pressable>
+      ) : null}
       <Button label={submitLabel} loading={saving} onPress={() => void save()} />
     </View>
   );
