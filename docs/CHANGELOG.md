@@ -10,6 +10,10 @@
 - `searchRestaurantsUncached`: empty query without veg/max_price returns `QUERY_REQUIRED` instead of dumping ≤40 kitchens.
 - Docs: `docs/06-rio-assistant.md` tool bounds updated.
 
+### P15 — Theme tokens
+- Added `primarySoftMid`, `primaryWash`, `primaryTintBorder`, `stepTrack`/`stepTrackBorder`/`stepLine` to shared brand tokens + client theme.
+- Replaced stray peach/grey hexes in OrderTracking, Rio, Notifications, Cart screens.
+
 ## 2026-10-06 — Phase 4 batch 1 (P4, P5, P6, P20, P8)
 
 ### P4 — RAG PII

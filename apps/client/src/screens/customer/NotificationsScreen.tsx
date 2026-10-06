@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 4,
   },
-  unread: { borderColor: colors.primary, backgroundColor: '#FFF7F3' },
+  unread: { borderColor: colors.primary, backgroundColor: colors.primaryWash },
   body: { lineHeight: 20 },
   time: { fontSize: 11, marginTop: 4 },
 });

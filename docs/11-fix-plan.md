@@ -307,14 +307,14 @@ Provide me steps of how to do supabase backup
 
 
 
-### P15 — Shared design tokens everywhere
+### P15 — Shared design tokens everywhere — **DONE (2026-10-06)**
 
 
 |             |                                                                                        |
 | ----------- | -------------------------------------------------------------------------------------- |
 | **Problem** | Hard-coded hex in OrderTracking, RIO, Notifications vs `brand-tokens`.                 |
 | **Why**     | Header/background look inconsistent.                                                   |
-| **Fix**     | Replace with `colors.`* / tokens; add missing soft variants to `brand-tokens.ts` once. |
+| **Fix**     | Soft/wash/step tokens in `brand-tokens`; screens use `colors.*` (tracking/RIO/cart/notifs). |
 | **Risk**    | Visual diffs — screenshot compare.                                                     |
 | **Effort**  | S–M                                                                                    |
 | **Verify**  | Grep for stray `#FFE` / `#FFF3` in screens ≈ 0.                                        |

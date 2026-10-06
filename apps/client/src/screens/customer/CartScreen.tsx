@@ -259,5 +259,5 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   warnText: { flex: 1, color: colors.primaryDark, fontSize: 13, lineHeight: 18 },
-  addressNeeded: { borderColor: colors.primarySoft, backgroundColor: '#FFF8F4' },
+  addressNeeded: { borderColor: colors.primarySoft, backgroundColor: colors.primaryWash },
 });

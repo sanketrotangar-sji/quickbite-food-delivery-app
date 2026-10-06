@@ -6,6 +6,10 @@ export const brandHex = {
   primary: '#F15A24',
   primaryDark: '#D44812',
   primarySoft: '#FFE8DC',
+  /** Lighter peach washes for cards / unread / address hints */
+  primarySoftMid: '#FFF3ED',
+  primaryWash: '#FFF7F3',
+  primaryTintBorder: '#FDBA74',
   forest: '#2D4A42',
   forestMuted: '#3F6358',
   forestForeground: '#F7F3EA',
@@ -14,6 +18,10 @@ export const brandHex = {
   text: '#1F1C19',
   textMuted: '#8D877F',
   border: '#EFE8E0',
+  /** Neutral tracks for progress steppers */
+  stepTrack: '#EEEEEE',
+  stepTrackBorder: '#E0E0E0',
+  stepLine: '#E8E8E8',
   danger: '#B42318',
   white: '#FFFFFF',
   overlay: 'rgba(58, 56, 52, 0.45)',
