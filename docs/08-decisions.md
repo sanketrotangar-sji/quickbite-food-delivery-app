@@ -41,27 +41,27 @@ Status tag: **CONFIRMED BY YOU** or **INFERRED** (from code/docs only).
 
 ---
 
-## ADR-004 — Single `profiles.role` (current code)
+## ADR-004 — Single `profiles.role` (product + code)
 
 | | |
 |--|--|
-| **Status** | INFERRED (code); **product desire differs — see ADR-005** |
-| **Context** | Multi-role via `user_roles` was hard to reason about; silent downgrades hurt. |
-| **Decision** | One role column; `user_roles` mirrors it; `grant_role` never downgrades precedence (`20260922154000…`, `20260929121000…`). |
-| **Alternatives** | Keep multi-role table as source of truth. |
-| **Consequences** | Simpler RLS helpers; a rider cannot also be a customer on the same account today. |
+| **Status** | CONFIRMED BY YOU (2026-10-06) + matches code |
+| **Context** | Multi-role via `user_roles` was hard to reason about; silent downgrades hurt. You confirmed you do **not** want multi-role. |
+| **Decision** | One role column forever; `user_roles` mirrors it; `grant_role` never downgrades precedence (`20260922154000…`, `20260929121000…`). Need both rider and customer? Use two accounts. |
+| **Alternatives** | Multi-capability flags / multi-role table (rejected). |
+| **Consequences** | Simpler RLS; UX must explain blocked customer/rider sides; no Phase 4 multi-role rewrite. |
 
 ---
 
-## ADR-005 — Desired multi-capability accounts
+## ADR-005 — Multi-capability accounts (superseded)
 
 | | |
 |--|--|
-| **Status** | CONFIRMED BY YOU |
-| **Context** | Riders (and others) should earn **and** order on the platform. |
-| **Decision** | Product direction: support multi-capability (e.g. customer + rider). Implementation TBD in Phase 3/4. |
-| **Alternatives** | Stay single-role forever; force second login. |
-| **Consequences** | Will require RLS/helper rework; supersedes long-term ADR-004. |
+| **Status** | SUPERSEDED — briefly considered, then rejected by you in favour of ADR-004 |
+| **Context** | Earlier note suggested rider+customer on one login. |
+| **Decision** | **Do not implement.** Keep single-role. |
+| **Alternatives** | — |
+| **Consequences** | Docs and Phase 3 proposals omit multi-role work. |
 
 ---
 

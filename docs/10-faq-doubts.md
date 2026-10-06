@@ -25,8 +25,7 @@ SQL RPCs (and shared helpers in `packages/shared` / `_shared/rules.ts`). Diagram
 No. Column privileges + `guard_profile_update` block it. Roles change via admin/owner RPCs (`private.grant_role`). Migrations: `20260919181927_helpers_and_guards.sql`, `20260922154000_single_role_column.sql`.
 
 ### 7. I want to be a rider and still order food. Can I?
-**Product:** yes — you said multi-capability is the goal.  
-**Code today:** no — single `profiles.role`. Tracked as ADR-005 in [`08-decisions.md`](./08-decisions.md).
+**No on one account.** Single-role is intentional (ADR-004). Create a second customer account to order, or stay customer and don’t take the rider role on that login.
 
 ### 8. Where are theme colours?
 Shared hex: `packages/shared/src/brand-tokens.ts`. Mobile wraps them in `apps/client/src/constants/theme.ts`. Manager: `apps/manager/src/styles.css`. Some screens still hard-code near-duplicate oranges (audit Medium).
@@ -87,7 +86,7 @@ Copy the template at the bottom; answer yourself or ask in chat referencing this
 | 1 | Cloud is what you use; local optional / surprising to you. |
 | 2 | OK to rebuild seed later with fresh characters; don’t fetishize keeping bulk junk (be careful with admin). |
 | 3 | Proper RAG needed; current corpus not trusted. |
-| 4 | Want multi-role capability (rider + customer etc.). |
+| 4 | **Single-role** only — multi-role rejected. |
 | 5 | Design proper agent architecture (not tool-count games). |
 | 6 | No idea on service role deploy — code shows unused helper. |
 | 7 | Yes, implement order acceptance timeout. |

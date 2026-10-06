@@ -58,7 +58,7 @@ mindmap
 Mobile (customer + rider), web dashboard (owner/manager/admin), landing. All talk to **one** Supabase project.
 
 **Auth makes the person; `profiles.role` opens the doors.**  
-Signup always creates a **customer**. Higher roles are granted later. Today: **one role per account**. You want **multi-role later** (rider who also orders).
+Signup always creates a **customer**. Higher roles are granted later. **One role per account forever** (CONFIRMED) — need another role? Separate login.
 
 **Customers never UPDATE `orders` directly.**  
 Cart → `place_order` → kitchen RPC → rider claim/status RPCs. History is a trigger. That is the spine of the product.
@@ -75,7 +75,7 @@ You develop against cloud Supabase. Local Docker is optional. Android id `com.sj
 **Migrations are history; don’t rewrite them.**  
 Fix with new migration files. Seeds and quarantine are separate from schema.
 
-**Next hardening:** security (RAG + webhook), seed cleanliness, multi-role design, order timeout, then polish.
+**Next hardening:** security (RAG + webhook), seed cleanliness, order timeout, then polish (see `11-fix-plan.md`).
 
 ---
 

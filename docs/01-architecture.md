@@ -19,8 +19,7 @@ QuickBite is a **food ordering and delivery platform** with five human roles:
 
 Everyone starts as a **customer** when they sign up. Higher roles are granted after applications or invites (see flows).
 
-**Your product intent (CONFIRMED BY YOU):** a person should eventually be able to **earn as a rider and also order as a customer** (multi-capability).  
-**What the code does today:** a **single** `profiles.role` — one primary role per account (`20260922154000_single_role_column.sql`). That is a known gap between desire and implementation (ADR in `08-decisions.md`).
+**Product + code (CONFIRMED BY YOU):** **single-role** design — one `profiles.role` per account (`20260922154000_single_role_column.sql`). A rider account does not also act as a customer on the same login (and likewise for other roles). Separate accounts if someone needs both.
 
 ---
 
@@ -205,7 +204,7 @@ Before adding features, harden:
 
 1. Security (RLS gaps, RAG PII, webhook).  
 2. Data quality (seed vs real, constraints).  
-3. Clear role model (multi-role product intent vs single-role code).  
+3. Keep **single-role** rules clear in UX (blocked screens when the wrong app side is opened).  
 4. Observability and release path (EAS APK you already use).  
 5. Order acceptance timeout (**CONFIRMED BY YOU** — build it).
 

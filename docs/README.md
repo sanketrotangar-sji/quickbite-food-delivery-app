@@ -2,7 +2,7 @@
 
 This folder is the **learning map** for the codebase. Read in order if you are new; jump via the tables if you already know what you need.
 
-**Phase status:** Phase 1 audit + Phase 2 documentation are done. Phase 3 (fix proposals) waits for your approval of proposal numbers. Phase 4 applies only approved items.
+**Phase status:** Phases 1–3 done. Approve specific numbers in [`11-fix-plan.md`](./11-fix-plan.md) before Phase 4.
 
 ---
 
@@ -31,7 +31,7 @@ This folder is the **learning map** for the codebase. Read in order if you are n
 | [`08-decisions.md`](./08-decisions.md) | Architecture Decision Records (CONFIRMED vs INFERRED). |
 | [`09-glossary.md`](./09-glossary.md) | Plain-language dictionary. |
 | [`10-faq-doubts.md`](./10-faq-doubts.md) | Beginner Q&A + your ongoing doubts. |
-| *Phase 3 (later)* | `11-fix-plan.md` — numbered proposals only after you ask. |
+| [`11-fix-plan.md`](./11-fix-plan.md) | Phase 3 numbered fix proposals — approve IDs before Phase 4. |
 
 ### Supporting / topic folders
 
@@ -58,7 +58,7 @@ This folder is the **learning map** for the codebase. Read in order if you are n
 | Database home | Cloud Supabase is what you use; local Docker is optional via CLI | `01`, `08` |
 | Seed wipe | OK to rebuild later with fresh test characters (keep admin careful) | Phase 3 seed plan |
 | RAG | Need a **proper** RAG; current corpus is not trusted as “correct” | `06`, `08` |
-| Roles | You want **multi-role** (e.g. rider can also order as customer) — code today is **single-role** | `01`, `04`, `08` |
+| Roles | **Single-role** forever (one `profiles.role` per account) — CONFIRMED | `01`, `04`, `08` |
 | RIO | Needs a deliberate agent architecture (not just 9 vs 10 tools) | `06` |
 | Service role in manager | Unknown to you; code shows helper exists but **no route imports it** | `08`, `10` |
 | Order timeout | **Yes — implement** auto-cancel / timeout for ignored `placed` orders | `05`, `08` |

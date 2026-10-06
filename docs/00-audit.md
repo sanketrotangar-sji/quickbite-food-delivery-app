@@ -454,7 +454,7 @@ Legend: **R** read, **W** write (insert/update/delete as allowed), **RPC** only 
 | Can a rider see orders that are not ready? | Assigned rider can see their row at any status. Unclaimed pool includes `preparing` **and** `ready`.                                                                                                                              | same + claim RPC                           |
 | Can a user change their own role?          | **No** via client: column privilege + trigger. Role changes only through `private.grant_role` (revoked from clients).                                                                                                             | helpers + `20260922154000…`                |
 | Can signup pick admin?                     | **No** — `handle_new_user` always inserts `customer`.                                                                                                                                                                             | `20260921133100…` L254–271                 |
-| Service role / secrets in client?          | **Not in Expo/Vite public env.** Client uses `EXPO_PUBLIC_`* anon; manager browser uses `VITE_*`. Service role appears in root `.env` (gitignored), scripts, edge, and `apps/manager/src/integrations/supabase/client.server.ts`. | `.env.example`, `.gitignore`               |
+| Service role / secrets in client?          | **Not in Expo/Vite public env.** Client uses `EXPO_PUBLIC_`* anon; manager browser uses `VITE_`*. Service role appears in root `.env` (gitignored), scripts, edge, and `apps/manager/src/integrations/supabase/client.server.ts`. | `.env.example`, `.gitignore`               |
 | `notify-new-order` JWT off?                | `verify_jwt = false` in `supabase/config.toml` L427–429; function compares `WEBHOOK_SECRET` (hashed). Still a sharp edge if secret is weak.                                                                                       | config + function                          |
 | **RAG PII leak?**                          | **Critical:** `match_embeddings` is `security definer`, granted to `authenticated`, and returns `delivery_address` (and order meta) for `orders` sources to **any** caller who can invoke the RPC — not scoped to “my orders.”    | `20261001120000…` L58–114; grant L160 area |
 
@@ -584,7 +584,7 @@ Legend: **R** read, **W** write (insert/update/delete as allowed), **RPC** only 
 
 **Extra HTTP actions (not LLM tools):** `replace_cart`, confirm place via `placeCustomerOrder` → `place_order` RPC (`rio/index.ts`).
 
-**Unbounded?** No tool does `select `* without a limit on the large catalogs. The risk is **semantic**: `match_embeddings` can return **other customers’ delivery addresses** in RAG payloads (see Critical). Broad `search_restaurants` with empty query still limitted to 40 kitchens.
+**Unbounded?** No tool does `select` * without a limit on the large catalogs. The risk is **semantic**: `match_embeddings` can return **other customers’ delivery addresses** in RAG payloads (see Critical). Broad `search_restaurants` with empty query still limitted to 40 kitchens.
 
 **LLM switching:** Active row in `llm_config` (Groq vs Ollama); keys from edge secrets (`_shared/llm.ts`). Embeddings always Ollama `nomic-embed-text` 768-d (`_shared/embeddings.ts`).
 
@@ -741,25 +741,30 @@ Legend: **R** read, **W** write (insert/update/delete as allowed), **RPC** only 
 
 ## Open Questions — answered (2026-10-06)
 
-| # | Your answer (summary) | How docs treat it |
-|---|----------------------|-------------------|
-| 1 | You work on **cloud**; surprised local Docker also exists in the repo. | Cloud = source of truth; local optional (`01`, ADR-003). Read-only live SQL still needs explicit OK when we need orphan counts. |
-| 2 | Bulk seed neglected careful relevance; OK to rebuild later with fresh test characters / orders (careful with admin). | Flexible wipe+seed in Phase 3 (ADR-016). |
-| 3 | Proper RAG required; current dataset/embeddings not trusted. | Redesign RAG; don’t ship current corpus as “correct” (`06`, ADR-011). |
-| 4 | Want **multi-role** (e.g. rider also customer). | Product ADR-005; code still single-role (ADR-004). |
-| 5 | Design a proper agent architecture (not 9-vs-10 counting). | `06` documents today + redesign direction. |
-| 6 | Unknown if service role is deployed on manager server. | Code: `client.server.ts` exists, **no route imports it** (ADR-014). |
-| 7 | **Yes — implement** order acceptance timeout. | Required for Phase 3 proposals (`05`, ADR-012). |
-| 8 | Package `com.sjinnovation.quickbite` final; EAS path (FCM worked). | ADR-013. |
-| 9 | Asked what quarantine is. | Explained in `10-faq-doubts.md` Q12; not runtime-critical. |
-| 10 | Move old audits to historical. | Done → `docs/historical/`. |
+
+| #   | Your answer (summary)                                                                                                | How docs treat it                                                                                                               |
+| --- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | You work on **cloud**; surprised local Docker also exists in the repo.                                               | Cloud = source of truth; local optional (`01`, ADR-003). Read-only live SQL still needs explicit OK when we need orphan counts. |
+| 2   | Bulk seed neglected careful relevance; OK to rebuild later with fresh test characters / orders (careful with admin). | Flexible wipe+seed in Phase 3 (ADR-016).                                                                                        |
+| 3   | Proper RAG required; current dataset/embeddings not trusted.                                                         | Redesign RAG; don’t ship current corpus as “correct” (`06`, ADR-011).                                                           |
+| 4   | **Single-role only** — do not implement multi-role / rider+customer on one account.                                  | ADR-004 CONFIRMED; ADR-005 superseded.                                                                                          |
+| 5   | Design a proper agent architecture (not 9-vs-10 counting).                                                           | `06` documents today + redesign direction.                                                                                      |
+| 6   | Unknown if service role is deployed on manager server.                                                               | Code: `client.server.ts` exists, **no route imports it** (ADR-014).                                                             |
+| 7   | **Yes — implement** order acceptance timeout.                                                                        | Required for Phase 3 proposals (`05`, ADR-012).                                                                                 |
+| 8   | Package `com.sjinnovation.quickbite` final; EAS path (FCM worked).                                                   | ADR-013.                                                                                                                        |
+| 9   | Asked what quarantine is.                                                                                            | Explained in `10-faq-doubts.md` Q12; not runtime-critical.                                                                      |
+| 10  | Move old audits to historical.                                                                                       | Done → `docs/historical/`.                                                                                                      |
+
 
 Still open only if needed later: **permission to run read-only COUNT/orphan SQL on cloud**.
 
 ---
 
+
+
 ## Phase status
 
 - **Phase 1:** Complete (this file).  
-- **Phase 2:** Complete — see [`docs/README.md`](./README.md) (`01`–`10`).  
-- **Phase 3:** Not started — wait for you to ask for `11-fix-plan.md`.
+- **Phase 2:** Complete — see `[docs/README.md](./README.md)` (`01`–`10`).  
+- **Phase 3:** Complete — see [`11-fix-plan.md`](./11-fix-plan.md); approve proposal numbers before Phase 4.
+

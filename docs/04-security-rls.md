@@ -45,7 +45,7 @@ Legend: **R** read, **W** write, **RPC** via function only, **view** safe view, 
 | `automation_*` | — | R own-order events / R config | R config | R kitchen events / R config | same | R events; W config |
 | Storage `menu-images` | public read | read | read | W own folder | W own folder | (via manage) |
 
-\* With **single-role** accounts, a rider account is not a customer for cart. Your **desired** multi-role product would change this matrix (see ADR).
+\* **Single-role (CONFIRMED):** a rider account is not a customer for cart; kitchen/admin roles use the dashboard, not the customer cart, on that same login.
 
 ---
 
@@ -144,5 +144,5 @@ Legend: **R** read, **W** write, **RPC** via function only, **view** safe view, 
 1. Scope `match_embeddings` / RAG to non-PII or to the caller’s own orders.  
 2. Revisit webhook auth + payload re-fetch.  
 3. Confirm admin read on `rider_locations` if ops need it.  
-4. Align matrix with **multi-role** product intent when you implement it.  
-5. Ensure manager `client.server.ts` never ships service role to the browser (currently unused by routes — still a footgun).
+4. Ensure manager `client.server.ts` never ships service role to the browser (currently unused by routes — still a footgun).  
+5. Keep single-role UX honest (blocked screens) so users are not confused when cart/orders are empty for rider accounts.
