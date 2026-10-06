@@ -1,10 +1,35 @@
 # Changelog
 
-## 2026-10-07 — Production readiness (in progress)
+## 2026-10-07 — Production readiness (waves 0–6)
 
 ### Wave 0 — Catalog wipe script
 - Added [`supabase/scripts/wipe_keep_catalog.sql`](../supabase/scripts/wipe_keep_catalog.sql) (manual; do not run until approved).
 - Docs: backup + wipe notes in `12-environments.md`.
+
+### Wave 1 — Fetch + permissions
+- Rider home: `mine` + duty-gated `available` only; history via dedicated Earnings query.
+- QueryClient stale/gc tuning; location permission helper + `LocationPermissionGate`.
+- Duty/claim require foreground GPS; address form uses shared permission helper.
+
+### Wave 2 — RIO cloud threads
+- Migration `20261007020000_rio_threads.sql`: `rio_threads` / `rio_messages` + RLS.
+- Client `rioChat.ts` + RioScreen hydrate from cloud; AsyncStorage as offline cache; clear on logout.
+
+### Wave 3 — Rider duty + earnings
+- Migration `20261007021000_rider_duty_and_earning.sql`: `rider_set_duty` blocks off-duty with active order; claim + auto-assign stamp `rider_earning`.
+- Optimistic duty toggle; UI abort when active order; mock earnings constants removed.
+- Earnings empty states; pay labeled as rider pay (not customer delivery fee).
+
+### Wave 4 — Profile / settings / status
+- Faster profile save (optimistic close); rider personal/vehicle persist to `profiles`.
+- Duty status on rider profile; push “Open settings” deep-link; shared `ORDER_STATUS_LABELS`.
+
+### Wave 5 — Dashboard / admin
+- Performance loading/empty clarity; admin recent-orders copy after wipe.
+- Admin Open/Close kitchens + RLS `20261007022000_admin_restaurant_update.sql`.
+
+### Wave 6 — Release smoke
+- Expanded APK + admin smoke checklists in [`12-release-android.md`](./12-release-android.md).
 
 ## 2026-10-07 — Phase 4 batch 3 (P3, P13, P16, P17, P21, P23)
 

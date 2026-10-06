@@ -86,11 +86,25 @@ Webhook + `WEBHOOK_SECRET` setup: [`setup.md`](./setup.md) (push demo section).
 - [ ] Home loads kitchens / dishes
 - [ ] **Place order** from cart (address selected)
 - [ ] Order appears in tracking / history
+- [ ] **RIO**: send a message → logout → login → same cloud thread restores
 - [ ] **Push** (if FCM configured): kitchen accept → customer notification; optional rider online + pool
-- [ ] **Rider online**: toggle online, see delivery pool (rider account)
-- [ ] Manager web (separate) can advance kitchen status for the same order
+- [ ] **Rider**: cannot go offline with an active assigned order; location gate before duty/claim
+- [ ] **Rider earnings**: after deliver, Earnings tab shows `rider_earning` (+ tips/bonuses)
+- [ ] Manager web can advance kitchen status for the same order; Performance shows real counts
+- [ ] Admin: summary coherent; Applications approve; Restaurants Open/Close; AI Activate
 
 If login works but pushes fail: check webhook secret match, `notification_dispatch_log`, and Expo push receipts — not the APK package id.
+
+---
+
+## Admin smoke (manager web, after wipe)
+
+- [ ] Sign in as `admin@quickbite.test`
+- [ ] Dashboard stats: restaurants / people non-zero; recent orders empty until first test order
+- [ ] Applications: approve or reject one pending app
+- [ ] Restaurants: Open/Close one kitchen
+- [ ] Highlights: create or toggle active
+- [ ] AI: Activate Groq or Ollama
 
 ---
 
@@ -99,3 +113,4 @@ If login works but pushes fail: check webhook secret match, `notification_dispat
 - Environments / secrets: [`12-environments.md`](./12-environments.md)
 - Client build notes: [`apps/client/README.md`](../apps/client/README.md)
 - Setup / webhook: [`setup.md`](./setup.md)
+- Catalog wipe (manual): [`supabase/scripts/wipe_keep_catalog.sql`](../supabase/scripts/wipe_keep_catalog.sql)

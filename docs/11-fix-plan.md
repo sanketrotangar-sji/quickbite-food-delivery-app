@@ -38,6 +38,11 @@ Wave E — Production readiness
   P18 env/dev-prod → P19 tests → P21 logging/errors → P22 Android release checklist → P23 quarantine cleanup
 ```
 
+**Follow-on (2026-10-07):** Client + dashboard production readiness waves 0–6 landed
+(wipe script, permissions/fetch split, RIO cloud threads, duty rule B + earnings,
+profile/settings, admin/performance, smoke docs). See `docs/CHANGELOG.md`.
+Cloud wipe script still requires explicit “run wipe” approval.
+
 **Suggested first approval batch:** `P4, P5, P6, P20, P8` (security + timeout + small repeatable seed).  
 Add `P7` only when you are ready to wipe cloud junk.  
 Defer `P1` naming/`created_at` cosmetics until after security unless you want schema purity first.
