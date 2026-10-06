@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-07 — Production readiness (in progress)
+
+### Wave 0 — Catalog wipe script
+- Added [`supabase/scripts/wipe_keep_catalog.sql`](../supabase/scripts/wipe_keep_catalog.sql) (manual; do not run until approved).
+- Docs: backup + wipe notes in `12-environments.md`.
+
 ## 2026-10-07 — Phase 4 batch 3 (P3, P13, P16, P17, P21, P23)
 
 ### P3 — Indexes / FK audit

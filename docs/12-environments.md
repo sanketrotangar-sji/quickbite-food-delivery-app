@@ -77,3 +77,13 @@ pg_dump "$DATABASE_URL" --format=custom --file="quickbite-$(date +%Y%m%d).dump"
 3. **Local Assessment artifacts** live under `_delivery_quarantine/` (gitignored except its README). Keep `seed-data-generated/` if graders still need the large corpus; delete `tmp*` anytime.
 
 Quarantine details: [`_delivery_quarantine/README.md`](../_delivery_quarantine/README.md) and FAQ item 12 in [`10-faq-doubts.md`](./10-faq-doubts.md).
+
+### Catalog wipe (keep kitchens + menus)
+
+Approved production wipe script: [`supabase/scripts/wipe_keep_catalog.sql`](../supabase/scripts/wipe_keep_catalog.sql).
+
+- **Keeps** restaurants, menu_items, embeddings (RAG), configs, home_highlights.
+- **Clears** orders/carts/ratings/tickets/notifications/addresses/etc.
+- **Keeps users:** `admin@quickbite.test`, listed managers, `aisha`/`divya` customers, `anushka`/`aparna` riders, plus every restaurant owner.
+
+**Backup first**, then paste into SQL Editor only after explicit approval. Do not run against cloud casually.
