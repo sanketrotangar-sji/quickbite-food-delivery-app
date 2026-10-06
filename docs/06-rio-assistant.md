@@ -54,7 +54,7 @@ Plain rules the model is told:
 | Tool | What it does | Main tables / RPCs | Bounds |
 |------|----------------|--------------------|--------|
 | `retrieve_context` | RAG over menu, ratings, order history | Ollama embed + `match_embeddings` | `top_k` ≤ 12; RPC match ≤ 20 |
-| `search_restaurants` | Find kitchens/dishes by mood/query | `restaurant_browse`, `menu_items` | fetch ≤ 40; show ≤ 8 places |
+| `search_restaurants` | Find kitchens/dishes by mood/query | `restaurant_browse`, `menu_items` | **empty query + no veg/price filters → `QUERY_REQUIRED` (no kitchen dump)**; fetch ≤ 40; show ≤ 8 places; “show more” keeps query + `exclude_restaurant_ids` |
 | `get_menu` | Available menu for one restaurant | `menu_items` | ≤ 10 items |
 | `view_cart` | Read cart | `cart_items` | ≤ 10 lines |
 | `add_to_cart` | Add / increment item | `cart_items`, `menu_items` | cart read ≤ 20 |

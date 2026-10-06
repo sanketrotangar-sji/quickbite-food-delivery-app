@@ -226,8 +226,23 @@ async function searchRestaurantsUncached(
   const broad = !query && !vegOnly && maxPrice == null;
   const includeClosed = wantsClosedKitchens(query);
 
+  // Empty browse dumps up to 40 kitchens — require food terms (or veg/price filters).
+  if (broad) {
+    return {
+      data: {
+        error: "QUERY_REQUIRED",
+        message:
+          "Pass a non-empty food query (dish, cuisine, or mood) to search_restaurants. Do not call with an empty query to list all kitchens. For \"show more\", keep the same query and pass exclude_restaurant_ids.",
+        restaurants: [],
+        dishes: [],
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
   const kitchenPromise = (async () => {
-    if (!(broad || query)) return [] as Kitchen[];
+    if (!query) return [] as Kitchen[];
     let request = db
       .from("restaurant_browse")
       .select("id, name, cuisine, description, address, image_url, is_open, offer_percent, prep_minutes, lat, lng")
@@ -246,7 +261,6 @@ async function searchRestaurantsUncached(
   })();
 
   const dishPromise = (async () => {
-    if (broad) return [] as Dish[];
     let request = db
       .from("menu_items")
       .select("id, name, description, price, image_url, is_available, is_veg, category, restaurant_id")
@@ -291,7 +305,7 @@ async function searchRestaurantsUncached(
       const nameHit = query ? named.includes(query.toLowerCase()) : false;
       if (vegOnly && matches.length === 0) return null;
       if (maxPrice != null && matches.length === 0) return null;
-      if (!broad && matches.length === 0 && !nameHit) return null;
+      if (matches.length === 0 && !nameHit) return null;
       const featured = matches[0];
       const veg = matches.length > 0 ? matches.every((dish) => dish.is_veg) : false;
       const place = toRestaurant(kitchen, featured?.name ?? kitchen.cuisine?.trim() ?? "Menu", veg);

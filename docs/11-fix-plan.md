@@ -253,14 +253,14 @@ Provide me steps of how to do supabase backup
 
 
 
-### P12 — Bound RIO tools further / cache policy
+### P12 — Bound RIO tools further / cache policy — **DONE (2026-10-06)**
 
 
 |             |                                                                                                                  |
 | ----------- | ---------------------------------------------------------------------------------------------------------------- |
 | **Problem** | Tools already limit, but empty broad search still feels heavy.                                                   |
 | **Why**     | Cost + latency on Groq/Ollama.                                                                                   |
-| **Fix**     | Require non-empty query for broad browse; tighten limits; document agent routing in `06` (implementation light). |
+| **Fix**     | Empty query with no veg/max_price returns `QUERY_REQUIRED` (no 40-kitchen dump); focused search still ≤8 places. |
 | **Risk**    | “Show any restaurant” UX needs a dedicated mode.                                                                 |
 | **Effort**  | S                                                                                                                |
 | **Verify**  | RIO timing; no unbounded queries in code review.                                                                 |

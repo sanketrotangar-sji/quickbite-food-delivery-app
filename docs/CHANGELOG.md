@@ -6,6 +6,10 @@
 - Client/manager APIs: replace `select('*')` with explicit columns on profiles, addresses, applications, menu create, restaurant update, invites.
 - Home dish fetch limit 240→96; kitchen orders 200→100; performance orders 2000→500; restaurant stats 500→200.
 
+### P12 — RIO empty-query guard
+- `searchRestaurantsUncached`: empty query without veg/max_price returns `QUERY_REQUIRED` instead of dumping ≤40 kitchens.
+- Docs: `docs/06-rio-assistant.md` tool bounds updated.
+
 ## 2026-10-06 — Phase 4 batch 1 (P4, P5, P6, P20, P8)
 
 ### P4 — RAG PII
