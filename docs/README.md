@@ -32,12 +32,14 @@ This folder is the **learning map** for the codebase. Read in order if you are n
 | [`09-glossary.md`](./09-glossary.md) | Plain-language dictionary. |
 | [`10-faq-doubts.md`](./10-faq-doubts.md) | Beginner Q&A + your ongoing doubts. |
 | [`11-fix-plan.md`](./11-fix-plan.md) | Phase 3 numbered fix proposals — approve IDs before Phase 4. |
+| [`12-environments.md`](./12-environments.md) | Local vs cloud, env files, migrations-as-SoT (no data in migrations). |
 
 ### Supporting / topic folders
 
 | Path | Purpose |
 |------|---------|
 | [`setup.md`](./setup.md) | How to run apps and link Supabase. |
+| [`12-environments.md`](./12-environments.md) | Local vs cloud, env hygiene, seed vs `db push`. |
 | [`requirements.md`](./requirements.md) | Original assignment brief. |
 | [`seed-data-spec.md`](./seed-data-spec.md) | Large seed contract (Assessment-era). |
 | [`rag/`](./rag/) | RAG eval reports and queries. |

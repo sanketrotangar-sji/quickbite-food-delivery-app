@@ -361,13 +361,13 @@ Provide me steps of how to do supabase backup
 
 
 
-### P18 — Migrations as SoT + env separation
+### P18 — Migrations as SoT + env separation — **DONE (2026-10-06)**
 
 
 |             |                                                                                                                                                         |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Problem** | Data inserted inside migrations (`home_highlights`); missing `seed.sql`; cloud vs local unclear to you.                                                 |
-| **Fix**     | No new data in migrations; P8 seed file; document `.env` per environment (dev project vs prod project) in `setup.md`; never share service role to Expo. |
+| **Fix**     | Docs: [`12-environments.md`](./12-environments.md); migrations rule in `03-database`; seed path confirmed in `config.toml` (P8). No cloud project split. |
 | **Risk**    | Two projects cost/time.                                                                                                                                 |
 | **Effort**  | M                                                                                                                                                       |
 | **Verify**  | Fresh `db reset` applies migrations + seed cleanly (local).                                                                                             |

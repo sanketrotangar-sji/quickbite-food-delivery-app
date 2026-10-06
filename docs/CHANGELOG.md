@@ -14,6 +14,11 @@
 - Added `primarySoftMid`, `primaryWash`, `primaryTintBorder`, `stepTrack`/`stepTrackBorder`/`stepLine` to shared brand tokens + client theme.
 - Replaced stray peach/grey hexes in OrderTracking, Rio, Notifications, Cart screens.
 
+### P18 — Environments / migrations SoT
+- New [`docs/12-environments.md`](./12-environments.md): local vs cloud, env files, no service role in `EXPO_PUBLIC_*` / `VITE_*`.
+- `docs/03-database.md`: new migrations = schema/RPC/RLS only (seed is the data path).
+- Links from `docs/README.md` and `docs/setup.md`; seed path already in `config.toml`.
+
 ## 2026-10-06 — Phase 4 batch 1 (P4, P5, P6, P20, P8)
 
 ### P4 — RAG PII

@@ -1,6 +1,7 @@
 # 03 — Database
 
 **Source of truth:** `supabase/migrations/` (apply order = filename timestamp).  
+**New migrations rule:** schema / RPC / RLS / indexes only — **no demo `INSERT` data** (use `supabase/seed.sql` for local demos; see [`12-environments.md`](./12-environments.md)).  
 **Live row counts:** not measured in Phase 1/2 without an approved read-only query against cloud.
 
 **Terms:** A **table** stores rows. A **column** is a field. A **PK** uniquely identifies a row. An **FK** points at another table’s PK. An **enum** is a fixed list of allowed words. A **trigger** is SQL that runs automatically on insert/update. An **RPC** is a Postgres function the app can call.
