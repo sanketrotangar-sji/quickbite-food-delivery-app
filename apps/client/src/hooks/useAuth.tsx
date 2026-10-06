@@ -113,6 +113,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       signOut: async () => {
         await stopRiderTracking();
+        const uid = session?.user.id;
+        if (uid) {
+          try {
+            const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
+            await AsyncStorage.removeItem(`qb.rio.chat.${uid}`);
+          } catch {
+            // Best-effort local RIO cache clear.
+          }
+        }
         await apiSignOut();
         setProfile(null);
       },

@@ -9,6 +9,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { askRio, askRioStream, type RioCard, type RioConflict } from '@/api/rio';
+import {
+  appendRioMessages,
+  createRioThread,
+  loadLatestRioThread,
+  trimRioThread,
+} from '@/api/rioChat';
 import { AppText } from '@/components/AppText';
 import { HomeHero } from '@/components/home/HomeHero';
 import { colors, fonts, radii } from '@/constants/theme';
@@ -103,6 +109,7 @@ export function RioScreen() {
   const inputRef = useRef<TextInput>(null);
   const busy = useRef(false);
   const threadGen = useRef(0);
+  const threadIdRef = useRef<string | null>(null);
   const userId = session?.user.id ?? null;
   const firstName = greetingName(profile?.full_name, profile?.email);
   const [hydrated, setHydrated] = useState(false);
@@ -122,20 +129,39 @@ export function RioScreen() {
   useEffect(() => {
     let cancelled = false;
     if (!userId) {
+      threadIdRef.current = null;
       setMessages([greetingMessage(firstName)]);
       setHydrated(true);
       return;
     }
     setHydrated(false);
-    void AsyncStorage.getItem(threadKey(userId)).then((raw) => {
-      if (cancelled) return;
-      setMessages((current) => {
-        // Don't clobber a thread the user already started while storage was loading.
-        if (current.some((message) => message.from === 'you')) return current;
-        return parseThread(raw, firstName) ?? [greetingMessage(firstName)];
-      });
-      setHydrated(true);
-    });
+    void (async () => {
+      try {
+        const cloud = await loadLatestRioThread(userId);
+        if (cancelled) return;
+        threadIdRef.current = cloud.threadId;
+        if (cloud.messages.length > 0) {
+          const withHello =
+            cloud.messages[0]?.id === 'hello'
+              ? cloud.messages
+              : [greetingMessage(firstName), ...cloud.messages];
+          setMessages(withHello);
+          void AsyncStorage.setItem(threadKey(userId), JSON.stringify(withHello));
+        } else {
+          const raw = await AsyncStorage.getItem(threadKey(userId));
+          if (cancelled) return;
+          const local = parseThread(raw, firstName);
+          setMessages(local ?? [greetingMessage(firstName)]);
+        }
+      } catch {
+        if (cancelled) return;
+        const raw = await AsyncStorage.getItem(threadKey(userId));
+        if (cancelled) return;
+        setMessages(parseThread(raw, firstName) ?? [greetingMessage(firstName)]);
+      } finally {
+        if (!cancelled) setHydrated(true);
+      }
+    })();
     return () => {
       cancelled = true;
     };
@@ -159,12 +185,31 @@ export function RioScreen() {
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [messages.length, thinking, keyboardVisible]);
 
+  async function ensureThreadId() {
+    if (!userId) return null;
+    if (threadIdRef.current) return threadIdRef.current;
+    const id = await createRioThread(userId);
+    threadIdRef.current = id;
+    return id;
+  }
+
   function startNewChat() {
     threadGen.current += 1;
     busy.current = false;
     setThinking(false);
     setDraft('');
     setMessages([greetingMessage(firstName)]);
+    threadIdRef.current = null;
+    if (userId) {
+      void createRioThread(userId)
+        .then((id) => {
+          threadIdRef.current = id;
+        })
+        .catch(() => {
+          // Offline / migration not applied — local-only new chat still works.
+        });
+      void AsyncStorage.setItem(threadKey(userId), JSON.stringify([greetingMessage(firstName)]));
+    }
   }
 
   async function send(
@@ -250,6 +295,26 @@ export function RioScreen() {
           queryClient.invalidateQueries({ queryKey: cartQueryKey }),
           queryClient.invalidateQueries({ queryKey: ordersQueryKey }),
         ]);
+      }
+      // Persist turn to cloud (best-effort).
+      if (userId && you) {
+        try {
+          const tid = await ensureThreadId();
+          if (tid) {
+            await appendRioMessages(tid, [
+              { from: 'you', text: you.text },
+              {
+                from: 'rio',
+                text: reply.text,
+                cards: reply.cards,
+                conflict: reply.conflict,
+              },
+            ]);
+            void trimRioThread(tid);
+          }
+        } catch {
+          // Local cache still holds the thread.
+        }
       }
       const placed = reply.cards.some((card) => card.kind === 'order');
       const cartUpdated = reply.cards.some((card) => card.kind === 'cart') && !reply.conflict;
