@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-10-06 — Phase 4 batch 2 (in progress)
+## 2026-10-06 — Phase 4 batch 2 (P11, P12, P15, P18, P19, P22)
 
 ### P11 — Query hygiene
 - Client/manager APIs: replace `select('*')` with explicit columns on profiles, addresses, applications, menu create, restaurant update, invites.
@@ -22,6 +22,10 @@
 ### P19 — Integration / RLS / RAG smoke
 - New `tests/integration/rls-rag-smoke.mjs` (wired into `npm run test:integration`): cross-customer order RLS when seed users exist; `match_embeddings` must not return `delivery_address`; `notification_dispatch_log` duplicate claim → unique violation.
 - Happy-path skips cleanly when no order fixture; P5 full webhook still manual.
+
+### P22 — Android / EAS release
+- New [`docs/12-release-android.md`](./12-release-android.md): package `com.sjinnovation.quickbite`, EAS profiles (dev/preview APK, production AAB), env + FCM, smoke checklist.
+- Linked from `docs/README.md` and `docs/setup.md`.
 
 ## 2026-10-06 — Phase 4 batch 1 (P4, P5, P6, P20, P8)
 

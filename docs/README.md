@@ -2,7 +2,7 @@
 
 This folder is the **learning map** for the codebase. Read in order if you are new; jump via the tables if you already know what you need.
 
-**Phase status:** Phases 1–3 done. Phase 4 **batch 1** applied (`P4, P5, P6, P20, P8`). Approve more IDs in [`11-fix-plan.md`](./11-fix-plan.md) before the next batch.
+**Phase status:** Phases 1–3 done. Phase 4 **batch 1** (`P4, P5, P6, P20, P8`) and **batch 2** (`P11, P12, P15, P18, P19, P22`) applied. Approve more IDs in [`11-fix-plan.md`](./11-fix-plan.md) before the next batch (e.g. P7 wipe / P9 RAG rebuild).
 
 ---
 
@@ -33,6 +33,7 @@ This folder is the **learning map** for the codebase. Read in order if you are n
 | [`10-faq-doubts.md`](./10-faq-doubts.md) | Beginner Q&A + your ongoing doubts. |
 | [`11-fix-plan.md`](./11-fix-plan.md) | Phase 3 numbered fix proposals — approve IDs before Phase 4. |
 | [`12-environments.md`](./12-environments.md) | Local vs cloud, env files, migrations-as-SoT (no data in migrations). |
+| [`12-release-android.md`](./12-release-android.md) | Android package, EAS profiles, FCM, smoke checklist. |
 
 ### Supporting / topic folders
 
@@ -40,6 +41,7 @@ This folder is the **learning map** for the codebase. Read in order if you are n
 |------|---------|
 | [`setup.md`](./setup.md) | How to run apps and link Supabase. |
 | [`12-environments.md`](./12-environments.md) | Local vs cloud, env hygiene, seed vs `db push`. |
+| [`12-release-android.md`](./12-release-android.md) | EAS Android APK/AAB checklist. |
 | [`requirements.md`](./requirements.md) | Original assignment brief. |
 | [`seed-data-spec.md`](./seed-data-spec.md) | Large seed contract (Assessment-era). |
 | [`rag/`](./rag/) | RAG eval reports and queries. |

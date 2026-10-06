@@ -423,13 +423,13 @@ Provide me steps of how to do supabase backup
 
 
 
-### P22 — Android APK / EAS release checklist
+### P22 — Android APK / EAS release checklist — **DONE (2026-10-06)**
 
 
 |             |                                                                                                                                                                                                                 |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Problem** | Release knowledge tribal.                                                                                                                                                                                       |
-| **Fix**     | Doc section (update `setup.md` or new `docs/12-release-android.md` in Phase 4): EAS profiles, package `com.sjinnovation.quickbite`, env for preview vs production, FCM/`google-services.json`, smoke test list. |
+| **Fix**     | [`docs/12-release-android.md`](./12-release-android.md): package id, EAS profiles, env, FCM/`google-services.json`, smoke list; linked from README + setup.                                                      |
 | **Risk**    | None (docs).                                                                                                                                                                                                    |
 | **Effort**  | S                                                                                                                                                                                                               |
 | **Verify**  | You follow checklist once → installable APK.                                                                                                                                                                    |

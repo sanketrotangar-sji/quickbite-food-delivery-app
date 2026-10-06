@@ -768,4 +768,5 @@ Still open only if needed later: **permission to run read-only COUNT/orphan SQL 
 - **Phase 2:** Complete — see `[docs/README.md](./README.md)` (`01`–`10`).  
 - **Phase 3:** Complete — see [`11-fix-plan.md`](./11-fix-plan.md).  
 - **Phase 4 batch 1:** Done — P4, P5, P6, P20, P8 ([`CHANGELOG.md`](./CHANGELOG.md)). Apply new migrations with `supabase db push` / deploy `notify-new-order` when ready.
+- **Phase 4 batch 2:** Done — P11, P12, P15, P18, P19, P22. Redeploy `rio` for empty-query guard. Deferred: P7 wipe, P9 embedding rebuild.
 

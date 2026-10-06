@@ -1,6 +1,7 @@
 # Setup — GitHub, Supabase, Lovable (manager), Expo (client)
 
-**Environments / seed / secrets:** see [`12-environments.md`](./12-environments.md) (local vs cloud, env files, migrations-without-data rule).
+**Environments / seed / secrets:** see [`12-environments.md`](./12-environments.md) (local vs cloud, env files, migrations-without-data rule).  
+**Android APK / EAS:** see [`12-release-android.md`](./12-release-android.md).
 
 ## 0. Repo layout (this monorepo)
 
