@@ -64,7 +64,7 @@ A **parking lot**, not part of the running app. It holds:
 `com.sjinnovation.quickbite` — `apps/client/app.json`. Keep it (FCM). Build via EAS (`eas.json`).
 
 ### 16. Why is `seed.sql` missing?
-`supabase/config.toml` points at `./seed.sql` for `db reset`, but the file is not in the repo (Phase 1 High). Phase 3 will propose creating a real seed path.
+It is present as of P8: [`supabase/seed.sql`](../supabase/seed.sql) for local `supabase db reset`. Uses `@quickbite.demo` accounts — see [`supabase/seed-data/README.md`](../supabase/seed-data/README.md). Do not push to cloud until wipe (P7).
 
 ### 17. Why migrations and not editing the DB in the dashboard?
 Migrations are repeatable history. Dashboard clicks are invisible to git and break teammates/CI. Phase 4 rule: new migration files only.

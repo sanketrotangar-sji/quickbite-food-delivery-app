@@ -4,8 +4,9 @@
 > Assessment demos and local grading. If they exist on a shared cloud project,
 > rotate passwords or wipe those users (see Phase 3 wipe plan P7).
 >
-> Prefer the small demo seed (`*@quickbite.demo`) described in
-> `supabase/seed-data/README.md` once P8 is applied locally.
+> Prefer the small demo seed (`*@quickbite.demo`, password `sanket123`) from
+> [`supabase/seed.sql`](../../supabase/seed.sql) / [`supabase/seed-data/README.md`](../../supabase/seed-data/README.md)
+> for local resets. Assessment table below is historical.
 
 Seeded Assessment accounts (password for all: `sanket123`). Source: `_delivery_quarantine/seed-data-generated/auth-users.csv`.
 

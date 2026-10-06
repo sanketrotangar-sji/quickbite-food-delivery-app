@@ -2,7 +2,7 @@
 
 This folder is the **learning map** for the codebase. Read in order if you are new; jump via the tables if you already know what you need.
 
-**Phase status:** Phases 1–3 done. Approve specific numbers in [`11-fix-plan.md`](./11-fix-plan.md) before Phase 4.
+**Phase status:** Phases 1–3 done. Phase 4 **batch 1** applied (`P4, P5, P6, P20, P8`). Approve more IDs in [`11-fix-plan.md`](./11-fix-plan.md) before the next batch.
 
 ---
 

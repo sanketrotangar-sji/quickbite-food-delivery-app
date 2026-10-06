@@ -197,7 +197,7 @@ Provide me steps of how to do supabase backup
 
 
 
-### P8 — Small, idempotent, identifiable seed **(recommended)**
+### P8 — Small, idempotent, identifiable seed **(DONE — batch 1, files only)**
 
 
 |             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -483,7 +483,7 @@ Provide me steps of how to do supabase backup
 | P6  | Secrets footguns     | **DONE (batch 1)** | S      |
 | P6b | Admin GPS read       | Low               | S      |
 | P7  | Wipe junk            | High              | M      |
-| P8  | Small seed           | High              | M      |
+| P8  | Small seed           | **DONE (batch 1)** | M      |
 | P9  | RAG rebuild          | High              | M–L    |
 | P11 | Query hygiene        | High              | M      |
 | P12 | RIO bounds           | Medium            | S      |
@@ -517,6 +517,4 @@ Provide me steps of how to do supabase backup
 
 ## Phase 3 status
 
-**Complete.** Waiting for you to approve proposal numbers (example: `Approve P4, P5, P6, P20, P8`).
-
-Phase 4 will implement **only** those, one commit each, with SQL preview + rollback for DB changes, then update affected `/docs`.
+**Complete.** Batch 1 applied in Phase 4: **P4, P5, P6, P20, P8** (see [`CHANGELOG.md`](./CHANGELOG.md)). Approve more proposal numbers to continue.
