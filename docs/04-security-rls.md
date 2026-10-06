@@ -144,5 +144,5 @@ Legend: **R** read, **W** write, **RPC** via function only, **view** safe view, 
 1. Scope `match_embeddings` / RAG to non-PII or to the caller’s own orders. **DONE (P4)** — migration `20261006220000_match_embeddings_scope_pii.sql` + RIO menu/ratings-only retrieve.  
 2. Revisit webhook auth + payload re-fetch. **DONE (P5)** — DB reload + `notification_dispatch_log` dedupe; rotate `WEBHOOK_SECRET` manually if shared.  
 3. Confirm admin read on `rider_locations` if ops need it.  
-4. Ensure manager `client.server.ts` never ships service role to the browser (currently unused by routes — still a footgun).  
+4. Ensure manager `client.server.ts` never ships service role to the browser (currently unused by routes — still a footgun). **DONE (P6)** — comments + `npm run check:secrets`.  
 5. Keep single-role UX honest (blocked screens) so users are not confused when cart/orders are empty for rider accounts.

@@ -57,7 +57,8 @@ A **parking lot**, not part of the running app. It holds:
 [`docs/historical/`](./historical/) — per your request. Current truth starts at [`00-audit.md`](./00-audit.md) + Phase 2 docs.
 
 ### 14. Does the manager app use the service role in production?
-**Unknown to you; code says:** `client.server.ts` can create an admin client, but **no route imports it**. Browser uses anon + JWT. E2E scripts may use the service role key locally. ADR-014.
+**Code:** `client.server.ts` can create an admin client, but **no route imports it**. Browser uses anon + JWT. E2E scripts may use the service role key locally. ADR-014.  
+**Guard (P6):** `npm run check:secrets` fails if service-role strings appear under `apps/client/src` or if `client.server` is imported from manager routes/UI.
 
 ### 15. What package id is the Android app?
 `com.sjinnovation.quickbite` — `apps/client/app.json`. Keep it (FCM). Build via EAS (`eas.json`).
