@@ -147,6 +147,8 @@ sequenceDiagram
 
 Optional: DB webhook → `notify-new-order` → Expo push.
 
+Push hardening (P5): function reloads the order from DB (ignores forged ids), claims `(order_id, event)` in `notification_dispatch_log` before fan-out, and decides the event from **current DB status** only (`preparing` / `delivered`). Rotate `WEBHOOK_SECRET` in Supabase secrets if it was ever shared.
+
 ---
 
 ## Rider claim → deliver

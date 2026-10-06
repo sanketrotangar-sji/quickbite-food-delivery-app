@@ -34,6 +34,8 @@ type ExpoTicket = {
   details?: { error?: string };
 };
 
+type DispatchEvent = "preparing" | "delivered";
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -70,6 +72,25 @@ function expoHeaders() {
   return accessToken
     ? { ...JSON_HEADERS, Authorization: `Bearer ${accessToken}` }
     : JSON_HEADERS;
+}
+
+async function claimDispatch(
+  admin: ReturnType<typeof createClient>,
+  orderId: string,
+  event: DispatchEvent,
+): Promise<"claimed" | "already_dispatched" | "error"> {
+  const { error } = await admin.from("notification_dispatch_log").insert({
+    order_id: orderId,
+    event,
+  });
+  if (!error) return "claimed";
+  const code = (error as { code?: string }).code;
+  const message = String((error as { message?: string }).message ?? "");
+  if (code === "23505" || /duplicate key|unique constraint/i.test(message)) {
+    return "already_dispatched";
+  }
+  console.error("notify-new-order dispatch claim failed", error);
+  return "error";
 }
 
 async function sendExpoPush(
@@ -196,28 +217,37 @@ Deno.serve(async (req) => {
   }
 
   const order = dbOrder as OrderRecord;
-  const previousStatus = payload.old_record?.status ?? null;
-  const enteredPreparing =
-    payload.type === "UPDATE" &&
-    order.status === "preparing" &&
-    previousStatus !== "preparing";
-  const enteredDelivered =
-    payload.type === "UPDATE" &&
-    order.status === "delivered" &&
-    previousStatus !== "delivered";
 
-  // Demo scope: only accept (preparing) and delivered fire pushes / inbox rows.
-  if (!enteredPreparing && !enteredDelivered) {
+  // Event from current DB status only — ignore forged old_record transitions.
+  let event: DispatchEvent | null = null;
+  if (order.status === "preparing") event = "preparing";
+  else if (order.status === "delivered") event = "delivered";
+
+  if (!event) {
     return json({
       ok: true,
       ignored: true,
-      idempotencyKey: `${order.id}:${order.status}:${payload.type.toLowerCase()}`,
+      reason: "status_not_notifiable",
+      idempotencyKey: `${order.id}:${order.status}`,
+    });
+  }
+
+  const claim = await claimDispatch(admin, order.id, event);
+  if (claim === "error") {
+    return json({ error: "dispatch_claim_failed" }, 500);
+  }
+  if (claim === "already_dispatched") {
+    return json({
+      ok: true,
+      ignored: true,
+      reason: "already_dispatched",
+      idempotencyKey: `${order.id}:${event}`,
     });
   }
 
   const recipients: Recipient[] = [];
 
-  if (enteredPreparing) {
+  if (event === "preparing") {
     recipients.push({
       userId: order.customer_id,
       title: "Order accepted",
@@ -252,7 +282,7 @@ Deno.serve(async (req) => {
     }
   }
 
-  if (enteredDelivered) {
+  if (event === "delivered") {
     recipients.push({
       userId: order.customer_id,
       title: "Order delivered",
@@ -304,7 +334,7 @@ Deno.serve(async (req) => {
 
   return json({
     ok: true,
-    idempotencyKey: `${order.id}:${order.status}:${enteredPreparing ? "preparing" : "delivered"}`,
+    idempotencyKey: `${order.id}:${event}`,
     inboxRows: recipients.length,
     pushMessages: push.sent,
     disabledTokens: push.disabled,

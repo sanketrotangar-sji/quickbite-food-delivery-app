@@ -120,7 +120,7 @@ Defer `P1` naming/`created_at` cosmetics until after security unless you want sc
 
 
 
-### P5 — Harden `notify-new-order` webhook **(Critical/High)**
+### P5 — Harden `notify-new-order` webhook **(DONE — batch 1)**
 
 
 |             |                                                                                                                                                                                                                                                               |
@@ -479,7 +479,7 @@ Provide me steps of how to do supabase backup
 | P2  | CHECKs               | Low–Med           | S      |
 | P3  | Indexes/FKs          | Medium            | S–M    |
 | P4  | RAG PII              | **DONE (batch 1)** | M      |
-| P5  | Webhook              | **Critical/High** | M      |
+| P5  | Webhook              | **DONE (batch 1)** | M      |
 | P6  | Secrets footguns     | High              | S      |
 | P6b | Admin GPS read       | Low               | S      |
 | P7  | Wipe junk            | High              | M      |
