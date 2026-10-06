@@ -72,6 +72,9 @@ export function RiderProfileScreen() {
             {name}
           </AppText>
           <AppText style={styles.meta}>{profile?.email}</AppText>
+          <AppText weight="semibold" style={styles.duty}>
+            {profile?.is_online ? 'On duty' : 'Off duty'}
+          </AppText>
           <AppText weight="semibold" style={styles.rating}>
             {stats.rating} rating
           </AppText>
@@ -149,6 +152,7 @@ const styles = StyleSheet.create({
   avatarText: { color: colors.white, fontSize: 24 },
   name: { fontSize: 22, textAlign: 'center' },
   meta: { color: colors.textMuted, fontSize: 13 },
+  duty: { color: colors.primary, fontSize: 13, marginTop: 2 },
   rating: { color: colors.primary, fontSize: 13, marginBottom: 8 },
   pad: { paddingHorizontal: 16, gap: 16 },
   group: { gap: 8 },

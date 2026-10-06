@@ -1,4 +1,5 @@
 import { Check, Circle, Clock3, MapPin } from "lucide-react";
+import { ORDER_STATUS_LABELS } from "@quickbite/shared";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useMinuteTick } from "@/hooks/use-minute-tick";
@@ -6,11 +7,11 @@ import { orderElapsed } from "@/lib/dashboard-stats";
 import type { Order, OrderStatus } from "@/lib/quickbite-data";
 
 const TIMELINE: { status: OrderStatus; label: string }[] = [
-  { status: "placed", label: "Order placed" },
-  { status: "preparing", label: "Preparing" },
-  { status: "ready", label: "Ready for pickup" },
-  { status: "out_for_delivery", label: "Out for delivery" },
-  { status: "delivered", label: "Delivered" },
+  { status: "placed", label: ORDER_STATUS_LABELS.placed },
+  { status: "preparing", label: ORDER_STATUS_LABELS.preparing },
+  { status: "ready", label: ORDER_STATUS_LABELS.ready },
+  { status: "out_for_delivery", label: ORDER_STATUS_LABELS.out_for_delivery },
+  { status: "delivered", label: ORDER_STATUS_LABELS.delivered },
 ];
 
 const statusStep: Record<OrderStatus, number> = {
@@ -23,12 +24,7 @@ const statusStep: Record<OrderStatus, number> = {
 };
 
 const historyLabel: Partial<Record<OrderStatus, string>> = {
-  placed: "Order placed",
-  preparing: "Preparing",
-  ready: "Ready for pickup",
-  out_for_delivery: "Out for delivery",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
+  ...ORDER_STATUS_LABELS,
 };
 
 function money(value: number) {

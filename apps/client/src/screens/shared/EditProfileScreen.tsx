@@ -45,12 +45,17 @@ export function EditProfileScreen() {
 
   async function onSave() {
     if (!profile) return;
+    const nextName = fullName.trim();
+    const nextPhone = phone.trim() || null;
     setSaving(true);
+    setEditing(false);
     try {
-      await updateProfile(profile.id, { full_name: fullName.trim(), phone: phone.trim() || null });
+      await updateProfile(profile.id, { full_name: nextName, phone: nextPhone });
       await refreshProfile();
-      setEditing(false);
     } catch (error) {
+      setFullName(profile.full_name ?? '');
+      setPhone(profile.phone ?? '');
+      setEditing(true);
       Alert.alert('Could not save', error instanceof Error ? error.message : 'Try again.');
     } finally {
       setSaving(false);
@@ -184,13 +189,18 @@ export function EditProfileScreen() {
             <ProfileListItem
               icon="settings-outline"
               title="Settings"
-              subtitle="Alerts and app preferences"
-              onPress={() =>
-                setNote({
-                  title: 'Settings',
-                  body: 'QuickBite sends push alerts for order and delivery updates. Your device may ask for notification permission.',
-                })
-              }
+              subtitle="Alerts and app permissions"
+              onPress={() => {
+                Alert.alert('Notification settings', 'Open system settings to allow or deny push alerts.', [
+                  { text: 'Not now' },
+                  {
+                    text: 'Open settings',
+                    onPress: () => {
+                      void import('@/lib/permissions').then((m) => m.openSystemAppSettings());
+                    },
+                  },
+                ]);
+              }}
             />
             <ProfileListItem
               icon="information-circle-outline"

@@ -17,10 +17,25 @@ import {
 } from '@/notifications/NotificationProvider';
 
 export function PersonalScreen() {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const [name, setName] = useState(profile?.full_name ?? '');
   const [phone, setPhone] = useState(profile?.phone ?? '');
-  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  async function onSave() {
+    if (!profile?.id || saving) return;
+    setSaving(true);
+    try {
+      const { updateProfile } = await import('@/api/profiles');
+      await updateProfile(profile.id, { full_name: name.trim(), phone: phone.trim() || null });
+      await refreshProfile();
+      Alert.alert('Saved', 'Your profile was updated.');
+    } catch (error) {
+      Alert.alert('Could not save', error instanceof Error ? error.message : 'Try again.');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <Screen>
@@ -29,19 +44,36 @@ export function PersonalScreen() {
         <TextField label="Full name" value={name} onChangeText={setName} autoCapitalize="words" />
         <TextField label="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
         <TextField label="Email" value={profile?.email ?? ''} editable={false} />
-        <Button label={saved ? 'Saved on this phone' : 'Save'} onPress={() => setSaved(true)} disabled={saved} />
-        <AppText muted style={styles.note}>
-          This stays on the device until rider profiles are stored.
-        </AppText>
+        <Button label={saving ? 'Saving…' : 'Save'} onPress={() => void onSave()} disabled={saving} />
       </ScrollView>
     </Screen>
   );
 }
 
 export function VehicleScreen() {
-  const [kind, setKind] = useState('Bike');
-  const [plate, setPlate] = useState('GA 01 AB 2148');
-  const [saved, setSaved] = useState(false);
+  const { profile, refreshProfile } = useAuth();
+  const [kind, setKind] = useState(profile?.vehicle_label ?? 'Bike');
+  const [plate, setPlate] = useState(profile?.plate ?? '');
+  const [saving, setSaving] = useState(false);
+
+  async function onSave() {
+    if (!profile?.id || saving) return;
+    setSaving(true);
+    try {
+      const { supabase } = await import('@/api/supabaseClient');
+      const { error } = await supabase
+        .from('profiles')
+        .update({ vehicle_label: kind.trim() || null, plate: plate.trim() || null })
+        .eq('id', profile.id);
+      if (error) throw error;
+      await refreshProfile();
+      Alert.alert('Saved', 'Vehicle details updated.');
+    } catch (error) {
+      Alert.alert('Could not save', error instanceof Error ? error.message : 'Try again.');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <Screen>
@@ -49,7 +81,7 @@ export function VehicleScreen() {
       <ScrollView contentContainerStyle={styles.form}>
         <TextField label="Vehicle" value={kind} onChangeText={setKind} />
         <TextField label="Number plate" value={plate} onChangeText={setPlate} autoCapitalize="characters" />
-        <Button label={saved ? 'Saved on this phone' : 'Save'} onPress={() => setSaved(true)} disabled={saved} />
+        <Button label={saving ? 'Saving…' : 'Save'} onPress={() => void onSave()} disabled={saving} />
       </ScrollView>
     </Screen>
   );
@@ -97,7 +129,15 @@ export function PreferencesScreen() {
       const next = await setPushNotificationsEnabled(enabling);
       setAlerts(next);
       if (enabling && !next) {
-        Alert.alert('Notifications are off', 'Allow notifications in your device settings, then try again.');
+        Alert.alert('Notifications are off', 'Allow notifications in your device settings, then try again.', [
+          { text: 'Not now' },
+          {
+            text: 'Open settings',
+            onPress: () => {
+              void import('@/lib/permissions').then((m) => m.openSystemAppSettings());
+            },
+          },
+        ]);
       }
     } catch (error) {
       Alert.alert(
@@ -122,6 +162,22 @@ export function PreferencesScreen() {
           </View>
           <AppText weight="semibold" style={styles.ok}>
             {savingAlerts ? 'Saving…' : alerts ? 'On' : 'Off'}
+          </AppText>
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            void import('@/lib/permissions').then((m) => m.openSystemAppSettings());
+          }}
+          style={styles.doc}
+        >
+          <View>
+            <AppText weight="semibold">Open system settings</AppText>
+            <AppText muted style={styles.note}>
+              Location and notification permissions
+            </AppText>
+          </View>
+          <AppText weight="semibold" style={styles.ok}>
+            Open
           </AppText>
         </Pressable>
         <View style={styles.doc}>

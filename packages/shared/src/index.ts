@@ -19,6 +19,16 @@ export const ORDER_STATUSES = [
 ] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
+/** Shared vocabulary for customer / rider / kitchen surfaces. */
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  placed: "Placed",
+  preparing: "Preparing",
+  ready: "Ready",
+  out_for_delivery: "On the way",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+};
+
 export {
   computeBumpedEta,
   hasRole,
