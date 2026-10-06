@@ -323,14 +323,14 @@ Provide me steps of how to do supabase backup
 
 
 
-### P16 — Generated DB types as source of truth
+### P16 — Generated DB types as source of truth — **DONE (2026-10-07)**
 
 
 |             |                                                                                        |
 | ----------- | -------------------------------------------------------------------------------------- |
 | **Problem** | Client `database.ts` vs manager types lag.                                             |
 | **Why**     | Silent schema drift bugs.                                                              |
-| **Fix**     | One `npm run types:gen` writing to `packages/shared` or both apps; document in README. |
+| **Fix**     | `npm run types:gen` regenerates client + manager; documented in README. No shared-pkg move. |
 | **Risk**    | Large type churn in PR.                                                                |
 | **Effort**  | M                                                                                      |
 | **Verify**  | `tsc` clean after regen.                                                               |

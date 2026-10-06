@@ -16,6 +16,8 @@
     "functions:serve": "supabase functions serve notify-new-order directions --no-verify-jwt",
     "functions:deploy": "supabase functions deploy notify-new-order && supabase functions deploy directions && supabase functions deploy rio",
     "types:client": "supabase gen types typescript --project-id motqehtswgjbbvoazarh --schema public > apps/client/src/types/database.ts",
+    "types:manager": "supabase gen types typescript --project-id motqehtswgjbbvoazarh --schema public > apps/manager/src/integrations/supabase/types.ts",
+    "types:gen": "npm run types:client && npm run types:manager",
     "images:optimize": "node scripts/optimize-menu-images.mjs",
     "images:optimize:dry": "node scripts/optimize-menu-images.mjs --dry-run",
     "seed:generate": "node scripts/generate-seed-data.mjs",

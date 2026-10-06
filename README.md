@@ -225,7 +225,9 @@ RAG numbers live only in the generated report (do not copy stale metrics into th
 | `npm run dct:artifacts` | Capture test logs + evidence index → `docs/dct/` |
 | `npm run rag:eval` | RAG retrieval report → [`docs/rag/evaluation-report.md`](./docs/rag/evaluation-report.md) |
 | `npm run dct:artifacts` | Capture unit/edge/integration logs → [`docs/dct/`](./docs/dct/) for DCT submit |
-| `npm run types:client` | Regenerate Expo `database.ts` from cloud schema |
+| `npm run types:client` | Regenerate Expo `apps/client/src/types/database.ts` from cloud schema |
+| `npm run types:manager` | Regenerate manager `apps/manager/src/integrations/supabase/types.ts` |
+| `npm run types:gen` | Regenerate **both** type files (prefer this after `db push`) |
 | `npm run landing` | Start marketing site (`apps/landing`) |
 | `npm run dashboard` | Start web dashboard (`apps/manager`) |
 | `npm run client` | Start Expo client (`apps/client`) |

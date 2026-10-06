@@ -11,6 +11,10 @@
 - Pool refresh: 20s interval while online (no global orders channel).
 - `restoreRiderTracking` requires `isOnline: true`; offline riders stop GPS.
 
+### P16 — Unified DB types
+- `npm run types:manager` + `npm run types:gen` (client + manager).
+- Regenerated both type files from cloud schema; README docs updated.
+
 ## 2026-10-06 — Phase 4 batch 2 (P11, P12, P15, P18, P19, P22)
 
 ### P11 — Query hygiene

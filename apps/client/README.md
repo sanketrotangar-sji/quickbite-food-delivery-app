@@ -122,7 +122,7 @@ Then submit via Play Console (`eas submit` optional).
 ## Rules
 
 - Nothing outside `src/api/` imports `supabase-js`.
-- `src/types/database.ts` is generated — `npm run types:client` from the repo root. Do not hand-edit.
+- Generated DB types — `npm run types:gen` from the repo root (writes client `database.ts` + manager `types.ts`). Do not hand-edit. Prefer after every schema `db push`.
 - Status colors/labels live in `src/constants/orderStatus.ts`.
 - Never put `service_role` or `WEBHOOK_SECRET` in the mobile app.
 
