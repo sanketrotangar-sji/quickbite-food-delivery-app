@@ -1,11 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
-import { loadAdminRestaurants, type AdminRestaurant } from '@/api/admin';
+import { loadAdminRestaurants, setAdminRestaurantOpen, type AdminRestaurant } from '@/api/admin';
+import { Button } from '@/components/ui/button';
 
 export function AdminRestaurantsPage() {
+  const queryClient = useQueryClient();
   const restaurants = useQuery({ queryKey: ['admin-restaurants'], queryFn: loadAdminRestaurants });
   const [query, setQuery] = useState('');
+  const toggle = useMutation({
+    mutationFn: ({ id, isOpen }: { id: string; isOpen: boolean }) => setAdminRestaurantOpen(id, isOpen),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin-restaurants'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin-summary'] });
+    },
+  });
   const groups = useMemo(() => {
     const needle = query.trim().toLowerCase();
     const shown = (restaurants.data ?? []).filter((row) => {
@@ -35,6 +44,7 @@ export function AdminRestaurantsPage() {
         onChange={(event) => setQuery(event.target.value)}
       />
       {restaurants.error ? <p className="mt-4 text-sm font-semibold text-destructive">{(restaurants.error as Error).message}</p> : null}
+      {toggle.error ? <p className="mt-4 text-sm font-semibold text-destructive">{(toggle.error as Error).message}</p> : null}
       <div className="mt-4 space-y-4">
         {groups.map((group) => (
           <section key={group.ownerId} className="overflow-hidden rounded-xl border border-border bg-card">
@@ -59,9 +69,20 @@ export function AdminRestaurantsPage() {
                     {row.managers.length > 0 ? row.managers.join(', ') : 'No manager assigned'}
                   </p>
                 </div>
-                <span className={row.is_open ? 'text-xs font-bold text-success' : 'text-xs font-bold text-muted-foreground'}>
-                  {row.is_open ? 'Open' : 'Closed'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={row.is_open ? 'text-xs font-bold text-success' : 'text-xs font-bold text-muted-foreground'}>
+                    {row.is_open ? 'Open' : 'Closed'}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={toggle.isPending}
+                    onClick={() => toggle.mutate({ id: row.id, isOpen: !row.is_open })}
+                  >
+                    {row.is_open ? 'Close' : 'Open'}
+                  </Button>
+                </div>
               </div>
             ))}
           </section>

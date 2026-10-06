@@ -178,6 +178,11 @@ export async function loadAdminRestaurants(): Promise<AdminRestaurant[]> {
   }));
 }
 
+export async function setAdminRestaurantOpen(id: string, isOpen: boolean) {
+  const { error } = await supabase.from('restaurants').update({ is_open: isOpen }).eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
 export async function loadHighlights(): Promise<AdminHighlight[]> {
   const { data, error } = await supabase
     .from('home_highlights')

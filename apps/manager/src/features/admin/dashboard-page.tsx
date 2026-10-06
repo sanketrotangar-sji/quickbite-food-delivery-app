@@ -24,7 +24,11 @@ export function AdminDashboardPage() {
         <div className="mt-4 flex flex-1 flex-col divide-y divide-border">
           {(data?.recent ?? []).length === 0 ? (
             <p className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-              No orders yet, or the admin orders policy is not applied.
+              {summary.isLoading
+                ? 'Loading recent orders…'
+                : summary.isError
+                  ? 'Could not load orders. Check admin RLS policies.'
+                  : 'No recent orders yet. After a catalog wipe, place a test order to populate this list.'}
             </p>
           ) : (
             data?.recent.map((order) => (

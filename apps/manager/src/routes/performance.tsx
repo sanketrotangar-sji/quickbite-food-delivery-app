@@ -88,8 +88,8 @@ function PerformancePage() {
           </section>
         ) : null}
 
-        {isLoading ? (
-          <p className="mt-6 text-sm text-muted-foreground">Loading restaurants…</p>
+        {isLoading || (ids.length > 0 && orders.isLoading && !orders.data) ? (
+          <p className="mt-6 text-sm text-muted-foreground">Loading restaurants and orders…</p>
         ) : visible.length === 0 ? (
           <div className="mt-7 rounded-xl border border-border bg-card p-10 text-center">
             <p className="font-bold">No restaurants assigned</p>
@@ -99,6 +99,10 @@ function PerformancePage() {
                 : "An owner has to invite you before this summary appears."}
             </p>
           </div>
+        ) : orders.isError ? (
+          <p className="mt-6 text-sm font-semibold text-destructive">
+            {(orders.error as Error).message}
+          </p>
         ) : (
           <ul className="mt-5 grid gap-3 md:grid-cols-2">
             {visible.map((restaurant) => {
