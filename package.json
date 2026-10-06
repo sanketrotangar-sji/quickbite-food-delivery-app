@@ -32,7 +32,7 @@
     "test": "npm run check:secrets && npm run test:unit && npm run test:edge && npm run test:integration && npm run test:e2e",
     "test:unit": "npm run test --workspace=@quickbite/shared && npm run test --workspace=client && npm run test --workspace=dashboard",
     "test:edge": "node scripts/test-edge.mjs",
-    "test:integration": "node tests/integration/order-happy-path.mjs",
+    "test:integration": "node tests/integration/order-happy-path.mjs && node tests/integration/rls-rag-smoke.mjs",
     "test:e2e": "node scripts/run-playwright.mjs",
     "client": "npm run start --workspace=client",
     "dashboard": "npm run dev --workspace=dashboard",

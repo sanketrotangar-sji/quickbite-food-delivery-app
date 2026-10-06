@@ -376,14 +376,14 @@ Provide me steps of how to do supabase backup
 
 
 
-### P19 — Tests for critical order flow + RLS
+### P19 — Tests for critical order flow + RLS — **DONE (2026-10-06)**
 
 
 |             |                                                                                                                                                              |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Problem** | Some unit/edge/integration exist; RLS not systematically tested.                                                                                             |
 | **Why**     | Regressions on status/PII are expensive.                                                                                                                     |
-| **Fix**     | Expand `tests/integration/order-happy-path.mjs`; add SQL or scripted RLS checks (customer A cannot read B; rider pool redaction; match_embeddings after P4). |
+| **Fix**     | `tests/integration/rls-rag-smoke.mjs`: cross-customer RLS (seed login), `match_embeddings` no `delivery_address`, dispatch-log unique claim; wired into `test:integration`. |
 | **Risk**    | Needs service role in CI secrets.                                                                                                                            |
 | **Effort**  | M                                                                                                                                                            |
 | **Verify**  | `npm run test:integration` green against cloud/dev.                                                                                                          |
