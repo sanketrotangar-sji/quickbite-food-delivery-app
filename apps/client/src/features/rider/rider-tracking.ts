@@ -138,8 +138,13 @@ export async function startRiderTracking(orderId: string) {
   await startPromise;
 }
 
-export async function restoreRiderTracking(options?: { isRider?: boolean }) {
+export async function restoreRiderTracking(options?: { isRider?: boolean; isOnline?: boolean }) {
   if (options?.isRider === false) {
+    await stopRiderTracking();
+    return;
+  }
+  // Offline riders must not restart GPS on app resume.
+  if (options?.isOnline !== true) {
     await stopRiderTracking();
     return;
   }

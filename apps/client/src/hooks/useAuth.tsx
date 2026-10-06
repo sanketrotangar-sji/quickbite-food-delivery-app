@@ -66,13 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((next) => {
         if (cancelled) return;
         setProfile(next);
-        if (hasRole(next, 'rider')) {
-          void restoreRiderTracking({ isRider: true }).catch(() => {
-            // GPS permission failures stay on the rider snapshot; boot should not crash.
-          });
-        } else {
-          void restoreRiderTracking({ isRider: false }).catch(() => {});
-        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -82,6 +75,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, [session?.user.id]);
+
+  // GPS restore only for online riders with an active assignment.
+  useEffect(() => {
+    if (!session?.user.id || !profile) return;
+    if (hasRole(profile, 'rider') && profile.is_online) {
+      void restoreRiderTracking({ isRider: true, isOnline: true }).catch(() => {
+        // GPS permission failures stay on the rider snapshot; boot should not crash.
+      });
+      return;
+    }
+    if (hasRole(profile, 'rider')) {
+      void stopRiderTracking().catch(() => {});
+      return;
+    }
+    void restoreRiderTracking({ isRider: false }).catch(() => {});
+  }, [session?.user.id, profile?.id, profile?.role, profile?.is_online]);
 
   const refreshProfile = useCallback(async () => {
     const userId = session?.user.id;

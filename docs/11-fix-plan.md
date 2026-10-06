@@ -269,14 +269,14 @@ Provide me steps of how to do supabase backup
 
 
 
-### P13 — Rider refresh / realtime scope
+### P13 — Rider refresh / realtime scope — **DONE (2026-10-07)**
 
 
 |             |                                                                                                                               |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | **Problem** | Historical H4/H5: multiple full order fetches; tracking restored aggressively.                                                |
 | **Why**     | Battery + quota.                                                                                                              |
-| **Fix**     | Single pooled query; subscribe only to assigned order ids; gate `restoreRiderTracking` to online riders with active delivery. |
+| **Fix**     | Realtime filtered to `rider_id=eq.user`; pool via 20s refetch while online; GPS restore only when online + active assignment. |
 | **Risk**    | Missed live update if filter wrong.                                                                                           |
 | **Effort**  | M                                                                                                                             |
 | **Verify**  | Manual rider shift; compare request count.                                                                                    |

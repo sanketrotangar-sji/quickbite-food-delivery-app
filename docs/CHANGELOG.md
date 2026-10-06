@@ -6,6 +6,11 @@
 - Confirmed FKs: `orders.delivery_address_id`, `home_highlights.restaurant_id`.
 - Migration `20261007010000_orders_restaurant_placed_idx.sql`: `(restaurant_id, placed_at desc)` for manager kitchen/history lists.
 
+### P13 — Rider realtime / GPS scope
+- Realtime subscription filtered to assigned orders (`rider_id=eq.user`).
+- Pool refresh: 20s interval while online (no global orders channel).
+- `restoreRiderTracking` requires `isOnline: true`; offline riders stop GPS.
+
 ## 2026-10-06 — Phase 4 batch 2 (P11, P12, P15, P18, P19, P22)
 
 ### P11 — Query hygiene

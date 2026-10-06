@@ -188,10 +188,11 @@ export function pickActive(mine: RiderDelivery[]) {
 }
 
 export function useRiderOrders() {
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const userId = session?.user.id;
+  const online = Boolean(profile?.is_online);
   return useQuery({
-    queryKey: riderOrdersKey,
+    queryKey: [...riderOrdersKey, online] as const,
     queryFn: async () => {
       if (!userId) throw new Error('Not signed in.');
       const [available, mine, history] = await Promise.all([
@@ -200,11 +201,13 @@ export function useRiderOrders() {
         listDeliveryHistory(userId),
       ]);
       const active = pickActive(mine);
-      if (active) void startRiderTracking(active.id);
+      if (active && online) void startRiderTracking(active.id);
       else void stopRiderTracking();
       return { available, mine, history };
     },
     enabled: !!userId,
+    // Pool updates without listening to every orders row globally.
+    refetchInterval: online ? 20_000 : false,
   });
 }
 
@@ -215,7 +218,7 @@ type RiderOrdersCache = {
 };
 
 export function useClaimDelivery() {
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: claimDelivery,
@@ -247,7 +250,7 @@ export function useClaimDelivery() {
       Alert.alert('Could not claim', error instanceof Error ? error.message : 'Try again.');
     },
     onSuccess: (_data, orderId) => {
-      void startRiderTracking(orderId);
+      if (profile?.is_online) void startRiderTracking(orderId);
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: riderOrdersKey });
@@ -306,15 +309,16 @@ export function useRiderOrdersRealtime() {
   useEffect(() => {
     const userId = session?.user.id;
     if (!userId || profile?.role !== 'rider') return;
+    const online = Boolean(profile.is_online);
     const channel = supabase
       .channel(`rider-orders-${userId}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders' },
+        { event: '*', schema: 'public', table: 'orders', filter: `rider_id=eq.${userId}` },
         (payload) => {
           const next = payload.new as { id?: string; rider_id?: string | null; status?: OrderStatus };
           const tracking = riderTrackingAction(next.status, next.rider_id, userId);
-          if (tracking === 'start' && next.id) void startRiderTracking(next.id);
+          if (tracking === 'start' && next.id && online) void startRiderTracking(next.id);
           if (tracking === 'stop') void stopRiderTracking(next.id);
           void queryClient.invalidateQueries({ queryKey: riderOrdersKey });
         },
@@ -324,7 +328,7 @@ export function useRiderOrdersRealtime() {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [queryClient, profile?.role, session?.user.id]);
+  }, [queryClient, profile?.is_online, profile?.role, session?.user.id]);
 }
 
 export function useRiderNotices() {
