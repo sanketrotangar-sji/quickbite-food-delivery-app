@@ -438,13 +438,13 @@ Provide me steps of how to do supabase backup
 
 
 
-### P23 — Quarantine / backup strategy
+### P23 — Quarantine / backup strategy — **DONE (2026-10-07)**
 
 
 |             |                                                                                                                   |
 | ----------- | ----------------------------------------------------------------------------------------------------------------- |
 | **Problem** | `_delivery_quarantine/` is bulky; no documented backup.                                                           |
-| **Fix**     | After P8: delete or gitignore generated JSON; keep README pointer; document Supabase PITR / weekly dump for prod. |
+| **Fix**     | Quarantine README + gitignore exception; backup/PITR/`pg_dump` section in `12-environments.md`; FAQ updated.    |
 | **Risk**    | Losing Assessment artifacts — copy to Drive first if graders need them.                                           |
 | **Effort**  | S                                                                                                                 |
 | **Verify**  | Repo smaller; backup steps in docs.                                                                               |
@@ -517,4 +517,4 @@ Provide me steps of how to do supabase backup
 
 ## Phase 3 status
 
-**Complete.** Batch 1 applied in Phase 4: **P4, P5, P6, P20, P8** (see [`CHANGELOG.md`](./CHANGELOG.md)). Approve more proposal numbers to continue.
+**Complete.** Phase 4 batches applied — see [`CHANGELOG.md`](./CHANGELOG.md). Remaining deferred: **P7**, **P9**, plus optional P1/P2/P6b/P14/P24.

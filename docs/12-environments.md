@@ -59,3 +59,21 @@ supabase db reset
 supabase link --project-ref <ref>
 supabase db push
 ```
+
+---
+
+## Backups
+
+Do this **before** any destructive cloud work (P7 wipe) or major migration experiments.
+
+1. **Supabase Dashboard** → Project Settings → Database → **Backups** (PITR / daily backups if your plan includes them). Restore from there if a wipe goes wrong.
+2. **Manual dump** (optional extra safety):
+
+```bash
+# From a machine with DB password (Dashboard → Database → connection string)
+pg_dump "$DATABASE_URL" --format=custom --file="quickbite-$(date +%Y%m%d).dump"
+```
+
+3. **Local Assessment artifacts** live under `_delivery_quarantine/` (gitignored except its README). Keep `seed-data-generated/` if graders still need the large corpus; delete `tmp*` anytime.
+
+Quarantine details: [`_delivery_quarantine/README.md`](../_delivery_quarantine/README.md) and FAQ item 12 in [`10-faq-doubts.md`](./10-faq-doubts.md).

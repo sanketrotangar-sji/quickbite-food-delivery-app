@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-10-07 — Phase 4 batch 3 (in progress)
+## 2026-10-07 — Phase 4 batch 3 (P3, P13, P16, P17, P21, P23)
 
 ### P3 — Indexes / FK audit
 - Confirmed FKs: `orders.delivery_address_id`, `home_highlights.restaurant_id`.
@@ -22,6 +22,10 @@
 ### P21 — Errors / logging
 - Client `userFacingMessage` for consistent Alert copy (cart/add/rider mutations).
 - RIO + notify-new-order logs use short `requestId` (no PII). Manager auth-gate already correct.
+
+### P23 — Quarantine / backup
+- `_delivery_quarantine/README.md` tracked; gitignore keeps bulky artifacts out.
+- Backup/PITR/`pg_dump` section in `docs/12-environments.md`; FAQ + Phase status updated.
 
 ## 2026-10-06 — Phase 4 batch 2 (P11, P12, P15, P18, P19, P22)
 

@@ -48,7 +48,8 @@ agent skills/*
 
 docs/planning.md
 # Local delivery quarantine (moved unused files)
-_delivery_quarantine/
+_delivery_quarantine/**
+!_delivery_quarantine/README.md
 
 # Generated seed with demo passwords — regenerate locally
 supabase/seed-data/generated/auth-users.csv

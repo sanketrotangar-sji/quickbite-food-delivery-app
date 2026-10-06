@@ -51,7 +51,7 @@ A **parking lot**, not part of the running app. It holds:
 
 **Is it important at runtime?** No.  
 **Is it important historically?** Maybe for graders or regenerating seeds.  
-**Phase 3 recommendation:** after a clean seed strategy, delete or stop tracking bulky generated files; keep a small sample if needed. Not required to edit code.
+**Hygiene (P23):** folder stays gitignored (except `_delivery_quarantine/README.md`). Prefer `supabase/seed.sql` for local demos. Backup steps: [`12-environments.md`](./12-environments.md#backups). Safe to delete local `tmp*` / old Playwright output anytime.
 
 ### 13. Where did the old audits go?
 [`docs/historical/`](./historical/) — per your request. Current truth starts at [`00-audit.md`](./00-audit.md) + Phase 2 docs.
