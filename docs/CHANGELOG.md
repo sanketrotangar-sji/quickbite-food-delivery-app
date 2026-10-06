@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-07 — Phase 4 batch 3 (in progress)
+
+### P3 — Indexes / FK audit
+- Confirmed FKs: `orders.delivery_address_id`, `home_highlights.restaurant_id`.
+- Migration `20261007010000_orders_restaurant_placed_idx.sql`: `(restaurant_id, placed_at desc)` for manager kitchen/history lists.
+
 ## 2026-10-06 — Phase 4 batch 2 (P11, P12, P15, P18, P19, P22)
 
 ### P11 — Query hygiene

@@ -180,9 +180,10 @@ Notable: `customer_id`, `restaurant_id`, `rider_id`, `status`, `total_amount`, `
 
 ## Indexes (why they exist)
 
-- Filter hot paths: orders by customer / restaurant+status / rider; unclaimed partial index.  
+- Filter hot paths: orders by customer / restaurant+status / restaurant+placed_at / rider; unclaimed partial index.  
 - Menu by restaurant (+ available).  
 - Cuisine browse.  
+- `orders.delivery_address_id` and `home_highlights.restaurant_id` FKs + partial indexes (audit P3 — already present).  
 - HNSW on embeddings for cosine search.  
 - Unique constraints that encode business rules (one rating per order, one active LLM, one active manager membership per user).
 

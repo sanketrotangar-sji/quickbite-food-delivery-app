@@ -82,14 +82,14 @@ Defer `P1` naming/`created_at` cosmetics until after security unless you want sc
 
 
 
-### P3 — Foreign keys / indexes audit patch
+### P3 — Foreign keys / indexes audit patch — **DONE (2026-10-07)**
 
 
 |             |                                                                                                                                                                                                                |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Problem** | Most FKs exist; browse/order paths got indexes, but manager large scans and RAG joins may still miss composites.                                                                                               |
 | **Why**     | Slow kitchen board and home as catalog grows.                                                                                                                                                                  |
-| **Fix**     | Migration: confirm FKs on `orders.delivery_address_id`, `home_highlights.restaurant_id`; add indexes only where `EXPLAIN` shows seq scans on hot filters (orders by status+restaurant already partly covered). |
+| **Fix**     | Confirmed FKs for `delivery_address_id` / `home_highlights.restaurant_id`; added `orders_restaurant_placed_idx (restaurant_id, placed_at desc)`.                                                              |
 | **Risk**    | Extra indexes slow writes slightly.                                                                                                                                                                            |
 | **Effort**  | S–M                                                                                                                                                                                                            |
 | **Verify**  | `EXPLAIN` on kitchen list + customer home queries.                                                                                                                                                             |
