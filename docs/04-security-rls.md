@@ -123,7 +123,7 @@ Legend: **R** read, **W** write, **RPC** via function only, **view** safe view, 
 | User UPDATEs own `role`? | **Blocked** — privileges + trigger. |
 | Hired manager steals `owner_id`? | **Blocked** by `restaurants_guard_owner_id`. |
 | Service role in Expo app? | **Not** in `EXPO_PUBLIC_*`. Exists in gitignored `.env` / scripts / edge. |
-| RAG leaks other people’s addresses? | **Yes, risk today** — `match_embeddings` is security definer and returns `delivery_address` for order chunks to any authenticated executor. See Critical in `00-audit.md`. |
+| RAG leaks other people’s addresses? | **Mitigated (P4):** `match_embeddings` strips `delivery_address` and only returns order-history rows for `customer_id = auth.uid()`. RIO `retrieve_context` queries `menu_items` + `ratings` only. See migration `20261006220000_match_embeddings_scope_pii.sql`. |
 
 ---
 
@@ -141,7 +141,7 @@ Legend: **R** read, **W** write, **RPC** via function only, **view** safe view, 
 
 ## Gap list (for Phase 3)
 
-1. Scope `match_embeddings` / RAG to non-PII or to the caller’s own orders.  
+1. Scope `match_embeddings` / RAG to non-PII or to the caller’s own orders. **DONE (P4)** — migration `20261006220000_match_embeddings_scope_pii.sql` + RIO menu/ratings-only retrieve.  
 2. Revisit webhook auth + payload re-fetch.  
 3. Confirm admin read on `rider_locations` if ops need it.  
 4. Ensure manager `client.server.ts` never ships service role to the browser (currently unused by routes — still a footgun).  

@@ -82,13 +82,15 @@ User query
 
 **Sources backfilled for Assessment:** `menu_items`, `ratings`, `orders`, `order_items`, `order_status_history` (`scripts/backfill-embeddings.mjs`, `--source all`).
 
+**Production retrieve (P4):** RIO `retrieve_context` requests **`menu_items` + `ratings` only**. `match_embeddings` never returns `delivery_address`; order-history sources only surface for the calling customer’s own rows (`20261006220000_match_embeddings_scope_pii.sql`).
+
 **Your assessment (CONFIRMED):** a proper RAG is needed, but the **current corpus feels wrong / not trustworthy**. Treat today’s ≥5k vectors as **grader-oriented**, not production-quality retrieval. Redesign should decide:
 
 - What is safe to embed (menus/reviews vs private orders)?  
 - How to scope retrieval to the caller?  
 - How to evaluate quality (`docs/rag/`, `npm run rag:eval`).
 
-**Critical bug:** `match_embeddings` is `SECURITY DEFINER` and can return **other customers’ `delivery_address`** to any authenticated caller. Fix before trusting RAG in production (`20261001120000_match_embeddings_order_history.sql`).
+**Critical bug (fixed in P4):** Older `match_embeddings` could return other customers’ `delivery_address`. Mitigated by ownership filter + address strip + RIO menu/ratings-only retrieve (`20261006220000_match_embeddings_scope_pii.sql`).
 
 ---
 
@@ -100,7 +102,7 @@ User query
 | RLS on cart/orders tools | Yes (user-scoped client) |
 | Tool row limits | Yes (see table) |
 | Tool result cache | `_toolCache.ts` for some reads |
-| PII-safe RAG | **No** |
+| PII-safe RAG | **Yes (P4)** — address stripped; order sources owner-scoped; RIO uses menu/ratings |
 | Rate limiting / abuse budget | Not documented in code |
 | Multi-agent / planner / memory store | Not present — single chat loop |
 

@@ -104,7 +104,7 @@ Defer `P1` naming/`created_at` cosmetics until after security unless you want sc
 
 
 
-### P4 — Fix `match_embeddings` PII leak **(Critical)**
+### P4 — Fix `match_embeddings` PII leak **(DONE — batch 1)**
 
 
 |             |                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -478,7 +478,7 @@ Provide me steps of how to do supabase backup
 | P1  | DB conventions       | Medium            | M      |
 | P2  | CHECKs               | Low–Med           | S      |
 | P3  | Indexes/FKs          | Medium            | S–M    |
-| P4  | RAG PII              | **Critical**      | M      |
+| P4  | RAG PII              | **DONE (batch 1)** | M      |
 | P5  | Webhook              | **Critical/High** | M      |
 | P6  | Secrets footguns     | High              | S      |
 | P6b | Admin GPS read       | Low               | S      |

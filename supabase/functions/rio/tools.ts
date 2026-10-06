@@ -889,13 +889,10 @@ async function retrieveContextUncached(
 
   try {
     const { retrieveContext } = await import("../_shared/embeddings.ts");
-    // Food + reviews for recommendations; order history grounds support / past-order questions.
+    // Public catalog + reviews only. Past-order questions use track_order / check_delivery_status (RLS).
     const chunks = await retrieveContext(db, query, Math.min(topK * 2, 20), [
       "menu_items",
       "ratings",
-      "orders",
-      "order_items",
-      "order_status_history",
     ]);
     const filtered = chunks.filter((c) => {
       if (c.source_table !== "menu_items") return true;
