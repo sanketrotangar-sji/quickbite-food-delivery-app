@@ -766,5 +766,6 @@ Still open only if needed later: **permission to run read-only COUNT/orphan SQL 
 
 - **Phase 1:** Complete (this file).  
 - **Phase 2:** Complete — see `[docs/README.md](./README.md)` (`01`–`10`).  
-- **Phase 3:** Complete — see [`11-fix-plan.md`](./11-fix-plan.md); approve proposal numbers before Phase 4.
+- **Phase 3:** Complete — see [`11-fix-plan.md`](./11-fix-plan.md).  
+- **Phase 4 batch 1:** Done — P4, P5, P6, P20, P8 ([`CHANGELOG.md`](./CHANGELOG.md)). Apply new migrations with `supabase db push` / deploy `notify-new-order` when ready.
 
