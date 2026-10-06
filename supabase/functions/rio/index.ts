@@ -178,6 +178,7 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
 const ADD_INTENT = /^add menu item ([0-9a-f-]{36})\b/i;
 
 Deno.serve(async (req) => {
+  const requestId = crypto.randomUUID().slice(0, 8);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") {
     return json({ error: "POST only." }, 405);
@@ -229,9 +230,11 @@ Deno.serve(async (req) => {
     ? body.deliveryLng
     : null;
   const notes = typeof body.notes === "string" ? body.notes : null;
+  const actionLabel = typeof body.action === "string" ? body.action : body.stream ? "chat_stream" : "chat";
 
   try {
     if (body.action === "confirm_order") {
+      console.log(`rio [${requestId}] action=${actionLabel}`);
       const outcome = await placeCustomerOrder(
         db,
         deliveryAddress,
@@ -251,6 +254,7 @@ Deno.serve(async (req) => {
     }
 
     if (body.action === "replace_cart") {
+      console.log(`rio [${requestId}] action=${actionLabel}`);
       if (!isUuid(body.menuItemId)) return json({ error: "That dish could not be added." }, 400);
       const outcome = await replaceCart(db, userId, body.menuItemId);
       const failed = typeof outcome.data.error === "string";
@@ -279,6 +283,7 @@ Deno.serve(async (req) => {
       : SYSTEM;
 
     const wantStream = body.stream === true;
+    console.log(`rio [${requestId}] action=${actionLabel}`);
     if (!wantStream) {
       const outcome = await runChat(db, userId, deliveryAddress, deliveryLat, deliveryLng, system, messages);
       return json(outcome);
@@ -313,7 +318,7 @@ Deno.serve(async (req) => {
         });
       } catch (error) {
         const message = error instanceof Error ? error.message : "RIO could not answer just now.";
-        console.error("rio stream", message);
+        console.error(`rio [${requestId}] stream`, message);
         await writeLine({
           type: "error",
           error: message.startsWith("RIO ") ? message : "RIO could not answer just now.",
@@ -332,7 +337,7 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown";
-    console.error("rio", message);
+    console.error(`rio [${requestId}]`, message);
     if (message.startsWith("RIO ")) return json({ error: message }, 503);
     return json({ error: "RIO could not answer just now." }, 500);
   }

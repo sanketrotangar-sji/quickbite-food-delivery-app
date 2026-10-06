@@ -15,6 +15,7 @@ import { QuantityStepper } from '@/components/QuantityStepper';
 import { Screen } from '@/components/Screen';
 import { StickyAction } from '@/components/StickyAction';
 import { VegMark } from '@/components/VegMark';
+import { userFacingMessage } from '@/api/errors';
 import { colors, formatInr, radii } from '@/constants/theme';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useCart } from '@/hooks/useCart';
@@ -32,7 +33,7 @@ export function CartScreen() {
     cart.updateQuantity.mutate(
       { id, quantity },
       {
-        onError: (error) => Alert.alert('Could not update', error instanceof Error ? error.message : 'Try again.'),
+        onError: (error) => Alert.alert('Could not update', userFacingMessage(error)),
       },
     );
   }

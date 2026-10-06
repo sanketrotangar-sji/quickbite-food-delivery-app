@@ -19,6 +19,10 @@
 - Renamed `apps/client/src/lib/home-mock.ts` → `home-catalog.ts`; updated imports.
 - Removed empty `apps/client/app/(tabs)/`; manager `supabase/README.md` clarifies tooling stub.
 
+### P21 — Errors / logging
+- Client `userFacingMessage` for consistent Alert copy (cart/add/rider mutations).
+- RIO + notify-new-order logs use short `requestId` (no PII). Manager auth-gate already correct.
+
 ## 2026-10-06 — Phase 4 batch 2 (P11, P12, P15, P18, P19, P22)
 
 ### P11 — Query hygiene

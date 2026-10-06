@@ -11,6 +11,7 @@ import {
   startDelivery,
   type RiderDelivery,
 } from '@/api/deliveries';
+import { userFacingMessage } from '@/api/errors';
 import { listMyNotifications, markNotificationRead } from '@/api/notices';
 import type { EarningsRange } from '@/features/rider/rider-content';
 import type { NearbyOrder, RiderCurrentOrder, RiderStats } from '@/features/rider/rider-home';
@@ -247,7 +248,7 @@ export function useClaimDelivery() {
     },
     onError: (error, _orderId, context) => {
       if (context?.previous) queryClient.setQueryData(riderOrdersKey, context.previous);
-      Alert.alert('Could not claim', error instanceof Error ? error.message : 'Try again.');
+      Alert.alert('Could not claim', userFacingMessage(error));
     },
     onSuccess: (_data, orderId) => {
       if (profile?.is_online) void startRiderTracking(orderId);
@@ -291,7 +292,7 @@ export function useAdvanceRiderOrder() {
     },
     onError: (error, _input, context) => {
       if (context?.previous) queryClient.setQueryData(riderOrdersKey, context.previous);
-      Alert.alert('Could not update', error instanceof Error ? error.message : 'Try again.');
+      Alert.alert('Could not update', userFacingMessage(error));
     },
     onSuccess: (_data, input) => {
       if (input.action === 'deliver') void stopRiderTracking(input.id);

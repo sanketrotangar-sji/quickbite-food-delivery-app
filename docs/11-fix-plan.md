@@ -408,13 +408,13 @@ Provide me steps of how to do supabase backup
 
 
 
-### P21 — Error handling & logging
+### P21 — Error handling & logging — **DONE (2026-10-07)**
 
 
 |             |                                                                                                                                                                       |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Problem** | Uneven empty/error states; edge logs unstructured.                                                                                                                    |
-| **Fix**     | Shared error toast patterns; edge log request id + tool name without PII; manager blocked screen only when role wrong, not on transient profile fail (if still true). |
+| **Fix**     | `userFacingMessage` helper on client; RIO/notify logs prefixed with short `requestId` + action (no PII). Auth-gate already skips blocked on profile fail.           |
 | **Risk**    | Low.                                                                                                                                                                  |
 | **Effort**  | M                                                                                                                                                                     |
 | **Verify**  | Force 401/network error → clear message.                                                                                                                              |

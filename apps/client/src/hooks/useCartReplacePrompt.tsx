@@ -1,7 +1,7 @@
 import { useState, type ReactElement } from 'react';
 import { Alert } from 'react-native';
 
-import { CartOtherRestaurantError } from '@/api/errors';
+import { CartOtherRestaurantError, userFacingMessage } from '@/api/errors';
 import { CartReplaceDialog } from '@/components/CartReplaceDialog';
 import { useCart } from '@/hooks/useCart';
 
@@ -48,7 +48,7 @@ export function useCartReplacePrompt() {
       await prompt.retry();
       setPrompt(null);
     } catch (error) {
-      Alert.alert('Could not update cart', error instanceof Error ? error.message : 'Try again.');
+      Alert.alert('Could not update cart', userFacingMessage(error));
     } finally {
       setLoading(false);
     }

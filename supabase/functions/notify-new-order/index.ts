@@ -164,13 +164,14 @@ async function sendExpoPush(
 }
 
 Deno.serve(async (req) => {
+  const requestId = crypto.randomUUID().slice(0, 8);
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   const webhookSecret = Deno.env.get("WEBHOOK_SECRET");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!webhookSecret || !supabaseUrl || !serviceRoleKey) {
-    console.error("Notification function is missing required server configuration.");
+    console.error(`notify-new-order [${requestId}] missing_server_config`);
     return json({ error: "server_not_configured" }, 500);
   }
   if (
@@ -209,7 +210,7 @@ Deno.serve(async (req) => {
     .eq("id", payload.record.id)
     .maybeSingle();
   if (orderError) {
-    console.error("notify-new-order order lookup failed", orderError);
+    console.error(`notify-new-order [${requestId}] order_lookup_failed`);
     return json({ error: "order_lookup_failed" }, 500);
   }
   if (!dbOrder) {

@@ -1,5 +1,6 @@
 import { Alert } from 'react-native';
 
+import { userFacingMessage } from '@/api/errors';
 import { useCart, type CartItemPreview } from '@/hooks/useCart';
 import { useCartReplacePrompt } from '@/hooks/useCartReplacePrompt';
 import type { HomeDish } from '@/lib/home-catalog';
@@ -25,7 +26,7 @@ export function useAddDish() {
     try {
       await replace.runWithReplacePrompt(() => cart.addItem.mutateAsync(input));
     } catch (error) {
-      Alert.alert('Could not add', error instanceof Error ? error.message : 'Try again.');
+      Alert.alert('Could not add', userFacingMessage(error));
     }
   }
 
