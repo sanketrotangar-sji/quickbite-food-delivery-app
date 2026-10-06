@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-07 — Customer performance + image payload
+
+### Fetch / tabs
+- Customer orders realtime scoped to `customer_id`; drop global history/location channels from tab layout.
+- Live kitchen catalog invalidation only while Home/Explore focused (4s debounce).
+- Cart/orders/active-order: `staleTime` 60s, `refetchOnMount: false`; cart mutations stop blanket invalidate storms.
+- Home catalog split: `home-shell` then `home-dishes`; ratings via `restaurant_rating_summary` (migration `20261007030000_…`).
+- Favorites + restaurant “similar” no longer pull full home catalog; Orders prefetched after shell load.
+- Notifications limit 50; RIO trim capped; Careers skips focus refetch when cached.
+
+### Images
+- Cart, restaurant hero, promo banner, rider cards use `RemoteImage` + `.sm.webp` thumbs (`hero`/`thumb` slots).
+- Removed unused multi‑MB dish PNGs from Expo client assets; manager uploads generate sibling thumbs in-browser; list `<img>` uses thumb rewrite.
+- Re-run `npm run images:optimize` for existing Storage objects when needed.
+
 ## 2026-10-07 — Production readiness (waves 0–6)
 
 ### Wave 0 — Catalog wipe script

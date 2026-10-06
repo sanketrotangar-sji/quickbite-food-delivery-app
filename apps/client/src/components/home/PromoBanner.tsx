@@ -44,7 +44,7 @@ export function PromoBanner({
 
   return (
     <View style={styles.card}>
-      {offer.imageUrl ? <RemoteImage uri={offer.imageUrl} slot="hero" style={styles.image} /> : <View style={styles.image} />}
+      {offer.imageUrl ? <RemoteImage uri={offer.imageUrl} slot="thumb" style={styles.image} /> : <View style={styles.image} />}
       <View style={styles.scrim} />
       <View style={styles.body}>
         <View style={styles.copy}>

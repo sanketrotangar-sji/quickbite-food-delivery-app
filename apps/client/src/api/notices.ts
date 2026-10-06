@@ -21,7 +21,8 @@ export async function listMyNotifications(userId?: string): Promise<RiderNotice[
     .from('notifications')
     .select('id, title, body, created_at, read_at')
     .eq('user_id', uid)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(50);
   if (error) throwApiError(error, 'Could not load notifications.');
   return (data ?? []).map((row) => ({
     id: row.id,

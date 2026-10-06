@@ -14,6 +14,8 @@ export function useOrders() {
     queryKey: ordersQueryKey,
     queryFn: listCustomerOrders,
     enabled: !!session,
+    staleTime: 60_000,
+    refetchOnMount: false,
   });
 }
 

@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AddressSheet } from '@/components/address/AddressSheet';
 import { AppText } from '@/components/AppText';
@@ -12,6 +12,7 @@ import { FlowHeader } from '@/components/FlowHeader';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { PriceRow } from '@/components/PriceRow';
 import { QuantityStepper } from '@/components/QuantityStepper';
+import { RemoteImage } from '@/components/RemoteImage';
 import { Screen } from '@/components/Screen';
 import { StickyAction } from '@/components/StickyAction';
 import { VegMark } from '@/components/VegMark';
@@ -97,7 +98,7 @@ export function CartScreen() {
             return (
               <View key={line.id} style={[styles.line, index > 0 && styles.lineBorder]}>
                 {imageUrl ? (
-                  <Image source={{ uri: imageUrl }} style={styles.image} />
+                  <RemoteImage uri={imageUrl} slot="thumb" style={styles.image} />
                 ) : (
                   <View style={[styles.image, styles.imageFallback]}>
                     <AppText weight="bold" style={styles.fallbackText}>

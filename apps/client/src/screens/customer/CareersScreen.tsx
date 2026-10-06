@@ -73,9 +73,9 @@ function RiderForm() {
 
   useFocusEffect(
     useCallback(() => {
-      void applications.refetch();
-      void refreshProfile();
-    }, [applications.refetch, refreshProfile]),
+      // Soft refresh only when cache is empty / stale — avoid refetch on every focus.
+      if (!applications.data) void applications.refetch();
+    }, [applications.data, applications.refetch]),
   );
 
   useEffect(() => {

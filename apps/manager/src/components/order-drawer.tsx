@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useMinuteTick } from "@/hooks/use-minute-tick";
 import { orderElapsed } from "@/lib/dashboard-stats";
+import { displayImageUrl } from "@/lib/images";
 import type { Order, OrderStatus } from "@/lib/quickbite-data";
 
 const TIMELINE: { status: OrderStatus; label: string }[] = [
@@ -72,7 +73,7 @@ export function OrderDrawer({ order, onClose, onAdvance }: { order?: Order | und
                 <div className="space-y-3">
                   {order.items.map((item) => (
                     <div key={item.name} className="grid grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-3">
-                      {item.image ? <img src={item.image} alt="" className="size-12 rounded-lg object-cover" /> : <span className="size-12 rounded-lg bg-secondary" />}
+                      {item.image ? <img src={displayImageUrl(item.image)} alt="" className="size-12 rounded-lg object-cover" /> : <span className="size-12 rounded-lg bg-secondary" />}
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold">{item.name}</p>
                         <p className="text-xs text-muted-foreground">Qty {item.quantity}</p>

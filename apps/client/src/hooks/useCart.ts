@@ -31,6 +31,8 @@ export function useCart() {
     queryKey: cartQueryKey,
     queryFn: listCart,
     enabled: !!customerId,
+    staleTime: 60_000,
+    refetchOnMount: false,
   });
 
   const items = query.data ?? [];
@@ -41,7 +43,10 @@ export function useCart() {
   const restaurantName = items[0]?.restaurants?.name ?? null;
   const restaurantId = items[0]?.restaurant_id ?? null;
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: cartQueryKey });
+  /** Soft reconcile — optimistic data already updated; avoid refetch storms. */
+  const reconcile = () => {
+    void queryClient.invalidateQueries({ queryKey: cartQueryKey, refetchType: 'none' });
+  };
 
   const addItem = useMutation({
     mutationFn: (input: { menuItemId: string; restaurantId: string; preview?: CartItemPreview }) => {
@@ -72,7 +77,21 @@ export function useCart() {
       if (context?.previous) queryClient.setQueryData(cartQueryKey, context.previous);
       if (!context?.skipped) alertCartError(error);
     },
-    onSettled: invalidate,
+    onSuccess: async (_data, input, context) => {
+      // Mixed-restaurant path skipped optimistic update — pull truth once.
+      if (context?.skipped) {
+        await queryClient.invalidateQueries({ queryKey: cartQueryKey });
+        return;
+      }
+      // Replace pending ids with server rows when we added a new line without a stable id.
+      if (input.preview && !(queryClient.getQueryData<CartLine[]>(cartQueryKey) ?? []).some((l) => l.id.startsWith('pending-'))) {
+        reconcile();
+        return;
+      }
+      if ((queryClient.getQueryData<CartLine[]>(cartQueryKey) ?? []).some((l) => l.id.startsWith('pending-'))) {
+        await queryClient.invalidateQueries({ queryKey: cartQueryKey });
+      }
+    },
   });
 
   const updateQuantity = useMutation({
@@ -91,7 +110,6 @@ export function useCart() {
       if (context?.previous) queryClient.setQueryData(cartQueryKey, context.previous);
       alertCartError(error);
     },
-    onSettled: invalidate,
   });
 
   const clear = useMutation({
@@ -109,7 +127,6 @@ export function useCart() {
       if (context?.previous) queryClient.setQueryData(cartQueryKey, context.previous);
       alertCartError(error);
     },
-    onSettled: invalidate,
   });
 
   return {

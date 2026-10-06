@@ -9,6 +9,7 @@ import {
   saveHighlight,
   type AdminHighlight,
 } from '@/api/admin';
+import { displayImageUrl } from '@/lib/images';
 import { Button } from '@/components/ui/button';
 
 type HighlightForm = {
@@ -122,7 +123,7 @@ export function AdminHighlightsPage() {
       <div className="mt-5 grid gap-3">
         {(highlights.data ?? []).map((row) => (
           <article key={row.id} className="grid grid-cols-[72px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border bg-card p-3">
-            <img src={row.image_url} alt="" className="size-[72px] rounded-lg object-cover" />
+            <img src={displayImageUrl(row.image_url)} alt="" className="size-[72px] rounded-lg object-cover" />
             <div className="min-w-0">
               <p className="truncate font-extrabold">{row.title}</p>
               <p className="truncate text-xs text-muted-foreground">

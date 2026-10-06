@@ -1,10 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMemo, useRef, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { fetchSimilarPlaces } from '@/api/home';
 import { AppText } from '@/components/AppText';
 import { CartBar } from '@/components/CartBar';
 import { EmptyState } from '@/components/EmptyState';
@@ -12,6 +14,7 @@ import { ExploreRestaurantCard } from '@/components/explore/ExploreRestaurantCar
 import { CategoryChips, type CuisineChip } from '@/components/home/CategoryChips';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { MenuItemRow } from '@/components/MenuItemRow';
+import { RemoteImage } from '@/components/RemoteImage';
 import { CustomizeSheet } from '@/components/restaurant/CustomizeSheet';
 import { RestaurantInfo } from '@/components/restaurant/RestaurantInfo';
 import { RestaurantReviews } from '@/components/restaurant/RestaurantReviews';
@@ -19,7 +22,6 @@ import { SectionHeader } from '@/components/SectionHeader';
 import { colors, formatInr, radii, screenTopGap } from '@/constants/theme';
 import { useCart } from '@/hooks/useCart';
 import { useCartReplacePrompt } from '@/hooks/useCartReplacePrompt';
-import { useHomeCatalog } from '@/hooks/useHomeCatalog';
 import { useMenu, useRestaurant, useRestaurantRatings } from '@/hooks/useRestaurants';
 import { useSavedHearts } from '@/hooks/useSavedHearts';
 import { formatPriceRange } from '@/lib/explore-filters';
@@ -35,7 +37,6 @@ export function RestaurantDetailScreen({ restaurantId }: { restaurantId?: string
   const restaurantQuery = useRestaurant(restaurantId);
   const menuQuery = useMenu(restaurantId);
   const ratingsQuery = useRestaurantRatings(restaurantId);
-  const catalog = useHomeCatalog();
   const cart = useCart();
   const replace = useCartReplacePrompt();
   const hearts = useSavedHearts();
@@ -71,17 +72,14 @@ export function RestaurantDetailScreen({ restaurantId }: { restaurantId?: string
     [sections],
   );
   const lines = cart.items.filter((line) => line.restaurant_id === restaurantId);
-  const similar = useMemo(() => {
-    const places = (catalog.data?.places ?? []).filter((place) => place.id !== restaurantId);
-    const needle = (restaurant?.cuisine ?? '').toLowerCase();
-    return [...places]
-      .sort((a, b) => {
-        const aMatch = needle && a.cuisine.toLowerCase().includes(needle) ? 1 : 0;
-        const bMatch = needle && b.cuisine.toLowerCase().includes(needle) ? 1 : 0;
-        return bMatch - aMatch || (b.rating ?? -1) - (a.rating ?? -1);
-      })
-      .slice(0, 3);
-  }, [catalog.data?.places, restaurant?.cuisine, restaurantId]);
+  const similarQuery = useQuery({
+    queryKey: ['similar-places', restaurantId, restaurant?.cuisine ?? ''],
+    queryFn: () => fetchSimilarPlaces(restaurantId as string, restaurant?.cuisine, 6),
+    enabled: !!restaurantId && !!restaurant,
+    staleTime: 120_000,
+    refetchOnMount: false,
+  });
+  const similar = (similarQuery.data ?? []).slice(0, 3);
 
   if (!restaurantId) {
     return (
@@ -187,7 +185,7 @@ export function RestaurantDetailScreen({ restaurantId }: { restaurantId?: string
           contentContainerStyle={{ paddingBottom: cart.itemCount > 0 ? 120 : 32 }}>
           <View>
             {restaurant.image_url ? (
-              <Image source={{ uri: restaurant.image_url }} style={styles.hero} />
+              <RemoteImage uri={restaurant.image_url} slot="hero" style={styles.hero} />
             ) : (
               <View style={[styles.hero, styles.heroFallback]}>
                 <AppText weight="bold" style={styles.heroLetter}>
@@ -366,9 +364,7 @@ export function RestaurantDetailScreen({ restaurantId }: { restaurantId?: string
                   <ExploreRestaurantCard
                     key={place.id}
                     place={place}
-                    priceLabel={formatPriceRange(
-                      (catalog.data?.dishes ?? []).filter((dish) => dish.restaurantId === place.id).map((dish) => dish.price),
-                    )}
+                    priceLabel={formatPriceRange([])}
                     liked={hearts.ids.has(place.id)}
                     onToggleLike={() => hearts.toggle(place.id)}
                     onPress={() => router.push(`/(customer)/restaurant/${place.id}`)}

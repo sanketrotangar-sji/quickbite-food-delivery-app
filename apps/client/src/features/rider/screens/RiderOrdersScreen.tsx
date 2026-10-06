@@ -2,26 +2,28 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { EmptyState } from '@/components/EmptyState';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
+import { RemoteImage } from '@/components/RemoteImage';
 import { Screen } from '@/components/Screen';
 import { colors, formatInr, radii, tabBarInset } from '@/constants/theme';
 import { deliveryStatusLabel, useDeliveryStep } from '@/features/rider/delivery-session';
-import { pickActive, toCurrentOrder, useRiderOrders } from '@/features/rider/use-rider-live';
+import { pickActive, toCurrentOrder, useRiderHistory, useRiderOrders } from '@/features/rider/use-rider-live';
 import type { RiderDelivery } from '@/api/deliveries';
 
 type Segment = 'active' | 'past';
 
 export function RiderOrdersScreen() {
   const orders = useRiderOrders();
+  const history = useRiderHistory();
   const [segment, setSegment] = useState<Segment>('active');
   const activeDelivery = pickActive(orders.data?.mine ?? []);
   const step = useDeliveryStep(activeDelivery?.id ?? null, activeDelivery?.status);
   const active = activeDelivery ? [toCurrentOrder(activeDelivery)] : [];
-  const past = (orders.data?.history ?? []).filter((order) => order.status === 'delivered');
+  const past = (history.data ?? []).filter((order: RiderDelivery) => order.status === 'delivered');
   const visible = segment === 'active' ? active : past;
 
   if (orders.isLoading && !orders.data) {
@@ -90,7 +92,15 @@ export function RiderOrdersScreen() {
                 key={order.id}
                 onPress={() => router.push('/(rider)/delivery')}
                 style={({ pressed }) => [styles.card, styles.active, pressed && styles.pressed]}>
-                <Image source={order.image} style={styles.thumb} />
+                {order.imageUrl ? (
+                  <RemoteImage uri={order.imageUrl} slot="thumb" style={styles.thumb} />
+                ) : (
+                  <View style={[styles.thumb, styles.thumbFallback]}>
+                    <AppText weight="bold" style={styles.thumbLetter}>
+                      {order.restaurantName.slice(0, 1).toUpperCase()}
+                    </AppText>
+                  </View>
+                )}
                 <View style={styles.copy}>
                   <AppText weight="bold" numberOfLines={1}>
                     {order.restaurantName}
@@ -177,6 +187,8 @@ const styles = StyleSheet.create({
   active: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   pressed: { opacity: 0.72 },
   thumb: { width: 48, height: 48, borderRadius: radii.sm, backgroundColor: colors.primarySoft },
+  thumbFallback: { alignItems: 'center', justifyContent: 'center' },
+  thumbLetter: { color: colors.primary, fontSize: 16 },
   copy: { flex: 1, gap: 2 },
   side: { alignItems: 'flex-end', gap: 6 },
   viewRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },

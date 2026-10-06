@@ -1,7 +1,9 @@
+import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
+import { fetchFavoritesCatalog } from '@/api/home';
 import { EmptyState } from '@/components/EmptyState';
 import { FlowHeader } from '@/components/FlowHeader';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
@@ -10,20 +12,27 @@ import { RestaurantStripCard } from '@/components/home/RestaurantStripCard';
 import { Screen } from '@/components/Screen';
 import { SectionHeader } from '@/components/SectionHeader';
 import { useAddDish } from '@/hooks/useAddDish';
-import { useHomeCatalog } from '@/hooks/useHomeCatalog';
 import { useSavedHearts } from '@/hooks/useSavedHearts';
 
 const PAGE_PAD = 16;
 
 export function FavoritesScreen() {
   const { width } = useWindowDimensions();
-  const catalog = useHomeCatalog();
   const hearts = useSavedHearts();
+  const heartIds = [...hearts.ids];
+  const favorites = useQuery({
+    queryKey: ['favorites-catalog', heartIds.slice().sort().join(',')],
+    queryFn: () => fetchFavoritesCatalog(heartIds),
+    enabled: hearts.ready && heartIds.length > 0,
+    staleTime: 60_000,
+    refetchOnMount: false,
+  });
   const { addDish, dialog: cartReplaceDialog } = useAddDish();
-  const dishes = (catalog.data?.dishes ?? []).filter((dish) => hearts.ids.has(dish.id));
-  const places = (catalog.data?.places ?? []).filter((place) => hearts.ids.has(place.id));
-  const loading = (catalog.isLoading || !hearts.ready) && dishes.length === 0 && places.length === 0;
-  const empty = !loading && dishes.length === 0 && places.length === 0;
+  const dishes = favorites.data?.dishes ?? [];
+  const places = favorites.data?.places ?? [];
+  const loading = (!hearts.ready || favorites.isLoading) && dishes.length === 0 && places.length === 0;
+  const empty = hearts.ready && heartIds.length === 0;
+  const emptyResolved = !loading && !empty && dishes.length === 0 && places.length === 0;
   const railCard = (width - PAGE_PAD - 8 * 3) / 2.2;
 
   return (
@@ -33,16 +42,16 @@ export function FavoritesScreen() {
       <FlowHeader title="Favorites" subtitle="Kitchens and dishes you saved" />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {loading ? <LoadingSkeleton rows={2} /> : null}
-        {catalog.isError ? (
+        {favorites.isError ? (
           <EmptyState
             icon="cloud-offline-outline"
             title="Couldn't load favorites"
-            body={catalog.error instanceof Error ? catalog.error.message : 'Try again in a moment.'}
+            body={favorites.error instanceof Error ? favorites.error.message : 'Try again in a moment.'}
             actionLabel="Try again"
-            onAction={() => void catalog.refetch()}
+            onAction={() => void favorites.refetch()}
           />
         ) : null}
-        {empty && !catalog.isError ? (
+        {(empty || emptyResolved) && !favorites.isError ? (
           <EmptyState
             icon="heart-outline"
             title="Nothing saved yet"
@@ -98,9 +107,9 @@ export function FavoritesScreen() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingBottom: 28, gap: 18 },
-  section: { gap: 0 },
+  scroll: { paddingBottom: 28, gap: 16 },
+  section: { gap: 8 },
   headerPad: { paddingHorizontal: PAGE_PAD },
   list: { paddingHorizontal: PAGE_PAD, gap: 10 },
-  rail: { gap: 8, paddingHorizontal: PAGE_PAD },
+  rail: { paddingHorizontal: PAGE_PAD, gap: 10 },
 });

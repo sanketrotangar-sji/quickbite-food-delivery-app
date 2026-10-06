@@ -28,11 +28,23 @@ type RatingRow = {
   food_rating: number;
 };
 
+type RatingSummaryRow = {
+  restaurant_id: string;
+  avg_food: number;
+  rating_count: number;
+};
+
 export type HomeCatalog = {
   categories: HomeCategory[];
   dishes: HomeDish[];
   places: HomePlace[];
   highlights: HomeHighlight[];
+};
+
+export type HomeShell = {
+  places: HomePlace[];
+  highlights: HomeHighlight[];
+  restaurantIds: string[];
 };
 
 function restaurantNameFromHighlight(
@@ -61,7 +73,11 @@ async function fetchHighlights(): Promise<HighlightRow[]> {
     .order('sort_order');
   if (basic.error) return [];
   return (basic.data ?? []).map((row) => ({
-    ...row,
+    id: row.id,
+    title: row.title,
+    subtitle: row.subtitle,
+    image_url: row.image_url,
+    kind: row.kind === 'video' ? ('video' as const) : ('offer' as const),
     restaurant_id: null,
     badge: null,
     cta_label: null,
@@ -82,6 +98,35 @@ function averageRatings(rows: RatingRow[]) {
     averages.set(id, value.total / value.count);
   }
   return averages;
+}
+
+function ratingMapFromSummary(rows: RatingSummaryRow[]) {
+  const averages = new Map<string, number>();
+  for (const row of rows) {
+    if (row.rating_count > 0) averages.set(row.restaurant_id, Number(row.avg_food));
+  }
+  return averages;
+}
+
+async function loadRatingAverages(restaurantIds: string[]) {
+  if (restaurantIds.length === 0) return new Map<string, number>();
+  // View added in 20261007030000 — cast until `npm run types:gen` after db push.
+  const summary = await (supabase as unknown as {
+    from: (relation: string) => ReturnType<typeof supabase.from>;
+  })
+    .from('restaurant_rating_summary')
+    .select('restaurant_id, avg_food, rating_count')
+    .in('restaurant_id', restaurantIds);
+  if (!summary.error && summary.data) {
+    return ratingMapFromSummary(summary.data as unknown as RatingSummaryRow[]);
+  }
+  // View not migrated yet — fall back to scoped public rows.
+  const ratings = await supabase
+    .from('restaurant_rating_public')
+    .select('restaurant_id, food_rating')
+    .in('restaurant_id', restaurantIds);
+  if (ratings.error) throwApiError(ratings.error, 'Could not load ratings.');
+  return averageRatings((ratings.data ?? []) as RatingRow[]);
 }
 
 /** Prefer one dish per kitchen first, then a second pass — avoids alphabetical mono-food rails. */
@@ -139,11 +184,10 @@ function pickFeaturedDish(kitchenDishes: HomeDish[], usedNames: Set<string>) {
 export function buildHomeCatalog(
   restaurants: RestaurantBrowse[],
   menuItems: MenuItem[],
-  ratings: RatingRow[],
+  ratingByRestaurant: Map<string, number>,
   highlights: HighlightRow[],
 ): HomeCatalog {
   const restaurantById = new Map(restaurants.map((row) => [row.id, row]));
-  const ratingByRestaurant = averageRatings(ratings);
   const available = diversifyMenuItems(
     menuItems.filter((item) => item.is_available),
     2,
@@ -233,8 +277,29 @@ export function buildHomeCatalog(
   };
 }
 
-export async function fetchHomeCatalog(): Promise<HomeCatalog> {
-  const [restaurants, ratings, highlights, mine] = await Promise.all([
+function buildShellPlaces(
+  restaurants: RestaurantBrowse[],
+  ratingByRestaurant: Map<string, number>,
+): HomePlace[] {
+  return restaurants.map((kitchen) => ({
+    id: kitchen.id,
+    name: kitchen.name,
+    cuisine: kitchen.cuisine?.trim() || 'Multi-cuisine',
+    dishName: kitchen.cuisine?.trim() || 'Menu coming soon',
+    rating: ratingByRestaurant.get(kitchen.id) ?? null,
+    imageUrl: kitchen.image_url || '',
+    address: kitchen.address,
+    isOpen: kitchen.is_open,
+    veg: false,
+    hasNonVeg: false,
+    categoryIds: [],
+    offerPercent: kitchen.offer_percent,
+    prepMinutes: kitchen.prep_minutes,
+  }));
+}
+
+async function loadVisibleRestaurants() {
+  const [restaurants, highlights, mine] = await Promise.all([
     supabase
       .from('restaurant_browse')
       .select(
@@ -243,32 +308,206 @@ export async function fetchHomeCatalog(): Promise<HomeCatalog> {
       .order('is_open', { ascending: false })
       .order('name')
       .limit(40),
-    supabase.from('restaurant_rating_public').select('restaurant_id, food_rating'),
     fetchHighlights(),
     supabase.rpc('list_my_restaurants'),
   ]);
-
   if (restaurants.error) throwApiError(restaurants.error, 'Could not load restaurants.');
-  if (ratings.error) throwApiError(ratings.error, 'Could not load ratings.');
-
   const hidden = new Set((mine.error ? [] : mine.data ?? []).map((row) => row.id));
   const visibleRestaurants = ((restaurants.data ?? []) as RestaurantBrowse[]).filter((row) => !hidden.has(row.id));
-  const restaurantIds = visibleRestaurants.map((row) => row.id);
+  return { visibleRestaurants, highlights, hidden };
+}
 
-  // Pull a wider pool then diversify client-side (round-robin / category spread).
-  let menuItems: MenuItem[] = [];
-  if (restaurantIds.length > 0) {
-    const dishes = await supabase
+/** Places + highlights first — paints Home kitchens before dish rails. */
+export async function fetchHomeShell(): Promise<HomeShell> {
+  const { visibleRestaurants, highlights } = await loadVisibleRestaurants();
+  const restaurantIds = visibleRestaurants.map((row) => row.id);
+  const ratingByRestaurant = await loadRatingAverages(restaurantIds);
+  const restaurantById = new Map(visibleRestaurants.map((row) => [row.id, row]));
+  return {
+    restaurantIds,
+    places: buildShellPlaces(visibleRestaurants, ratingByRestaurant),
+    highlights: highlights.map((row) => ({
+      id: row.id,
+      title: row.title,
+      subtitle: row.subtitle ?? '',
+      imageUrl: row.image_url,
+      kind: row.kind,
+      restaurantId: row.restaurant_id ?? null,
+      restaurantName: restaurantNameFromHighlight(row, restaurantById),
+      badge: row.badge?.trim() || (row.kind === 'offer' ? 'Offer' : 'Watch'),
+      ctaLabel: row.cta_label?.trim() || 'Order Now',
+    })),
+  };
+}
+
+export async function fetchHomeDishes(restaurantIds: string[]): Promise<{
+  categories: HomeCategory[];
+  dishes: HomeDish[];
+  placesPatch: Map<string, Pick<HomePlace, 'dishName' | 'veg' | 'hasNonVeg' | 'categoryIds' | 'imageUrl'>>;
+}> {
+  if (restaurantIds.length === 0) {
+    return {
+      categories: [{ id: POPULAR_CATEGORY_ID, label: 'Popular', imageUrl: '' }],
+      dishes: [],
+      placesPatch: new Map(),
+    };
+  }
+  const [dishesRes, restaurantsRes] = await Promise.all([
+    supabase
       .from('menu_items')
       .select('id, restaurant_id, name, price, image_url, is_available, is_veg, category')
       .eq('is_available', true)
       .in('restaurant_id', restaurantIds)
-      .limit(96);
-    if (dishes.error) throwApiError(dishes.error, 'Could not load dishes.');
-    menuItems = (dishes.data ?? []) as MenuItem[];
+      .limit(96),
+    supabase
+      .from('restaurant_browse')
+      .select(
+        'id, name, cuisine, description, image_url, is_open, offer_percent, prep_minutes, address, lat, lng, branch_name',
+      )
+      .in('id', restaurantIds),
+  ]);
+  if (dishesRes.error) throwApiError(dishesRes.error, 'Could not load dishes.');
+  if (restaurantsRes.error) throwApiError(restaurantsRes.error, 'Could not load restaurants.');
+  const catalog = buildHomeCatalog(
+    (restaurantsRes.data ?? []) as RestaurantBrowse[],
+    (dishesRes.data ?? []) as MenuItem[],
+    new Map(),
+    [],
+  );
+  const placesPatch = new Map(
+    catalog.places.map((place) => [
+      place.id,
+      {
+        dishName: place.dishName,
+        veg: place.veg,
+        hasNonVeg: place.hasNonVeg,
+        categoryIds: place.categoryIds,
+        imageUrl: place.imageUrl,
+      },
+    ]),
+  );
+  return { categories: catalog.categories, dishes: catalog.dishes, placesPatch };
+}
+
+export async function fetchHomeCatalog(): Promise<HomeCatalog> {
+  const { visibleRestaurants, highlights } = await loadVisibleRestaurants();
+  const restaurantIds = visibleRestaurants.map((row) => row.id);
+  const [ratingByRestaurant, menuItems] = await Promise.all([
+    loadRatingAverages(restaurantIds),
+    (async () => {
+      if (restaurantIds.length === 0) return [] as MenuItem[];
+      const dishes = await supabase
+        .from('menu_items')
+        .select('id, restaurant_id, name, price, image_url, is_available, is_veg, category')
+        .eq('is_available', true)
+        .in('restaurant_id', restaurantIds)
+        .limit(96);
+      if (dishes.error) throwApiError(dishes.error, 'Could not load dishes.');
+      return (dishes.data ?? []) as MenuItem[];
+    })(),
+  ]);
+  return buildHomeCatalog(visibleRestaurants, menuItems, ratingByRestaurant, highlights);
+}
+
+/** Favorites by heart ids — no full catalog. */
+export async function fetchFavoritesCatalog(ids: string[]): Promise<{
+  places: HomePlace[];
+  dishes: HomeDish[];
+}> {
+  const unique = [...new Set(ids)].slice(0, 80);
+  if (unique.length === 0) return { places: [], dishes: [] };
+
+  const [restaurants, menuItems] = await Promise.all([
+    supabase
+      .from('restaurant_browse')
+      .select(
+        'id, name, cuisine, description, image_url, is_open, offer_percent, prep_minutes, address, lat, lng, branch_name',
+      )
+      .in('id', unique),
+    supabase
+      .from('menu_items')
+      .select('id, restaurant_id, name, price, image_url, is_available, is_veg, category')
+      .in('id', unique)
+      .eq('is_available', true),
+  ]);
+  if (restaurants.error) throwApiError(restaurants.error, 'Could not load favorites.');
+  if (menuItems.error) throwApiError(menuItems.error, 'Could not load favorites.');
+
+  const kitchenRows = (restaurants.data ?? []) as RestaurantBrowse[];
+  const dishRows = (menuItems.data ?? []) as MenuItem[];
+  const ratingByRestaurant = await loadRatingAverages([
+    ...kitchenRows.map((row) => row.id),
+    ...dishRows.map((row) => row.restaurant_id),
+  ]);
+
+  // Need kitchen names for dishes not in heart restaurants.
+  const missingKitchenIds = dishRows
+    .map((row) => row.restaurant_id)
+    .filter((id) => !kitchenRows.some((row) => row.id === id));
+  let extraKitchens: RestaurantBrowse[] = [];
+  if (missingKitchenIds.length > 0) {
+    const extra = await supabase
+      .from('restaurant_browse')
+      .select(
+        'id, name, cuisine, description, image_url, is_open, offer_percent, prep_minutes, address, lat, lng, branch_name',
+      )
+      .in('id', [...new Set(missingKitchenIds)]);
+    if (!extra.error) extraKitchens = (extra.data ?? []) as RestaurantBrowse[];
   }
 
-  const visibleItems = menuItems.filter((item) => !hidden.has(item.restaurant_id));
+  const catalog = buildHomeCatalog(
+    [...kitchenRows, ...extraKitchens],
+    dishRows,
+    ratingByRestaurant,
+    [],
+  );
+  const placeIds = new Set(kitchenRows.map((row) => row.id));
+  const dishIds = new Set(dishRows.map((row) => row.id));
+  return {
+    places: catalog.places.filter((place) => placeIds.has(place.id)),
+    dishes: catalog.dishes.filter((dish) => dishIds.has(dish.id)),
+  };
+}
 
-  return buildHomeCatalog(visibleRestaurants, visibleItems, ratings.data ?? [], highlights);
+/** Similar kitchens for restaurant detail — small query, not full catalog. */
+export async function fetchSimilarPlaces(
+  restaurantId: string,
+  cuisine: string | null | undefined,
+  limit = 6,
+): Promise<HomePlace[]> {
+  let query = supabase
+    .from('restaurant_browse')
+    .select(
+      'id, name, cuisine, description, image_url, is_open, offer_percent, prep_minutes, address, lat, lng, branch_name',
+    )
+    .neq('id', restaurantId)
+    .order('is_open', { ascending: false })
+    .limit(24);
+  if (cuisine?.trim()) {
+    query = query.ilike('cuisine', `%${cuisine.trim()}%`);
+  }
+  const { data, error } = await query;
+  if (error) throwApiError(error, 'Could not load similar kitchens.');
+  let rows = (data ?? []) as RestaurantBrowse[];
+  if (rows.length < limit) {
+    const fill = await supabase
+      .from('restaurant_browse')
+      .select(
+        'id, name, cuisine, description, image_url, is_open, offer_percent, prep_minutes, address, lat, lng, branch_name',
+      )
+      .neq('id', restaurantId)
+      .order('is_open', { ascending: false })
+      .limit(limit);
+    if (!fill.error) {
+      const seen = new Set(rows.map((row) => row.id));
+      for (const row of (fill.data ?? []) as RestaurantBrowse[]) {
+        if (seen.has(row.id)) continue;
+        rows.push(row);
+        if (rows.length >= limit) break;
+      }
+    }
+  }
+  rows = rows.slice(0, limit);
+  const ratingByRestaurant = await loadRatingAverages(rows.map((row) => row.id));
+  return buildShellPlaces(rows, ratingByRestaurant);
 }

@@ -25,12 +25,6 @@ export const riderOrdersKey = ['rider-orders'] as const;
 export const riderHistoryKey = ['rider-history'] as const;
 export const riderNoticesKey = ['rider-notices'] as const;
 
-const FALLBACK_IMAGE = require('../../../assets/images/misal_pav.png');
-
-function imageFor(url: string | null) {
-  return url ? { uri: url } : FALLBACK_IMAGE;
-}
-
 function orderCode(order: RiderDelivery) {
   const note = order.notes?.trim();
   if (note && /^QB\d+$/i.test(note)) return note.toUpperCase();
@@ -47,7 +41,7 @@ export function toCurrentOrder(order: RiderDelivery): RiderCurrentOrder {
     code: orderCode(order),
     restaurantName: order.restaurantName,
     cuisine: order.cuisine,
-    image: imageFor(order.imageUrl),
+    imageUrl: order.imageUrl,
     minutesToPickup: order.etaMinutes ?? 15,
     earning: order.earning + order.bonus + order.tip,
     itemCount: order.itemCount,
@@ -68,7 +62,7 @@ export function toNearbyOrder(order: RiderDelivery): NearbyOrder {
     id: order.id,
     restaurantName: order.restaurantName,
     cuisine: order.cuisine,
-    image: imageFor(order.imageUrl),
+    imageUrl: order.imageUrl,
     pickupKm: order.pickupKm,
     dropKm: order.dropKm,
     earning: order.earning + order.bonus + order.tip,

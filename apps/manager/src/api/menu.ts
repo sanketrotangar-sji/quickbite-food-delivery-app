@@ -68,6 +68,8 @@ export async function uploadMenuImage(restaurantId: string, file: File): Promise
     upsert: false,
   });
   if (error) throwApiError(error, 'Could not upload photo.');
+  const { uploadSiblingThumb } = await import('@/lib/images');
+  void uploadSiblingThumb(path, file);
   const { data } = supabase.storage.from('menu-images').getPublicUrl(path);
   return data.publicUrl;
 }

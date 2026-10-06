@@ -1,4 +1,3 @@
-import type { ImageSourcePropType } from 'react-native';
 import type { DeliveryCoordinate } from '@/api/deliveries';
 
 export type RiderHomePhase = 'loading' | 'error' | 'ready';
@@ -14,7 +13,7 @@ export type RiderCurrentOrder = {
   code: string;
   restaurantName: string;
   cuisine: string;
-  image: ImageSourcePropType;
+  imageUrl: string | null;
   minutesToPickup: number;
   earning: number;
   itemCount: number;
@@ -29,7 +28,7 @@ export type NearbyOrder = {
   id: string;
   restaurantName: string;
   cuisine: string;
-  image: ImageSourcePropType;
+  imageUrl: string | null;
   pickupKm: number;
   dropKm: number;
   earning: number;

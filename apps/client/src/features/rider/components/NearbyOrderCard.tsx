@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
-import { Image, Modal, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Modal, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
+import { RemoteImage } from '@/components/RemoteImage';
 import { colors, formatInr, radii } from '@/constants/theme';
 import type { NearbyOrder } from '@/features/rider/rider-home';
 
@@ -14,7 +15,15 @@ export function NearbyOrderCard({ order, onAccept }: { order: NearbyOrder; onAcc
   return (
     <View style={styles.card}>
       <Pressable onPress={() => setOpen(true)} style={({ pressed }) => [styles.main, pressed && styles.pressed]}>
-        <Image source={order.image} style={styles.image} />
+        {order.imageUrl ? (
+          <RemoteImage uri={order.imageUrl} slot="thumb" style={styles.image} />
+        ) : (
+          <View style={[styles.image, styles.imageFallback]}>
+            <AppText weight="bold" style={styles.fallbackLetter}>
+              {order.restaurantName.slice(0, 1).toUpperCase()}
+            </AppText>
+          </View>
+        )}
         <View style={styles.copy}>
           <AppText weight="bold" numberOfLines={1}>
             {order.restaurantName}
@@ -102,6 +111,8 @@ const styles = StyleSheet.create({
   main: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   pressed: { opacity: 0.86 },
   image: { width: 64, height: 64, borderRadius: radii.sm, backgroundColor: colors.primarySoft },
+  imageFallback: { alignItems: 'center', justifyContent: 'center' },
+  fallbackLetter: { color: colors.primary, fontSize: 20 },
   copy: { flex: 1, gap: 3 },
   meta: { fontSize: 12 },
   distances: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4, marginTop: 2 },

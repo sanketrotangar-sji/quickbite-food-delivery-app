@@ -86,7 +86,8 @@ export async function trimRioThread(threadId: string) {
     .from('rio_messages')
     .select('id, created_at')
     .eq('thread_id', threadId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(MAX_MESSAGES + 10);
   const excess = (rows ?? []).slice(MAX_MESSAGES);
   if (excess.length === 0) return;
   await supabase.from('rio_messages').delete().in(

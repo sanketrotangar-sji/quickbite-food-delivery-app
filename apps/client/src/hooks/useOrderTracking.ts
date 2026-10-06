@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { getTrackedOrder, type TrackedOrder } from '@/api/order-tracking';
 import { fetchActiveCustomerOrder } from '@/api/orders';
 import { supabase } from '@/api/supabaseClient';
+import { useAuth } from '@/hooks/useAuth';
 import { ordersQueryKey } from '@/hooks/useOrders';
 import type { CustomerOrder } from '@/types/models';
 
@@ -16,14 +17,12 @@ export function useTrackedOrder(id: string | undefined) {
     queryKey: trackedOrderQueryKey(id ?? ''),
     queryFn: () => getTrackedOrder(id as string),
     enabled: !!id,
+    staleTime: 60_000,
+    refetchOnMount: false,
   });
 
   useEffect(() => {
     if (!id) return;
-    const refreshOrder = () => {
-      void queryClient.invalidateQueries({ queryKey: trackedOrderQueryKey(id) });
-      void queryClient.invalidateQueries({ queryKey: ordersQueryKey });
-    };
     const channel = supabase
       .channel(`customer-order-tracking:${id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `id=eq.${id}` }, (payload) => {
@@ -31,17 +30,26 @@ export function useTrackedOrder(id: string | undefined) {
         queryClient.setQueryData<TrackedOrder>(trackedOrderQueryKey(id), (current) =>
           current ? { ...current, ...next } : current,
         );
-        refreshOrder();
+        queryClient.setQueryData<CustomerOrder | null>(activeOrderQueryKey, (current) =>
+          current?.id === id ? ({ ...current, ...next } as CustomerOrder) : current,
+        );
+        if (payload.eventType === 'INSERT' || payload.eventType === 'DELETE') {
+          void queryClient.invalidateQueries({ queryKey: ordersQueryKey });
+        }
       })
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'order_status_history', filter: `order_id=eq.${id}` },
-        refreshOrder,
+        () => {
+          void queryClient.invalidateQueries({ queryKey: trackedOrderQueryKey(id) });
+        },
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rider_locations', filter: `order_id=eq.${id}` },
-        refreshOrder,
+        () => {
+          void queryClient.invalidateQueries({ queryKey: trackedOrderQueryKey(id) });
+        },
       )
       .subscribe();
 
@@ -54,43 +62,51 @@ export function useTrackedOrder(id: string | undefined) {
 }
 
 export function useCustomerOrdersRealtime() {
+  const { session } = useAuth();
   const queryClient = useQueryClient();
+  const userId = session?.user.id;
 
   useEffect(() => {
+    if (!userId) return;
+
     const channel = supabase
-      .channel('customer-orders-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
-        const next = payload.new as Partial<CustomerOrder> & { id?: string };
-        if (next.id) {
-          queryClient.setQueryData<CustomerOrder[]>(ordersQueryKey, (current) =>
-            current?.map((order) => (order.id === next.id ? { ...order, ...next } : order)),
-          );
-        }
-        void queryClient.invalidateQueries({ queryKey: activeOrderQueryKey });
-        // Patch-in-place above; only refetch list when structure may have changed.
-        if (payload.eventType === 'INSERT' || payload.eventType === 'DELETE') {
-          void queryClient.invalidateQueries({ queryKey: ordersQueryKey });
-        }
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'order_status_history' }, () => {
-        void queryClient.invalidateQueries({ queryKey: activeOrderQueryKey });
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rider_locations' }, () => {
-        void queryClient.invalidateQueries({ queryKey: ['order-tracking'] });
-      })
+      .channel(`customer-orders-live-${userId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders', filter: `customer_id=eq.${userId}` },
+        (payload) => {
+          const next = payload.new as Partial<CustomerOrder> & { id?: string; status?: string };
+          if (next.id) {
+            queryClient.setQueryData<CustomerOrder[]>(ordersQueryKey, (current) =>
+              current?.map((order) => (order.id === next.id ? { ...order, ...next } : order)),
+            );
+            queryClient.setQueryData<CustomerOrder | null>(activeOrderQueryKey, (current) => {
+              if (!current) return current;
+              if (current.id !== next.id) return current;
+              const terminal = next.status === 'delivered' || next.status === 'cancelled';
+              return terminal ? null : ({ ...current, ...next } as CustomerOrder);
+            });
+          }
+          if (payload.eventType === 'INSERT' || payload.eventType === 'DELETE') {
+            void queryClient.invalidateQueries({ queryKey: ordersQueryKey });
+            void queryClient.invalidateQueries({ queryKey: activeOrderQueryKey });
+          }
+        },
+      )
       .subscribe();
 
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, userId]);
 }
 
 export function useActiveOrder() {
   const query = useQuery({
     queryKey: activeOrderQueryKey,
     queryFn: fetchActiveCustomerOrder,
-    staleTime: 15_000,
+    staleTime: 60_000,
+    refetchOnMount: false,
   });
   return { ...query, activeOrder: query.data ?? null };
 }

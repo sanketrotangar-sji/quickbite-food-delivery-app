@@ -61,28 +61,32 @@ export function ExploreScreen() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const categories = catalog.data?.categories ?? [];
-  const cravings = categories.filter((category) => category.id !== POPULAR_CATEGORY_ID);
-  const allPlaces = catalog.data?.places ?? [];
-  const allDishes = catalog.data?.dishes ?? [];
-  const places = useMemo(
-    () =>
-      filterExplorePlaces(allPlaces, allDishes, debouncedQuery, filters).sort(
-        (a, b) => Number(b.isOpen) - Number(a.isOpen) || (b.rating ?? -1) - (a.rating ?? -1),
-      ),
-    [allDishes, allPlaces, filters, debouncedQuery],
+  const cravings = useMemo(
+    () => categories.filter((category) => category.id !== POPULAR_CATEGORY_ID),
+    [categories],
   );
-  const matchedDishes = useMemo(
-    () => filterExploreDishes(allDishes, allPlaces, debouncedQuery, filters),
-    [allDishes, allPlaces, filters, debouncedQuery],
-  );
-  const dishes = matchedDishes.slice(0, 9);
+  const allPlaces = catalog.data?.places;
+  const allDishes = catalog.data?.dishes;
+  const places = useMemo(() => {
+    const sourcePlaces = allPlaces ?? [];
+    const sourceDishes = allDishes ?? [];
+    return filterExplorePlaces(sourcePlaces, sourceDishes, debouncedQuery, filters).sort(
+      (a, b) => Number(b.isOpen) - Number(a.isOpen) || (b.rating ?? -1) - (a.rating ?? -1),
+    );
+  }, [allDishes, allPlaces, filters, debouncedQuery]);
+  const matchedDishes = useMemo(() => {
+    const sourcePlaces = allPlaces ?? [];
+    const sourceDishes = allDishes ?? [];
+    return filterExploreDishes(sourceDishes, sourcePlaces, debouncedQuery, filters);
+  }, [allDishes, allPlaces, filters, debouncedQuery]);
+  const dishes = useMemo(() => matchedDishes.slice(0, 9), [matchedDishes]);
   const offers = useMemo(
     () => [...places].sort((a, b) => placePresentation(b).discount - placePresentation(a).discount).slice(0, 8),
     [places],
   );
   const prices = useMemo(() => {
     const map = new Map<string, number[]>();
-    for (const dish of allDishes) {
+    for (const dish of allDishes ?? []) {
       const list = map.get(dish.restaurantId) ?? [];
       list.push(dish.price);
       map.set(dish.restaurantId, list);
@@ -101,7 +105,7 @@ export function ExploreScreen() {
   const loading = catalog.isLoading && !catalog.data;
   const failed = catalog.isError && !catalog.data;
   const errorMessage = catalog.error instanceof Error ? catalog.error.message : 'Check the connection and try again.';
-  const catalogEmpty = !loading && !failed && allPlaces.length === 0 && allDishes.length === 0;
+  const catalogEmpty = !loading && !failed && (allPlaces?.length ?? 0) === 0 && (allDishes?.length ?? 0) === 0;
   const noResults = !loading && !failed && !catalogEmpty && places.length === 0 && matchedDishes.length === 0;
   const cardWidth = (width - PAGE_PAD * 2 - GRID_GAP * 2) / 3;
   const filterCount = exploreFilterCount(filters);
