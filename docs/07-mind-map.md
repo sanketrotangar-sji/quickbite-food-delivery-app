@@ -75,7 +75,7 @@ You develop against cloud Supabase. Local Docker is optional. Android id `com.sj
 **Migrations are history; don’t rewrite them.**  
 Fix with new migration files. Seeds and quarantine are separate from schema.
 
-**Next hardening:** security (RAG + webhook), seed cleanliness, order timeout, then polish (see `11-fix-plan.md`).
+**Next hardening:** security (RAG + webhook done in batch 1), seed cleanliness, then polish (see `11-fix-plan.md`). Order accept timeout: auto-cancel `placed` after 30m (P20).
 
 ---
 

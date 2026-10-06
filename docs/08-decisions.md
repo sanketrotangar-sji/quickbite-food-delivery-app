@@ -141,11 +141,11 @@ Status tag: **CONFIRMED BY YOU** or **INFERRED** (from code/docs only).
 
 | | |
 |--|--|
-| **Status** | CONFIRMED BY YOU (requirement); **not implemented** |
+| **Status** | CONFIRMED BY YOU + **IMPLEMENTED (P20)** |
 | **Context** | Kitchens may ignore `placed` orders. |
-| **Decision** | Add timeout behaviour (e.g. auto-cancel or alert) — approved as needed now. |
+| **Decision** | Auto-cancel `placed` orders older than `automation_config.order_accept_timeout_minutes` (default 30) via `run_order_accept_timeout` + `pg_cron` every 5 minutes. |
 | **Alternatives** | Manual only; never expire. |
-| **Consequences** | Needs migration (cron/trigger) + UX copy + Phase 3 proposal. |
+| **Consequences** | Customers get a notification; history shows `cancelled`; kitchens should accept promptly. Tunable without code change. |
 
 ---
 

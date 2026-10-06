@@ -392,7 +392,7 @@ Provide me steps of how to do supabase backup
 
 
 
-### P20 — Order acceptance timeout **(CONFIRMED needed)**
+### P20 — Order acceptance timeout **(DONE — batch 1)**
 
 
 |             |                                                                                                                                                                                                                                                                                                                                                         |
@@ -494,7 +494,7 @@ Provide me steps of how to do supabase backup
 | P17 | Structure rename     | Low–Med           | S–M    |
 | P18 | Env / migrations SoT | High              | M      |
 | P19 | Tests RLS/order      | High              | M      |
-| P20 | Accept timeout       | High (you asked)  | M      |
+| P20 | Accept timeout       | **DONE (batch 1)** | M      |
 | P21 | Errors/logging       | Medium            | M      |
 | P22 | Android release doc  | Medium            | S      |
 | P23 | Quarantine/backup    | Low–Med           | S      |

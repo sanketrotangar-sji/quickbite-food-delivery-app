@@ -29,7 +29,7 @@ stateDiagram-v2
 | `ready` → `out_for_delivery` | Assigned rider | `rider_set_order_status` |
 | `out_for_delivery` → `delivered` | Assigned rider | same |
 
-**Product TODO (CONFIRMED BY YOU):** **order acceptance timeout** — if kitchen leaves an order in `placed` too long, auto-cancel (or similar). Not implemented yet; design in Phase 3.
+**Product TODO (CONFIRMED BY YOU):** **order acceptance timeout** — if kitchen leaves an order in `placed` too long, auto-cancel (or similar). **Implemented (P20):** `run_order_accept_timeout()` + `pg_cron` every 5 minutes; default **30 minutes** via `automation_config.order_accept_timeout_minutes` (`placed` → `cancelled`, event + customer notification).
 
 Self-deal guards: you cannot kitchen-handle or rate in ways that game your own restaurant / own delivery (RPC + rating RLS).
 
