@@ -104,7 +104,7 @@ export async function listRestaurantOrders(restaurantId: string): Promise<Order[
     .eq('restaurant_id', restaurantId)
     .or(`status.in.(placed,preparing,ready),placed_at.gte.${since.toISOString()}`)
     .order('placed_at', { ascending: false })
-    .limit(200);
+    .limit(100);
   if (error) throwApiError(error, 'Could not load orders.');
   return ((data ?? []) as unknown as OrderQueryRow[]).map(toUiOrder);
 }
@@ -126,7 +126,7 @@ export async function listPerformanceOrders(restaurantIds: string[]): Promise<Pe
     .in('restaurant_id', restaurantIds)
     .gte('placed_at', since.toISOString())
     .order('placed_at', { ascending: false })
-    .limit(2000);
+    .limit(500);
   if (error) throwApiError(error, 'Could not load performance.');
   return data ?? [];
 }
@@ -140,7 +140,7 @@ export async function listRestaurantOrderStats(restaurantId: string): Promise<Db
     .eq('restaurant_id', restaurantId)
     .gte('placed_at', since.toISOString())
     .order('placed_at', { ascending: false })
-    .limit(500);
+    .limit(200);
   if (error) throwApiError(error, 'Could not load orders.');
   return data ?? [];
 }

@@ -237,14 +237,14 @@ Provide me steps of how to do supabase backup
 
 
 
-### P11 — Stop over-fetch / `select('*')` on hot paths
+### P11 — Stop over-fetch / `select('*')` on hot paths — **DONE (2026-10-06)**
 
 
 |             |                                                                                                                                                                                                |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Problem** | Profiles, menu, addresses, applications use `select('*')`; home loads up to 240 dishes; manager orders limits 500–2000.                                                                        |
 | **Why**     | Battery, latency, and accidental column leakage.                                                                                                                                               |
-| **Fix**     | Explicit column lists in `apps/client/src/api/`* and `apps/manager/src/api/*`; lower home limits + pagination; manager kitchen query by status + restaurant with sensible page size (e.g. 50). |
+| **Fix**     | Explicit column lists in client/manager APIs; home dish limit 240→96; kitchen orders 200→100; performance 2000→500; restaurant stats 500→200.                                                   |
 | **Risk**    | Missed column → UI blank — TypeScript helps if types regenerated.                                                                                                                              |
 | **Effort**  | M                                                                                                                                                                                              |
 | **Verify**  | Network tab payload size down; screens still render.                                                                                                                                           |

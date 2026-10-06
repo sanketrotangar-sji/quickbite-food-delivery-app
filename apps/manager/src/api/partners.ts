@@ -67,7 +67,7 @@ export async function listMembers(restaurantId: string) {
 export async function listInvites(restaurantId: string) {
   const { data, error } = await supabase
     .from('manager_invites')
-    .select('*')
+    .select('id, restaurant_id, email, invited_by, status, created_at, accepted_at')
     .eq('restaurant_id', restaurantId)
     .eq('status', 'pending')
     .order('created_at', { ascending: false });

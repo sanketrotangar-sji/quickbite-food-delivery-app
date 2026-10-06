@@ -7,7 +7,7 @@ import { throwApiError } from './errors';
 export async function listMyApplications(): Promise<Application[]> {
   const { data, error } = await supabase
     .from('applications')
-    .select('*')
+    .select('id, applicant_id, kind, status, payload, review_note, reviewed_by, reviewed_at, created_at, updated_at')
     .order('created_at', { ascending: false });
   if (error) throwApiError(error, 'Could not load applications.');
   return data ?? [];

@@ -263,7 +263,7 @@ export async function fetchHomeCatalog(): Promise<HomeCatalog> {
       .select('id, restaurant_id, name, price, image_url, is_available, is_veg, category')
       .eq('is_available', true)
       .in('restaurant_id', restaurantIds)
-      .limit(240);
+      .limit(96);
     if (dishes.error) throwApiError(dishes.error, 'Could not load dishes.');
     menuItems = (dishes.data ?? []) as MenuItem[];
   }

@@ -27,7 +27,14 @@ export async function getOwnedRestaurant(ownerId: string): Promise<Restaurant | 
 }
 
 export async function updateOwnedRestaurant(id: string, patch: RestaurantPatch): Promise<Restaurant> {
-  const { data, error } = await supabase.from('restaurants').update(patch).eq('id', id).select('*').single();
+  const { data, error } = await supabase
+    .from('restaurants')
+    .update(patch)
+    .eq('id', id)
+    .select(
+      'id, owner_id, name, description, cuisine, address, phone, image_url, is_open, branch_name, created_at, updated_at',
+    )
+    .single();
   if (error || !data) throwApiError(error ?? {}, 'Could not update restaurant.');
   return data;
 }

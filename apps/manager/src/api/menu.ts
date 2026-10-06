@@ -52,7 +52,9 @@ export async function createMenuItem(input: {
       is_veg: input.isVeg,
       image_url: input.imageUrl ?? null,
     })
-    .select('*')
+    .select(
+      'id, restaurant_id, name, description, price, image_url, is_available, is_veg, category, created_at, updated_at',
+    )
     .single();
   if (error || !data) throwApiError(error ?? {}, 'Could not add menu item.');
   return data;

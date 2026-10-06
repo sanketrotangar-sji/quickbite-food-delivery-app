@@ -7,6 +7,9 @@ import type { Tables, TablesInsert, TablesUpdate } from '@/types/database';
 
 type AddressRow = Tables<'customer_addresses'>;
 
+const ADDRESS_COLUMNS =
+  'id, customer_id, label, nickname, address_line, area, landmark, lat, lng, is_default, created_at, updated_at' as const;
+
 function fromRow(row: AddressRow): SavedAddress {
   return {
     id: row.id,
@@ -35,7 +38,7 @@ function draftValues(draft: AddressDraft): TablesUpdate<'customer_addresses'> {
 export async function listAddresses(): Promise<{ addresses: SavedAddress[]; selectedId: string | null }> {
   const { data, error } = await supabase
     .from('customer_addresses')
-    .select('*')
+    .select(ADDRESS_COLUMNS)
     .order('created_at', { ascending: true });
   if (error) throwApiError(error, 'Could not load saved addresses.');
   const rows = data ?? [];
@@ -66,7 +69,7 @@ export async function createAddress(userId: string, id: string, draft: AddressDr
     area: values.area!,
     nickname: values.nickname!,
   };
-  const { data, error } = await supabase.from('customer_addresses').insert(insert).select().single();
+  const { data, error } = await supabase.from('customer_addresses').insert(insert).select(ADDRESS_COLUMNS).single();
   if (error) throwApiError(error, 'Could not save this address.');
   return fromRow(data);
 }
@@ -76,7 +79,7 @@ export async function updateAddress(id: string, draft: AddressDraft): Promise<Sa
     .from('customer_addresses')
     .update(draftValues(draft))
     .eq('id', id)
-    .select()
+    .select(ADDRESS_COLUMNS)
     .single();
   if (error) throwApiError(error, 'Could not update this address.');
   return fromRow(data);

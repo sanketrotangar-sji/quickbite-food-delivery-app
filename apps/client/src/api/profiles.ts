@@ -3,8 +3,15 @@ import type { Profile } from '@/types/models';
 import { supabase } from './supabaseClient';
 import { throwApiError } from './errors';
 
+const PROFILE_COLUMNS =
+  'id, full_name, email, role, phone, is_online, vehicle_label, plate, created_at, updated_at' as const;
+
 export async function getProfile(userId: string): Promise<Profile | null> {
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(PROFILE_COLUMNS)
+    .eq('id', userId)
+    .maybeSingle();
   if (error) throwApiError(error, 'Could not load profile.');
   if (!data) return null;
   return { ...data, roles: [data.role] };
@@ -18,7 +25,7 @@ export async function updateProfile(
     .from('profiles')
     .update(patch)
     .eq('id', userId)
-    .select('*')
+    .select(PROFILE_COLUMNS)
     .single();
   if (error || !data) throwApiError(error ?? {}, 'Could not update profile.');
   const next = await getProfile(userId);

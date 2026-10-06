@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-06 — Phase 4 batch 2 (in progress)
+
+### P11 — Query hygiene
+- Client/manager APIs: replace `select('*')` with explicit columns on profiles, addresses, applications, menu create, restaurant update, invites.
+- Home dish fetch limit 240→96; kitchen orders 200→100; performance orders 2000→500; restaurant stats 500→200.
+
 ## 2026-10-06 — Phase 4 batch 1 (P4, P5, P6, P20, P8)
 
 ### P4 — RAG PII
