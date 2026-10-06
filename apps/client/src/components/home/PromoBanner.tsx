@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors, radii } from '@/constants/theme';
-import type { HomeHighlight } from '@/lib/home-mock';
+import type { HomeHighlight } from '@/lib/home-catalog';
 import { RemoteImage } from '@/components/RemoteImage';
 
 const ROTATE_MS = 4000;

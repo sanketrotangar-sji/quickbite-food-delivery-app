@@ -13,7 +13,7 @@ import { RiderStatsRow } from '@/features/rider/components/RiderStatsRow';
 import { stopRiderTracking } from '@/features/rider/rider-tracking';
 import { pickActive, todayStats, useRiderOrders } from '@/features/rider/use-rider-live';
 import { useAuth } from '@/hooks/useAuth';
-import { greetingName } from '@/lib/home-mock';
+import { greetingName } from '@/lib/home-catalog';
 import { rememberRole } from '@/lib/last-role';
 
 function initialsFrom(name: string) {

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors, radii } from '@/constants/theme';
-import type { HomePlace } from '@/lib/home-mock';
+import type { HomePlace } from '@/lib/home-catalog';
 import { RemoteImage } from '@/components/RemoteImage';
 
 export function RecPlaceCard({ place, onPress }: { place: HomePlace; onPress: () => void }) {

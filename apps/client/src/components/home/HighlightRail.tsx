@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 're
 
 import { AppText } from '@/components/AppText';
 import { colors } from '@/constants/theme';
-import type { HomeHighlight } from '@/lib/home-mock';
+import type { HomeHighlight } from '@/lib/home-catalog';
 import { RemoteImage } from '@/components/RemoteImage';
 
 export const HIGHLIGHT_HEIGHT = 236;

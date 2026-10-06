@@ -2,7 +2,7 @@ import { Alert } from 'react-native';
 
 import { useCart, type CartItemPreview } from '@/hooks/useCart';
 import { useCartReplacePrompt } from '@/hooks/useCartReplacePrompt';
-import type { HomeDish } from '@/lib/home-mock';
+import type { HomeDish } from '@/lib/home-catalog';
 
 export function useAddDish() {
   const cart = useCart();

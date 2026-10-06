@@ -44,6 +44,7 @@ Paths are from the repo root. Prefer changing the listed file; do not duplicate 
 | I want to… | Go here |
 |------------|---------|
 | Home / browse data | `apps/client/src/api/home.ts`, `restaurants.ts` |
+| Home catalog helpers (types/filters) | `apps/client/src/lib/home-catalog.ts` (not mocks) |
 | Restaurant detail UI | `apps/client/src/screens/customer/RestaurantDetailScreen.tsx` |
 | Cart API | `apps/client/src/api/cart.ts` |
 | Cart rules (one restaurant) | Trigger `enforce_cart_rules` — `20260919182625_cart_rules.sql` |
@@ -139,7 +140,7 @@ Paths are from the repo root. Prefer changing the listed file; do not duplicate 
 | Android package id | `apps/client/app.json` → `com.sjinnovation.quickbite` |
 | EAS profiles (APK) | `apps/client/eas.json` |
 | Unit / edge / integration / e2e | Root `package.json` scripts; `tests/integration/`; `apps/manager/e2e/` |
-| Regenerate TS DB types | `npm run types:client` → `apps/client/src/types/database.ts` |
+| Regenerate TS DB types | `npm run types:gen` → client `database.ts` + manager `types.ts` |
 
 ---
 

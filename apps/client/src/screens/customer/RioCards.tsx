@@ -10,7 +10,7 @@ import { PopularDishCard } from '@/components/home/PopularDishCard';
 import { RestaurantStripCard } from '@/components/home/RestaurantStripCard';
 import { ORDER_STATUS_META, type OrderStatus } from '@/constants/orderStatus';
 import { colors, formatInr, radii } from '@/constants/theme';
-import type { HomeDish, HomePlace } from '@/lib/home-mock';
+import type { HomeDish, HomePlace } from '@/lib/home-catalog';
 
 const RAIL_GAP = 10;
 const PAGE_PAD = 16;

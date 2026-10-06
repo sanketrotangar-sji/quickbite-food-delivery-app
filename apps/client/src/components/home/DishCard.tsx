@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors, formatInr } from '@/constants/theme';
-import type { HomeDish } from '@/lib/home-mock';
+import type { HomeDish } from '@/lib/home-catalog';
 import { RemoteImage } from '@/components/RemoteImage';
 
 export function DishCard({

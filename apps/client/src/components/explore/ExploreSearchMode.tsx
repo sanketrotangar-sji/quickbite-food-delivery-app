@@ -6,7 +6,7 @@ import { HomeSearch } from '@/components/home/HomeSearch';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { SectionHeader } from '@/components/SectionHeader';
 import { colors } from '@/constants/theme';
-import type { HomeCategory, HomeDish, HomePlace } from '@/lib/home-mock';
+import type { HomeCategory, HomeDish, HomePlace } from '@/lib/home-catalog';
 import type { CuisineChip } from '@/components/home/CategoryChips';
 
 import { CuisineCard } from './CuisineCard';

@@ -33,7 +33,7 @@ import {
   POPULAR_CATEGORY_ID,
   type DietFilter,
   type HomeHighlight,
-} from '@/lib/home-mock';
+} from '@/lib/home-catalog';
 
 const PAGE_PAD = 16;
 const RAIL_GAP = 8;

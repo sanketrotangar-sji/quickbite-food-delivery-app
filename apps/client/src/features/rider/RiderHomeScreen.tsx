@@ -17,7 +17,7 @@ import { RiderStatsRow } from '@/features/rider/components/RiderStatsRow';
 import { stopRiderTracking, useRiderTracking } from '@/features/rider/rider-tracking';
 import { pickActive, todayStats, toCurrentOrder, toNearbyOrder, useClaimDelivery, useRiderOrders } from '@/features/rider/use-rider-live';
 import { useAuth } from '@/hooks/useAuth';
-import { greetingName } from '@/lib/home-mock';
+import { greetingName } from '@/lib/home-catalog';
 
 export function RiderHomeScreen() {
   const insets = useSafeAreaInsets();

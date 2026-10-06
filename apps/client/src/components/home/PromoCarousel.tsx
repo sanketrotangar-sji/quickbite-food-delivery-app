@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native'
 
 import { AppText } from '@/components/AppText';
 import { colors, radii } from '@/constants/theme';
-import type { MockPromo } from '@/lib/home-mock';
+import type { MockPromo } from '@/lib/home-catalog';
 import { RemoteImage } from '@/components/RemoteImage';
 
 export function PromoCarousel({ promos }: { promos: MockPromo[] }) {

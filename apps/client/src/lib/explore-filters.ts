@@ -1,6 +1,6 @@
 import { formatInr } from '@/constants/theme';
-import type { HomeDish, HomePlace, DietFilter } from '@/lib/home-mock';
-import { filterHomeDishes, filterHomePlaces, POPULAR_CATEGORY_ID, VEG_CATEGORY_ID } from '@/lib/home-mock';
+import type { HomeDish, HomePlace, DietFilter } from '@/lib/home-catalog';
+import { filterHomeDishes, filterHomePlaces, POPULAR_CATEGORY_ID, VEG_CATEGORY_ID } from '@/lib/home-catalog';
 import { placePresentation } from '@/lib/home-presentation';
 
 export const OFFER_MIN_DISCOUNT = 25;

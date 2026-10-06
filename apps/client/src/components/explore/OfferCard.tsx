@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { colors, radii } from '@/constants/theme';
-import type { HomePlace } from '@/lib/home-mock';
+import type { HomePlace } from '@/lib/home-catalog';
 import { placePresentation } from '@/lib/home-presentation';
 import { RemoteImage } from '@/components/RemoteImage';
 

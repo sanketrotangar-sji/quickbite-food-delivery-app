@@ -5,7 +5,7 @@ import {
   type HomeDish,
   type HomeHighlight,
   type HomePlace,
-} from '@/lib/home-mock';
+} from '@/lib/home-catalog';
 import type { MenuItem, RestaurantBrowse } from '@/types/models';
 
 import { supabase } from './supabaseClient';

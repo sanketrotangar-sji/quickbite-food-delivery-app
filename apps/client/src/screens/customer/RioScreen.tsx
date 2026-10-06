@@ -23,7 +23,7 @@ import { useActiveOrder } from '@/hooks/useOrderTracking';
 import { useSavedHearts } from '@/hooks/useSavedHearts';
 import { formatDeliveryAddress } from '@/lib/addresses';
 import { rioStatusHint } from '@/lib/rio-status-hint';
-import { greetingName, type HomeDish } from '@/lib/home-mock';
+import { greetingName, type HomeDish } from '@/lib/home-catalog';
 import { RioCards } from '@/screens/customer/RioCards';
 
 const RIO_MARK = require('../../../assets/images/rio-mark.png');

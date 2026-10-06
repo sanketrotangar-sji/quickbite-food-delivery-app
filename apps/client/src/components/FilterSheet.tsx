@@ -7,7 +7,7 @@ import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { colors, radii } from '@/constants/theme';
 import { DEFAULT_EXPLORE_FILTERS, type ExploreFilters } from '@/lib/explore-filters';
-import type { DietFilter } from '@/lib/home-mock';
+import type { DietFilter } from '@/lib/home-catalog';
 
 type Option<T extends string | number> = { value: T; label: string };
 

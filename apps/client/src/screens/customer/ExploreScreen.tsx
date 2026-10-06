@@ -38,8 +38,8 @@ import {
   type ExploreFilters,
   type QuickFilter,
 } from '@/lib/explore-filters';
-import type { HomeDish } from '@/lib/home-mock';
-import { POPULAR_CATEGORY_ID, VEG_CATEGORY_ID } from '@/lib/home-mock';
+import type { HomeDish } from '@/lib/home-catalog';
+import { POPULAR_CATEGORY_ID, VEG_CATEGORY_ID } from '@/lib/home-catalog';
 import { placePresentation } from '@/lib/home-presentation';
 
 const PAGE_PAD = 16;

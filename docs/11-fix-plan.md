@@ -339,14 +339,14 @@ Provide me steps of how to do supabase backup
 
 
 
-### P17 — Clarify data-access + rename `home-mock`
+### P17 — Clarify data-access + rename `home-mock` — **DONE (2026-10-07)**
 
 
 |             |                                                                                                                                             |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Problem** | `home-mock.ts` is real catalog helpers; empty `(tabs)` group; duplicate manager `supabase/` stub.                                           |
 | **Why**     | Confuses learners.                                                                                                                          |
-| **Fix**     | Rename to `home-catalog.ts`; delete empty routes; remove or README-note unused `apps/manager/supabase/`. Keep API-only Supabase calls rule. |
+| **Fix**     | Renamed to `home-catalog.ts`; removed empty `app/(tabs)`; manager `supabase/README.md` notes tooling-only stub.                           |
 | **Risk**    | Many import path updates.                                                                                                                   |
 | **Effort**  | S–M                                                                                                                                         |
 | **Verify**  | App compiles; docs repo-map updated.                                                                                                        |

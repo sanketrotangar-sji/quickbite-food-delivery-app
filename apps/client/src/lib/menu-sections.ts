@@ -1,4 +1,4 @@
-import { categorySlug } from '@/lib/home-mock';
+import { categorySlug } from '@/lib/home-catalog';
 import type { MenuItem } from '@/types/models';
 
 export type MenuSection = {

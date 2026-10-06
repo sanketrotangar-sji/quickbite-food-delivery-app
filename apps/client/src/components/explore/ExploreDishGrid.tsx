@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { PopularDishCard } from '@/components/home/PopularDishCard';
-import type { HomeDish } from '@/lib/home-mock';
+import type { HomeDish } from '@/lib/home-catalog';
 
 export function ExploreDishGrid({
   dishes,

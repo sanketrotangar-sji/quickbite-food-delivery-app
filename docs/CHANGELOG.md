@@ -15,6 +15,10 @@
 - `npm run types:manager` + `npm run types:gen` (client + manager).
 - Regenerated both type files from cloud schema; README docs updated.
 
+### P17 — home-catalog rename
+- Renamed `apps/client/src/lib/home-mock.ts` → `home-catalog.ts`; updated imports.
+- Removed empty `apps/client/app/(tabs)/`; manager `supabase/README.md` clarifies tooling stub.
+
 ## 2026-10-06 — Phase 4 batch 2 (P11, P12, P15, P18, P19, P22)
 
 ### P11 — Query hygiene
