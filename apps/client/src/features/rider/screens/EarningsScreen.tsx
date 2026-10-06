@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
+import { EmptyState } from '@/components/EmptyState';
+import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { Screen } from '@/components/Screen';
 import { colors, formatInr, radii, tabBarInset } from '@/constants/theme';
 import { earningsBars, earningsSnapshot, recentEarnings, useRiderHistory } from '@/features/rider/use-rider-live';
@@ -23,6 +25,7 @@ export function EarningsScreen() {
   const recent = recentEarnings(history);
   const peak = Math.max(...bars.map((bar) => bar.amount), 1);
   const rangeLabel = RANGES.find((item) => item.id === range)?.label ?? 'Today';
+  const hasEarnings = snapshot.deliveries > 0 || snapshot.total > 0;
 
   return (
     <Screen>
@@ -43,45 +46,74 @@ export function EarningsScreen() {
             );
           })}
         </View>
-        <View style={styles.panel}>
-          <AppText style={styles.heroLabel}>{rangeLabel} earnings</AppText>
-          <AppText heading weight="bold" style={styles.heroValue}>
-            {formatInr(snapshot.total)}
-          </AppText>
-          <AppText muted style={styles.heroMeta}>
-            {snapshot.deliveries} deliveries
-          </AppText>
-          <View style={styles.chart}>
-            {bars.map((bar) => (
-              <View key={bar.label} style={styles.barCol}>
-                <View style={styles.barTrack}>
-                  <View style={{ flex: Math.max(peak - bar.amount, 0) }} />
-                  <View style={[styles.barFill, { flex: bar.amount }]} />
+        {historyQuery.isLoading && !historyQuery.data ? <LoadingSkeleton rows={3} /> : null}
+        {historyQuery.isError ? (
+          <EmptyState
+            icon="cloud-offline-outline"
+            title="Couldn't load earnings"
+            body="Pull to refresh or try again in a moment."
+            actionLabel="Try again"
+            onAction={() => void historyQuery.refetch()}
+          />
+        ) : null}
+        {!historyQuery.isLoading && !historyQuery.isError ? (
+          <View style={styles.panel}>
+            <AppText style={styles.heroLabel}>{rangeLabel} earnings</AppText>
+            <AppText heading weight="bold" style={styles.heroValue}>
+              {formatInr(snapshot.total)}
+            </AppText>
+            <AppText muted style={styles.heroMeta}>
+              {snapshot.deliveries} deliveries · rider pay (not customer delivery fee)
+            </AppText>
+            {hasEarnings ? (
+              <View style={styles.chart}>
+                {bars.map((bar) => (
+                  <View key={bar.label} style={styles.barCol}>
+                    <View style={styles.barTrack}>
+                      <View style={{ flex: Math.max(peak - bar.amount, 0.01) }} />
+                      <View
+                        style={[
+                          styles.barFill,
+                          { flex: Math.max(bar.amount, 0), minHeight: bar.amount > 0 ? 8 : 2 },
+                        ]}
+                      />
+                    </View>
+                    <AppText style={styles.barLabel}>{bar.label}</AppText>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <AppText muted style={styles.emptyChart}>
+                Complete a delivery to see pay, tips, and bonuses here.
+              </AppText>
+            )}
+            <View style={styles.divider} />
+            <Line label="Delivery earnings" value={formatInr(snapshot.deliveryPay)} />
+            <Line label="Bonuses" value={formatInr(snapshot.bonuses)} />
+            <Line label="Tips" value={formatInr(snapshot.tips)} />
+            <View style={styles.divider} />
+            <AppText weight="semibold" style={styles.where}>
+              Where it came from
+            </AppText>
+            {recent.length === 0 ? (
+              <AppText muted style={styles.emptyChart}>
+                No delivered trips in history yet.
+              </AppText>
+            ) : (
+              recent.map((row, index) => (
+                <View key={row.id} style={[styles.source, index > 0 && styles.sourceBorder]}>
+                  <View style={styles.copy}>
+                    <AppText weight="semibold">{row.title}</AppText>
+                    <AppText muted style={styles.meta}>
+                      {row.detail}
+                    </AppText>
+                  </View>
+                  <AppText weight="bold">{formatInr(row.amount)}</AppText>
                 </View>
-                <AppText style={styles.barLabel}>{bar.label}</AppText>
-              </View>
-            ))}
+              ))
+            )}
           </View>
-          <View style={styles.divider} />
-          <Line label="Delivery earnings" value={formatInr(snapshot.deliveryPay)} />
-          <Line label="Bonuses" value={formatInr(snapshot.bonuses)} />
-          <Line label="Tips" value={formatInr(snapshot.tips)} />
-          <View style={styles.divider} />
-          <AppText weight="semibold" style={styles.where}>
-            Where it came from
-          </AppText>
-          {recent.map((row, index) => (
-            <View key={row.id} style={[styles.source, index > 0 && styles.sourceBorder]}>
-              <View style={styles.copy}>
-                <AppText weight="semibold">{row.title}</AppText>
-                <AppText muted style={styles.meta}>
-                  {row.detail}
-                </AppText>
-              </View>
-              <AppText weight="bold">{formatInr(row.amount)}</AppText>
-            </View>
-          ))}
-        </View>
+        ) : null}
       </ScrollView>
     </Screen>
   );
@@ -126,8 +158,9 @@ const styles = StyleSheet.create({
   chart: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, height: 120, marginTop: 8 },
   barCol: { flex: 1, alignItems: 'center', gap: 6, height: '100%' },
   barTrack: { flex: 1, width: '100%', justifyContent: 'flex-end' },
-  barFill: { width: '100%', borderRadius: 6, backgroundColor: colors.primary, minHeight: 8 },
+  barFill: { width: '100%', borderRadius: 6, backgroundColor: colors.primary },
   barLabel: { fontSize: 10, color: colors.textMuted },
+  emptyChart: { fontSize: 13, lineHeight: 18, marginVertical: 8 },
   divider: { height: 1, backgroundColor: colors.border, marginVertical: 4 },
   line: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   lineLabel: { fontSize: 14 },

@@ -19,7 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/api/supabaseClient';
 import { startRiderTracking, stopRiderTracking } from '@/features/rider/rider-tracking';
 import { riderTrackingAction } from '@/features/rider/tracking-policy';
-import type { OrderStatus } from '@/constants/orderStatus';
+import { ORDER_STATUS_META, type OrderStatus } from '@/constants/orderStatus';
 
 export const riderOrdersKey = ['rider-orders'] as const;
 export const riderHistoryKey = ['rider-history'] as const;
@@ -38,11 +38,7 @@ function orderCode(order: RiderDelivery) {
 }
 
 function statusLabelFor(status: OrderStatus) {
-  if (status === 'out_for_delivery') return 'On the way';
-  if (status === 'ready') return 'Ready for pickup';
-  if (status === 'preparing') return 'Preparing';
-  if (status === 'placed') return 'Assigned';
-  return 'Active';
+  return ORDER_STATUS_META[status]?.label ?? 'Active';
 }
 
 export function toCurrentOrder(order: RiderDelivery): RiderCurrentOrder {

@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
@@ -26,7 +26,6 @@ import {
   toCurrentOrder,
   toNearbyOrder,
   useClaimDelivery,
-  useRiderHistory,
   useRiderOrders,
 } from '@/features/rider/use-rider-live';
 import { useAuth } from '@/hooks/useAuth';
@@ -38,17 +37,23 @@ export function RiderHomeScreen() {
   const queryClient = useQueryClient();
   const { profile, refreshProfile } = useAuth();
   const orders = useRiderOrders();
-  const history = useRiderHistory();
   const claim = useClaimDelivery();
   const tracking = useRiderTracking();
   const [dutyBusy, setDutyBusy] = useState(false);
   const [needsLocation, setNeedsLocation] = useState(false);
-  const online = Boolean(profile?.is_online);
+  const profileOnline = Boolean(profile?.is_online);
+  const [optimisticOnline, setOptimisticOnline] = useState<boolean | null>(null);
+  const online = optimisticOnline ?? profileOnline;
   const firstName = greetingName(profile?.full_name, profile?.email);
   const mine = orders.data?.mine ?? [];
   const active = pickActive(mine);
   const nearby = (orders.data?.available ?? []).map(toNearbyOrder);
-  const stats = todayStats(history.data ?? [], active);
+  // Home skips history fetch; stats reflect active trip only until Earnings tab loads history.
+  const stats = todayStats([], active);
+
+  useEffect(() => {
+    setOptimisticOnline(null);
+  }, [profileOnline]);
 
   async function setDuty(next: boolean) {
     if (!profile?.id || dutyBusy || next === online) return;
@@ -72,8 +77,7 @@ export function RiderHomeScreen() {
     }
 
     setDutyBusy(true);
-    // Optimistic UI — profile refresh confirms.
-    const previousOnline = online;
+    setOptimisticOnline(next);
     try {
       await setRiderDuty(next);
       if (!next) await stopRiderTracking();
@@ -81,8 +85,9 @@ export function RiderHomeScreen() {
       void queryClient.invalidateQueries({ queryKey: riderOrdersKey });
       void queryClient.invalidateQueries({ queryKey: riderHistoryKey });
     } catch (error) {
+      setOptimisticOnline(profileOnline);
       Alert.alert('Could not update duty', userFacingMessage(error));
-      if (previousOnline !== online) await refreshProfile();
+      await refreshProfile();
     } finally {
       setDutyBusy(false);
     }
