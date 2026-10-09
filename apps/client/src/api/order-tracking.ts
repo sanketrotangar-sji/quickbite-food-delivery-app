@@ -38,6 +38,7 @@ export type TrackedOrder = Tables<'orders'> & {
 
 const ORDER_COLUMNS = `
   id, customer_id, restaurant_id, rider_id, status, total_amount, delivery_fee,
+  discount_amount, offer_percent,
   delivery_address, delivery_address_id, delivery_lat, delivery_lng, notes,
   placed_at, delivered_at, updated_at, rider_earning, tip_amount, bonus_amount,
   pickup_km, drop_km, eta_minutes,

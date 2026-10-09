@@ -24,7 +24,7 @@ import { tabBarInset } from '@/constants/theme';
 import { useAddDish } from '@/hooks/useAddDish';
 import { useCart } from '@/hooks/useCart';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import { useHomeCatalog } from '@/hooks/useHomeCatalog';
+import { sortPlacesByDistance, useHomeCatalog } from '@/hooks/useHomeCatalog';
 import { useActiveOrder } from '@/hooks/useOrderTracking';
 import { useSavedHearts } from '@/hooks/useSavedHearts';
 import {
@@ -70,9 +70,13 @@ export function ExploreScreen() {
   const places = useMemo(() => {
     const sourcePlaces = allPlaces ?? [];
     const sourceDishes = allDishes ?? [];
-    return filterExplorePlaces(sourcePlaces, sourceDishes, debouncedQuery, filters).sort(
-      (a, b) => Number(b.isOpen) - Number(a.isOpen) || (b.rating ?? -1) - (a.rating ?? -1),
-    );
+    const filtered = filterExplorePlaces(sourcePlaces, sourceDishes, debouncedQuery, filters);
+    if (filters.minRating > 0) {
+      return [...filtered].sort(
+        (a, b) => Number(b.isOpen) - Number(a.isOpen) || (b.rating ?? -1) - (a.rating ?? -1),
+      );
+    }
+    return sortPlacesByDistance(filtered);
   }, [allDishes, allPlaces, filters, debouncedQuery]);
   const matchedDishes = useMemo(() => {
     const sourcePlaces = allPlaces ?? [];

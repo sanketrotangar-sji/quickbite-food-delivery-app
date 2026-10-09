@@ -13,6 +13,7 @@ import { type OrderStatus } from '@/constants/orderStatus';
 import { colors, formatInr, tabBarInset } from '@/constants/theme';
 import { useCart } from '@/hooks/useCart';
 import { useCartReplacePrompt } from '@/hooks/useCartReplacePrompt';
+import { useDeliveryRangeGuard } from '@/hooks/useDeliveryRangeGuard';
 import { useOrders } from '@/hooks/useOrders';
 import type { CustomerOrder } from '@/types/models';
 
@@ -24,6 +25,7 @@ export function OrdersScreen() {
   const orders = useOrders();
   const cart = useCart();
   const replace = useCartReplacePrompt();
+  const { ensureDeliverable } = useDeliveryRangeGuard();
   const [segment, setSegment] = useState<Segment>('active');
   const [reorderingId, setReorderingId] = useState<string | null>(null);
   const rows = orders.data ?? [];
@@ -45,6 +47,7 @@ export function OrdersScreen() {
   }
 
   function reorder(order: CustomerOrder) {
+    if (!ensureDeliverable(order.restaurant_id)) return;
     const lines = order.order_items.filter((line) => line.menu_item_id);
     if (!lines.length) {
       Alert.alert('Cannot reorder', 'Those dishes are no longer linked to the menu.');

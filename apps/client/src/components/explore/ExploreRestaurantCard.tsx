@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { colors, radii } from '@/constants/theme';
 import type { HomePlace } from '@/lib/home-catalog';
+import { formatKm } from '@/lib/geo';
 import { placePresentation } from '@/lib/home-presentation';
 import { RemoteImage } from '@/components/RemoteImage';
 
@@ -81,6 +82,7 @@ export function ExploreRestaurantCard({
           </AppText>
         ) : null}
         <AppText muted numberOfLines={1} style={styles.meta}>
+          {place.distanceKm != null ? `${formatKm(place.distanceKm)} · ` : ''}
           {offer.eta} · Free delivery above ₹{offer.freeAbove}
         </AppText>
       </View>

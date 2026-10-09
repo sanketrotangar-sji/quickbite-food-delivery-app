@@ -57,16 +57,16 @@ function fail(name, detail) {
 }
 
 async function embed(text) {
-  const base = (process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434').replace(/\/+$/, '');
+  const base = (process.env.OLLAMA_BASE_URL || 'https://ollama.buildyourai.consulting').replace(/\/+$/, '');
   const res = await fetch(`${base}/api/embed`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ model: 'nomic-embed-text', input: text }),
+    body: JSON.stringify({ model: 'qwen3-embedding:0.6b', input: text }),
   });
   if (!res.ok) throw new Error(`Ollama ${res.status}`);
   const body = await res.json();
   const vector = body?.embeddings?.[0] || body?.embedding;
-  if (!Array.isArray(vector) || vector.length !== 768) throw new Error('bad embedding dims');
+  if (!Array.isArray(vector) || vector.length !== 1024) throw new Error('bad embedding dims');
   return vector;
 }
 

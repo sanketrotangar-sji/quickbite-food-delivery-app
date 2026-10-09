@@ -100,6 +100,9 @@ export function RioCards({
           );
         }
         if (card.kind === 'cart') {
+          const discount = Number(card.discountAmount ?? 0);
+          const fee = Number(card.deliveryFee ?? 0);
+          const offer = Number(card.offerPercent ?? 0);
           return (
             <View key={`cart-${index}`} style={styles.panel}>
               <AppText weight="semibold">{card.restaurantName}</AppText>
@@ -110,11 +113,23 @@ export function RioCards({
                   value={formatInr(line.quantity * line.unitPrice)}
                 />
               ))}
+              {card.subtotal != null ? (
+                <PriceRow label="Subtotal" value={formatInr(card.subtotal)} />
+              ) : null}
+              {discount > 0 ? (
+                <PriceRow
+                  label={offer > 0 ? `Offer (${offer}%)` : 'Offer'}
+                  value={`- ${formatInr(discount)}`}
+                />
+              ) : null}
+              {fee > 0 || card.deliveryFee != null ? (
+                <PriceRow label="Delivery fee" value={formatInr(fee)} />
+              ) : null}
               <PriceRow label="Total" value={formatInr(card.total)} strong />
               {card.needsAddress ? (
                 <Button label="Add a delivery address" onPress={onAddAddress} variant="secondary" />
               ) : null}
-              {card.confirm && !confirmHidden ? (
+              {card.confirm && !confirmHidden && !card.settled ? (
                 <Button label="Confirm order" onPress={onConfirm} loading={confirming} />
               ) : null}
             </View>
@@ -162,6 +177,9 @@ function toPlace(place: RioRestaurant): HomePlace {
     categoryIds: [],
     offerPercent: place.offerPercent,
     prepMinutes: place.prepMinutes,
+    lat: null,
+    lng: null,
+    distanceKm: place.distanceKm ?? null,
   };
 }
 

@@ -1,3 +1,4 @@
+import { cartHash, cartTotals, DELIVERY_MAX_KM, money, STANDARD_DELIVERY_FEE } from "../_shared/cartMath.ts";
 import { ticketUrgency } from "../_shared/rules.ts";
 import { cachedTool } from "./_toolCache.ts";
 
@@ -12,6 +13,7 @@ export type RioRestaurant = {
   veg: boolean;
   offerPercent: number | null;
   prepMinutes: number | null;
+  distanceKm?: number | null;
 };
 
 export type RioMenuItem = {
@@ -33,9 +35,15 @@ export type RioCard =
     kind: "cart";
     restaurantName: string;
     lines: { name: string; quantity: number; unitPrice: number }[];
+    subtotal: number;
+    offerPercent: number;
+    discountAmount: number;
+    deliveryFee: number;
     total: number;
     confirm: boolean;
     needsAddress: boolean;
+    settled?: boolean;
+    cartHash?: string;
   }
   | {
     kind: "order";
@@ -71,11 +79,11 @@ export type ToolOutcome = {
 
 type Db = any;
 
-/** Must match public.standard_delivery_fee() (₹40). */
-export const STANDARD_DELIVERY_FEE = 40;
+export { STANDARD_DELIVERY_FEE, DELIVERY_MAX_KM };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CLOSED_QUERY = /\b(closed|shut|offline|not open)\b/i;
+const ACTIVE_ORDER_STATUSES = ["placed", "preparing", "ready", "out_for_delivery"];
 
 export function isUuid(value: unknown): value is string {
   return typeof value === "string" && UUID.test(value);
@@ -141,6 +149,22 @@ function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number) {
   return 2 * R * Math.asin(Math.sqrt(x));
 }
 
+/** Same rules as client assertWithinDeliveryRange (missing kitchen coords → skip). */
+function rangeError(
+  originLat: number | null,
+  originLng: number | null,
+  kitchen: { lat?: number | null; lng?: number | null; name?: string | null },
+): string | null {
+  if (originLat == null || originLng == null) {
+    return "Set a delivery address with a location pin first so we can check if this kitchen is in range.";
+  }
+  if (kitchen.lat == null || kitchen.lng == null) return null;
+  const km = haversineKm(originLat, originLng, Number(kitchen.lat), Number(kitchen.lng));
+  if (!Number.isFinite(km) || km <= DELIVERY_MAX_KM) return null;
+  const label = kitchen.name?.trim() || "This kitchen";
+  return `${label} is about ${km.toFixed(1)} km from your address. We only deliver within ${DELIVERY_MAX_KM} km.`;
+}
+
 function parseExcludeIds(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   return raw.filter((id): id is string => isUuid(id)).slice(0, 40);
@@ -180,7 +204,12 @@ function diversifyDishes(dishes: Dish[], limit = 10): Dish[] {
   return picked;
 }
 
-function toRestaurant(kitchen: Kitchen, dishName: string, veg: boolean): RioRestaurant {
+function toRestaurant(
+  kitchen: Kitchen,
+  dishName: string,
+  veg: boolean,
+  distanceKm: number | null = null,
+): RioRestaurant {
   return {
     id: kitchen.id,
     name: kitchen.name,
@@ -192,7 +221,37 @@ function toRestaurant(kitchen: Kitchen, dishName: string, veg: boolean): RioRest
     veg,
     offerPercent: kitchen.offer_percent,
     prepMinutes: kitchen.prep_minutes,
+    distanceKm: distanceKm != null && Number.isFinite(distanceKm) ? Number(distanceKm.toFixed(1)) : null,
   };
+}
+
+function kitchenDistanceKm(
+  kitchen: Kitchen,
+  deliveryLat: number | null,
+  deliveryLng: number | null,
+): number | null {
+  if (
+    deliveryLat == null ||
+    deliveryLng == null ||
+    kitchen.lat == null ||
+    kitchen.lng == null ||
+    !Number.isFinite(Number(kitchen.lat)) ||
+    !Number.isFinite(Number(kitchen.lng))
+  ) {
+    return null;
+  }
+  return haversineKm(deliveryLat, deliveryLng, Number(kitchen.lat), Number(kitchen.lng));
+}
+
+function inDeliveryRange(
+  kitchen: Kitchen,
+  deliveryLat: number | null,
+  deliveryLng: number | null,
+): boolean {
+  if (deliveryLat == null || deliveryLng == null) return true;
+  const km = kitchenDistanceKm(kitchen, deliveryLat, deliveryLng);
+  if (km == null) return true;
+  return km <= DELIVERY_MAX_KM;
 }
 
 async function loadKitchens(db: Db, ids: string[]) {
@@ -321,6 +380,11 @@ async function searchRestaurantsUncached(
       return { place, distanceKm, offer: kitchen.offer_percent ?? 0 };
     })
     .filter((row): row is { place: RioRestaurant; distanceKm: number | null; offer: number } => row != null)
+    .filter((row) => {
+      if (deliveryLat == null || deliveryLng == null) return true;
+      if (row.distanceKm == null) return true;
+      return row.distanceKm <= DELIVERY_MAX_KM;
+    })
     .sort((a, b) => {
       const openDelta = Number(b.place.isOpen) - Number(a.place.isOpen);
       if (openDelta !== 0) return openDelta;
@@ -330,6 +394,11 @@ async function searchRestaurantsUncached(
       if (b.offer !== a.offer) return b.offer - a.offer;
       return a.place.name.localeCompare(b.place.name);
     });
+
+  const inRangeIds = new Set(ranked.map((row) => row.place.id));
+  if (deliveryLat != null && deliveryLng != null) {
+    dishes = dishes.filter((dish) => inRangeIds.has(dish.restaurant_id));
+  }
 
   const places = diversifyPlaces(
     ranked.map((row) => row.place),
@@ -385,6 +454,401 @@ export async function searchRestaurants(
   // Skip cache when paginating (excludes) so "Show more" is not sticky.
   if (exclude.length > 0) return searchRestaurantsUncached(db, args);
   return cachedTool("search_restaurants", cacheArgs, () => searchRestaurantsUncached(db, args));
+}
+
+/** Themes near the customer — categories from open, in-range kitchens (no add cards). */
+export async function browseThemes(
+  db: Db,
+  args: {
+    veg_only?: unknown;
+    delivery_lat?: unknown;
+    delivery_lng?: unknown;
+  },
+): Promise<ToolOutcome> {
+  const vegOnly = args.veg_only === true;
+  const deliveryLat = typeof args.delivery_lat === "number" ? args.delivery_lat : null;
+  const deliveryLng = typeof args.delivery_lng === "number" ? args.delivery_lng : null;
+
+  const { data: kitchensRaw, error: kErr } = await db
+    .from("restaurant_browse")
+    .select("id, name, lat, lng, is_open")
+    .eq("is_open", true)
+    .limit(80);
+  if (kErr) {
+    return {
+      data: {
+        error: "Could not load kitchens nearby.",
+        instruction: "Ask the customer for a dish name and call find_offers instead.",
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  const kitchens = ((kitchensRaw ?? []) as Kitchen[]).filter((k) =>
+    inDeliveryRange(k, deliveryLat, deliveryLng)
+  );
+  const kitchenIds = kitchens.map((k) => k.id);
+  if (kitchenIds.length === 0) {
+    return {
+      data: {
+        empty: true,
+        themes: [],
+        instruction:
+          "No open kitchens in range. Ask for a delivery address pin or try again later.",
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  let dishQuery = db
+    .from("menu_items")
+    .select("category, name, restaurant_id, is_veg, is_available")
+    .eq("is_available", true)
+    .in("restaurant_id", kitchenIds)
+    .limit(400);
+  if (vegOnly) dishQuery = dishQuery.eq("is_veg", true);
+  const { data: dishes, error: dErr } = await dishQuery;
+  if (dErr) {
+    return {
+      data: {
+        error: "Could not load menu themes.",
+        instruction: "Ask for a concrete dish and call find_offers.",
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  const byTheme = new Map<string, Set<string>>();
+  for (const row of (dishes ?? []) as {
+    category: string | null;
+    name: string;
+    restaurant_id: string;
+  }[]) {
+    const theme = (row.category?.trim() || row.name?.trim() || "").slice(0, 40);
+    if (!theme) continue;
+    const set = byTheme.get(theme) ?? new Set<string>();
+    set.add(row.restaurant_id);
+    byTheme.set(theme, set);
+  }
+
+  const themes = [...byTheme.entries()]
+    .map(([theme, kitchensSet]) => ({
+      theme,
+      kitchen_count: kitchensSet.size,
+    }))
+    .sort((a, b) => b.kitchen_count - a.kitchen_count || a.theme.localeCompare(b.theme))
+    .slice(0, 12);
+
+  return {
+    data: {
+      themes,
+      open_kitchens_in_range: kitchenIds.length,
+      instruction:
+        "Present these themes to the customer. When they pick one, call find_offers with that theme as query. Do not invent themes.",
+    },
+    cards: [],
+    conflict: null,
+  };
+}
+
+/**
+ * Per-kitchen offers for a dish/theme. One featured dish per kitchen.
+ * Available+open first as cards; unavailable/closed listed in JSON for honesty.
+ */
+export async function findOffers(
+  db: Db,
+  args: {
+    query?: unknown;
+    veg_only?: unknown;
+    max_price?: unknown;
+    exclude_restaurant_ids?: unknown;
+    restaurant_id?: unknown;
+    delivery_lat?: unknown;
+    delivery_lng?: unknown;
+  },
+): Promise<ToolOutcome> {
+  const query = searchTerm(args.query);
+  if (!query) {
+    return {
+      data: {
+        empty: true,
+        error: "QUERY_REQUIRED",
+        instruction: "Need a dish or theme. Call browse_themes or ask the customer what they want.",
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  const vegOnly = args.veg_only === true;
+  const maxPrice = typeof args.max_price === "number" && args.max_price > 0 ? args.max_price : null;
+  const exclude = new Set(parseExcludeIds(args.exclude_restaurant_ids));
+  const narrowId = isUuid(args.restaurant_id) ? String(args.restaurant_id) : null;
+  const deliveryLat = typeof args.delivery_lat === "number" ? args.delivery_lat : null;
+  const deliveryLng = typeof args.delivery_lng === "number" ? args.delivery_lng : null;
+
+  let dishRequest = db
+    .from("menu_items")
+    .select("id, name, description, price, image_url, is_available, is_veg, category, restaurant_id")
+    .or(`name.ilike.%${query}%,category.ilike.%${query}%,description.ilike.%${query}%`)
+    .limit(80);
+  if (narrowId) dishRequest = dishRequest.eq("restaurant_id", narrowId);
+  if (vegOnly) dishRequest = dishRequest.eq("is_veg", true);
+  if (maxPrice != null) dishRequest = dishRequest.lte("price", maxPrice);
+
+  const { data: dishRows, error: dishErr } = await dishRequest;
+  if (dishErr) {
+    return {
+      data: {
+        error: "Search failed. Try a shorter dish name.",
+        instruction: "Retry find_offers with a simpler query, or browse_themes.",
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  let dishes = ((dishRows ?? []) as Dish[]).filter((d) => !exclude.has(d.restaurant_id));
+  if (dishes.length === 0) {
+    return {
+      data: {
+        empty: true,
+        offers: [],
+        unavailable_or_closed: [],
+        instruction: "No matches. Suggest browse_themes or a different dish name.",
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  const kitchens = await loadKitchens(
+    db,
+    dishes.map((d) => d.restaurant_id),
+  );
+  const kitchenById = new Map(kitchens.map((k) => [k.id, k]));
+
+  type OfferRow = {
+    restaurant_id: string;
+    restaurant_name: string;
+    is_open: boolean;
+    distance_km: number | null;
+    dish_id: string;
+    dish_name: string;
+    price: number;
+    is_available: boolean;
+    is_veg: boolean;
+    in_range: boolean;
+  };
+
+  const bestByKitchen = new Map<string, OfferRow>();
+  for (const dish of dishes) {
+    const kitchen = kitchenById.get(dish.restaurant_id);
+    if (!kitchen) continue;
+    const distanceKm = kitchenDistanceKm(kitchen, deliveryLat, deliveryLng);
+    const inRange = inDeliveryRange(kitchen, deliveryLat, deliveryLng);
+    const candidate: OfferRow = {
+      restaurant_id: kitchen.id,
+      restaurant_name: kitchen.name,
+      is_open: kitchen.is_open,
+      distance_km: distanceKm != null ? Number(distanceKm.toFixed(1)) : null,
+      dish_id: dish.id,
+      dish_name: dish.name,
+      price: Number(dish.price),
+      is_available: dish.is_available === true,
+      is_veg: dish.is_veg === true,
+      in_range: inRange,
+    };
+    const prev = bestByKitchen.get(kitchen.id);
+    if (!prev) {
+      bestByKitchen.set(kitchen.id, candidate);
+      continue;
+    }
+    // Prefer available + open over unavailable/closed for the featured offer.
+    const score = (o: OfferRow) =>
+      (o.is_available ? 4 : 0) + (o.is_open ? 2 : 0) + (o.in_range ? 1 : 0);
+    if (score(candidate) > score(prev)) bestByKitchen.set(kitchen.id, candidate);
+  }
+
+  const allOffers = [...bestByKitchen.values()];
+  const ready = allOffers
+    .filter((o) => o.is_available && o.is_open && o.in_range)
+    .sort((a, b) => {
+      if (a.distance_km != null && b.distance_km != null && a.distance_km !== b.distance_km) {
+        return a.distance_km - b.distance_km;
+      }
+      return a.restaurant_name.localeCompare(b.restaurant_name);
+    });
+  const soft = allOffers
+    .filter((o) => !o.is_available || !o.is_open || !o.in_range)
+    .slice(0, 8);
+
+  const places: RioRestaurant[] = ready.slice(0, 8).map((o) => {
+    const kitchen = kitchenById.get(o.restaurant_id)!;
+    return toRestaurant(kitchen, o.dish_name, o.is_veg, o.distance_km);
+  });
+
+  return {
+    data: {
+      query,
+      offers: ready.slice(0, 8),
+      unavailable_or_closed: soft,
+      empty: ready.length === 0,
+      instruction:
+        ready.length > 0
+          ? "Show these kitchens (cards attached). Customer picks ONE kitchen, then get_menu or cart add from that kitchen only. Mention open and ~km. Do not add dishes from two kitchens in one cart."
+          : "No open in-range available matches. Use unavailable_or_closed to explain honestly, or browse_themes / different query.",
+    },
+    cards: places.length ? [{ kind: "restaurants", places }] : [],
+    conflict: null,
+  };
+}
+
+/** Re-check a named kitchen for a dish — honest available / closed / unavailable. */
+export async function verifyDish(
+  db: Db,
+  args: {
+    query?: unknown;
+    restaurant_id?: unknown;
+    restaurant_name?: unknown;
+    delivery_lat?: unknown;
+    delivery_lng?: unknown;
+  },
+): Promise<ToolOutcome> {
+  const query = searchTerm(args.query);
+  if (!query) {
+    return {
+      data: {
+        error: "Need a dish name to verify.",
+        instruction: "Ask which dish, then call verify_dish again.",
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  const deliveryLat = typeof args.delivery_lat === "number" ? args.delivery_lat : null;
+  const deliveryLng = typeof args.delivery_lng === "number" ? args.delivery_lng : null;
+
+  let kitchen: Kitchen | null = null;
+  if (isUuid(args.restaurant_id)) {
+    const rows = await loadKitchens(db, [String(args.restaurant_id)]);
+    kitchen = rows[0] ?? null;
+  } else if (typeof args.restaurant_name === "string" && args.restaurant_name.trim()) {
+    const name = searchTerm(args.restaurant_name);
+    const { data, error } = await db
+      .from("restaurant_browse")
+      .select("id, name, cuisine, description, address, image_url, is_open, offer_percent, prep_minutes, lat, lng")
+      .ilike("name", `%${name}%`)
+      .limit(5);
+    if (error) {
+      return {
+        data: { error: "Could not look up that kitchen.", instruction: "Ask for the restaurant name again." },
+        cards: [],
+        conflict: null,
+      };
+    }
+    kitchen = ((data ?? []) as Kitchen[])[0] ?? null;
+  }
+
+  if (!kitchen) {
+    return {
+      data: {
+        status: "not_on_menu",
+        message: "Could not find that restaurant.",
+        instruction: "Call find_offers for the dish without restaurant_id.",
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  const distanceKm = kitchenDistanceKm(kitchen, deliveryLat, deliveryLng);
+  const inRange = inDeliveryRange(kitchen, deliveryLat, deliveryLng);
+
+  const { data: dishes, error } = await db
+    .from("menu_items")
+    .select("id, name, description, price, image_url, is_available, is_veg, category, restaurant_id")
+    .eq("restaurant_id", kitchen.id)
+    .or(`name.ilike.%${query}%,category.ilike.%${query}%,description.ilike.%${query}%`)
+    .limit(10);
+  if (error) {
+    return {
+      data: { error: "Could not check that menu.", instruction: "Try find_offers instead." },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  const matches = (dishes ?? []) as Dish[];
+  if (matches.length === 0) {
+    const alt = await findOffers(db, {
+      query,
+      delivery_lat: deliveryLat,
+      delivery_lng: deliveryLng,
+    });
+    return {
+      data: {
+        status: "not_on_menu",
+        restaurant_id: kitchen.id,
+        restaurant_name: kitchen.name,
+        is_open: kitchen.is_open,
+        distance_km: distanceKm != null ? Number(distanceKm.toFixed(1)) : null,
+        message: `${kitchen.name} does not list "${query}" on the menu right now.`,
+        alternatives: alt.data,
+        instruction: "Be honest. Offer alternatives from find_offers cards if any.",
+      },
+      cards: alt.cards,
+      conflict: null,
+    };
+  }
+
+  const available = matches.find((d) => d.is_available);
+  const any = available ?? matches[0];
+
+  let status: string = "available";
+  if (!inRange) status = "out_of_range";
+  else if (!kitchen.is_open) status = "closed";
+  else if (!any.is_available) status = "unavailable";
+
+  const place = toRestaurant(kitchen, any.name, any.is_veg, distanceKm);
+  const cards: RioCard[] =
+    status === "available" ? [{ kind: "restaurants", places: [place] }] : [];
+
+  return {
+    data: {
+      status,
+      restaurant_id: kitchen.id,
+      restaurant_name: kitchen.name,
+      is_open: kitchen.is_open,
+      in_range: inRange,
+      distance_km: distanceKm != null ? Number(distanceKm.toFixed(1)) : null,
+      dish: {
+        id: any.id,
+        name: any.name,
+        price: Number(any.price),
+        is_available: any.is_available,
+        is_veg: any.is_veg,
+      },
+      message:
+        status === "available"
+          ? `${kitchen.name} has ${any.name} available now.`
+          : status === "unavailable"
+          ? `Yes — ${kitchen.name} has ${any.name} on the menu, but it is not available right now.`
+          : status === "closed"
+          ? `Yes — ${kitchen.name} offers ${any.name}, but the kitchen is closed right now.`
+          : `${kitchen.name} is outside the ${DELIVERY_MAX_KM} km delivery range from this address.`,
+      instruction:
+        status === "available"
+          ? "Customer can get_menu or cart add this dish_id."
+          : "Acknowledge they are right about the kitchen, explain the blocker, offer find_offers alternatives.",
+    },
+    cards,
+    conflict: null,
+  };
 }
 
 async function getMenuUncached(db: Db, args: { restaurant_id?: unknown }): Promise<ToolOutcome> {
@@ -454,9 +918,16 @@ async function readCart(db: Db) {
   const rows = (data ?? []) as CartRow[];
   const restaurantId = rows[0]?.restaurant_id ?? null;
   let restaurantName = "Your cart";
+  let offerPercent = 0;
+  let kitchenLat: number | null = null;
+  let kitchenLng: number | null = null;
   if (restaurantId) {
     const kitchens = await loadKitchens(db, [restaurantId]);
-    restaurantName = kitchens[0]?.name ?? restaurantName;
+    const kitchen = kitchens[0];
+    restaurantName = kitchen?.name ?? restaurantName;
+    offerPercent = Math.max(0, Math.min(100, Number(kitchen?.offer_percent ?? 0)));
+    kitchenLat = kitchen?.lat != null ? Number(kitchen.lat) : null;
+    kitchenLng = kitchen?.lng != null ? Number(kitchen.lng) : null;
   }
   const lines = rows.map((row) => {
     const item = one(row.menu_items);
@@ -467,13 +938,25 @@ async function readCart(db: Db) {
       menuItemId: row.menu_item_id,
     };
   });
-  const subtotal = lines.reduce((sum, line) => sum + line.quantity * line.unitPrice, 0);
-  const deliveryFee = lines.length > 0 ? STANDARD_DELIVERY_FEE : 0;
-  const total = subtotal + deliveryFee;
-  return { rows, restaurantName, lines, subtotal, deliveryFee, total };
+  const subtotal = money(lines.reduce((sum, line) => sum + line.quantity * line.unitPrice, 0));
+  const totals = cartTotals(subtotal, offerPercent, lines.length > 0);
+  return {
+    rows,
+    restaurantId,
+    restaurantName,
+    kitchenLat,
+    kitchenLng,
+    lines,
+    subtotal,
+    offerPercent: totals.offerPercent,
+    discountAmount: totals.discountAmount,
+    discountedSubtotal: totals.discountedSubtotal,
+    deliveryFee: totals.deliveryFee,
+    total: totals.total,
+  };
 }
 
-function cartPayload(cart: Awaited<ReturnType<typeof readCart>>) {
+function cartPayload(cart: Awaited<ReturnType<typeof readCart>>, hash?: string) {
   return {
     restaurant_name: cart.lines.length ? cart.restaurantName : null,
     lines: cart.lines.map(({ name, quantity, unitPrice, menuItemId }) => ({
@@ -483,23 +966,41 @@ function cartPayload(cart: Awaited<ReturnType<typeof readCart>>) {
       menu_item_id: menuItemId,
     })),
     subtotal: cart.subtotal,
+    offer_percent: cart.offerPercent,
+    discount_amount: cart.discountAmount,
     delivery_fee: cart.deliveryFee,
     total: cart.total,
+    ...(hash ? { cart_hash: hash } : {}),
   };
 }
 
-function cartCard(
+async function hashForCart(cart: Awaited<ReturnType<typeof readCart>>): Promise<string | null> {
+  if (!cart.restaurantId || cart.lines.length === 0) return null;
+  return cartHash({
+    restaurantId: cart.restaurantId,
+    lines: cart.lines.map((line) => ({ menuItemId: line.menuItemId, quantity: line.quantity })),
+    total: cart.total,
+  });
+}
+
+async function cartCard(
   cart: Awaited<ReturnType<typeof readCart>>,
   confirm: boolean,
   needsAddress: boolean,
-): RioCard {
+): Promise<RioCard> {
+  const hash = confirm ? await hashForCart(cart) : null;
   return {
     kind: "cart",
     restaurantName: cart.restaurantName,
     lines: cart.lines.map(({ name, quantity, unitPrice }) => ({ name, quantity, unitPrice })),
+    subtotal: cart.subtotal,
+    offerPercent: cart.offerPercent,
+    discountAmount: cart.discountAmount,
+    deliveryFee: cart.deliveryFee,
     total: cart.total,
     confirm,
     needsAddress,
+    ...(hash ? { cartHash: hash } : {}),
   };
 }
 
@@ -510,7 +1011,7 @@ export async function viewCart(db: Db): Promise<ToolOutcome> {
       empty: cart.lines.length === 0,
       ...cartPayload(cart),
     },
-    cards: cart.lines.length ? [cartCard(cart, false, false)] : [],
+    cards: cart.lines.length ? [await cartCard(cart, false, false)] : [],
     conflict: null,
   };
 }
@@ -525,7 +1026,13 @@ async function menuItemForCart(db: Db, menuItemId: string) {
   return data as { id: string; name: string; restaurant_id: string; is_available: boolean } | null;
 }
 
-export async function addToCart(db: Db, userId: string, menuItemId: string): Promise<ToolOutcome> {
+export async function addToCart(
+  db: Db,
+  userId: string,
+  menuItemId: string,
+  deliveryLat: number | null = null,
+  deliveryLng: number | null = null,
+): Promise<ToolOutcome> {
   const item = await menuItemForCart(db, menuItemId);
   if (!item) {
     return { data: { error: "That dish could not be found." }, cards: [], conflict: null };
@@ -536,6 +1043,17 @@ export async function addToCart(db: Db, userId: string, menuItemId: string): Pro
       cards: [],
       conflict: null,
     };
+  }
+
+  const kitchensForItem = await loadKitchens(db, [item.restaurant_id]);
+  const kitchen = kitchensForItem[0];
+  const outOfRange = rangeError(deliveryLat, deliveryLng, {
+    lat: kitchen?.lat,
+    lng: kitchen?.lng,
+    name: kitchen?.name,
+  });
+  if (outOfRange) {
+    return { data: { error: "DELIVERY_RANGE", message: outOfRange }, cards: [], conflict: null };
   }
 
   const { data: existingCart, error: cartError } = await db
@@ -551,8 +1069,13 @@ export async function addToCart(db: Db, userId: string, menuItemId: string): Pro
     return {
       data: {
         error: "CART_OTHER_RESTAURANT",
+        seller_choice: "two_orders",
         current_restaurant: currentRestaurant,
+        wanted_item: item.name,
+        wanted_restaurant: kitchen?.name ?? "another kitchen",
         message: `Your cart already has items from ${currentRestaurant}.`,
+        instruction:
+          "Do NOT call cart add again this turn. Explain one kitchen per order. Offer: (1) Keep current cart and checkout first, then order the other item as a second order, or (2) Clear cart and switch kitchen (customer taps Clear on the conflict UI).",
       },
       cards: [],
       conflict: { menuItemId: item.id, itemName: item.name, currentRestaurant },
@@ -575,7 +1098,14 @@ export async function addToCart(db: Db, userId: string, menuItemId: string): Pro
       const currentKitchen = current ? await loadKitchens(db, [current.restaurant_id]) : [];
       const currentRestaurant = currentKitchen[0]?.name ?? "another restaurant";
       return {
-        data: { error: "CART_OTHER_RESTAURANT", current_restaurant: currentRestaurant },
+        data: {
+          error: "CART_OTHER_RESTAURANT",
+          seller_choice: "two_orders",
+          current_restaurant: currentRestaurant,
+          wanted_item: item.name,
+          instruction:
+            "Do NOT call cart add again this turn. Explain one kitchen per order. Offer checkout-then-second-order or Clear & switch.",
+        },
         cards: [],
         conflict: { menuItemId: item.id, itemName: item.name, currentRestaurant },
       };
@@ -586,7 +1116,7 @@ export async function addToCart(db: Db, userId: string, menuItemId: string): Pro
   const cart = await readCart(db);
   return {
     data: { added: item.name, ...cartPayload(cart) },
-    cards: [cartCard(cart, false, false)],
+    cards: [await cartCard(cart, false, false)],
     conflict: null,
   };
 }
@@ -630,12 +1160,18 @@ export async function updateCartQuantity(
       removed: quantity < 1,
       ...cartPayload(cart),
     },
-    cards: cart.lines.length ? [cartCard(cart, false, false)] : [],
+    cards: cart.lines.length ? [await cartCard(cart, false, false)] : [],
     conflict: null,
   };
 }
 
-export async function replaceCart(db: Db, userId: string, menuItemId: string): Promise<ToolOutcome> {
+export async function replaceCart(
+  db: Db,
+  userId: string,
+  menuItemId: string,
+  deliveryLat: number | null = null,
+  deliveryLng: number | null = null,
+): Promise<ToolOutcome> {
   const item = await menuItemForCart(db, menuItemId);
   if (!item) {
     return { data: { error: "That dish could not be found." }, cards: [], conflict: null };
@@ -646,6 +1182,16 @@ export async function replaceCart(db: Db, userId: string, menuItemId: string): P
       cards: [],
       conflict: null,
     };
+  }
+  const kitchensForItem = await loadKitchens(db, [item.restaurant_id]);
+  const kitchen = kitchensForItem[0];
+  const outOfRange = rangeError(deliveryLat, deliveryLng, {
+    lat: kitchen?.lat,
+    lng: kitchen?.lng,
+    name: kitchen?.name,
+  });
+  if (outOfRange) {
+    return { data: { error: "DELIVERY_RANGE", message: outOfRange }, cards: [], conflict: null };
   }
   const { error: clearError } = await db.from("cart_items").delete().eq("customer_id", userId);
   if (clearError) throw new Error(errText(clearError) || "Could not clear cart.");
@@ -659,36 +1205,55 @@ export async function replaceCart(db: Db, userId: string, menuItemId: string): P
   const cart = await readCart(db);
   return {
     data: { replaced: true, added: item.name, ...cartPayload(cart) },
-    cards: [cartCard(cart, false, false)],
+    cards: [await cartCard(cart, false, false)],
     conflict: null,
   };
 }
 
-export async function requestCheckout(db: Db, deliveryAddress: string | null): Promise<ToolOutcome> {
+export async function requestCheckout(
+  db: Db,
+  deliveryAddress: string | null,
+  deliveryLat: number | null = null,
+  deliveryLng: number | null = null,
+): Promise<ToolOutcome> {
   const cart = await readCart(db);
   if (cart.lines.length === 0) {
     return { data: { error: "CART_EMPTY", message: "The cart is empty." }, cards: [], conflict: null };
   }
+  const outOfRange = rangeError(deliveryLat, deliveryLng, {
+    lat: cart.kitchenLat,
+    lng: cart.kitchenLng,
+    name: cart.restaurantName,
+  });
+  if (outOfRange) {
+    return {
+      data: { error: "DELIVERY_RANGE", message: outOfRange, ...cartPayload(cart) },
+      cards: [await cartCard(cart, false, false)],
+      conflict: null,
+    };
+  }
   const address = deliveryAddress?.trim() ?? "";
+  const hash = await hashForCart(cart);
   if (!address) {
     return {
       data: {
         needs_address: true,
-        ...cartPayload(cart),
+        ...cartPayload(cart, hash ?? undefined),
         message: "A saved delivery address is required before the order can be placed.",
       },
-      cards: [cartCard(cart, false, true)],
+      cards: [await cartCard(cart, false, true)],
       conflict: null,
     };
   }
   return {
     data: {
       awaiting_confirmation: true,
-      ...cartPayload(cart),
+      ...cartPayload(cart, hash ?? undefined),
       delivery_address: address,
-      message: "Shown to the customer with a Confirm button. The order is not placed. Total includes delivery fee.",
+      message:
+        "Shown to the customer with a Confirm button. The order is not placed. Quote subtotal, discount, delivery fee, and total from this tool.",
     },
-    cards: [cartCard(cart, true, false)],
+    cards: [await cartCard(cart, true, false)],
     conflict: null,
   };
 }
@@ -700,13 +1265,41 @@ export async function placeCustomerOrder(
   deliveryLat: number | null,
   deliveryLng: number | null,
   notes: string | null,
+  expectedCartHash: string | null = null,
 ): Promise<ToolOutcome> {
   const address = deliveryAddress?.trim() ?? "";
   if (!address && !deliveryAddressId) {
     const cart = await readCart(db);
     return {
       data: { error: "A delivery address is required." },
-      cards: cart.lines.length ? [cartCard(cart, false, true)] : [],
+      cards: cart.lines.length ? [await cartCard(cart, false, true)] : [],
+      conflict: null,
+    };
+  }
+  const cart = await readCart(db);
+  if (cart.lines.length === 0) {
+    return { data: { error: "CART_EMPTY", message: "The cart is empty." }, cards: [], conflict: null };
+  }
+  const liveHash = await hashForCart(cart);
+  if (!expectedCartHash || !liveHash || expectedCartHash !== liveHash) {
+    return {
+      data: {
+        error: "CART_CHANGED",
+        message: "Your cart changed since you tapped Confirm. Open checkout again to place the order.",
+      },
+      cards: [await cartCard(cart, false, false)],
+      conflict: null,
+    };
+  }
+  const outOfRange = rangeError(deliveryLat, deliveryLng, {
+    lat: cart.kitchenLat,
+    lng: cart.kitchenLng,
+    name: cart.restaurantName,
+  });
+  if (outOfRange) {
+    return {
+      data: { error: outOfRange },
+      cards: [await cartCard(cart, false, false)],
       conflict: null,
     };
   }
@@ -831,24 +1424,61 @@ export async function checkDeliveryStatus(db: Db, args: { order_id?: unknown }):
   };
 }
 
+async function resolveEscalateOrderId(db: Db, userId: string, orderId: unknown): Promise<string | null> {
+  if (isUuid(orderId)) return orderId;
+  const { data: active, error: activeError } = await db
+    .from("orders")
+    .select("id")
+    .eq("customer_id", userId)
+    .in("status", ACTIVE_ORDER_STATUSES)
+    .order("placed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (activeError) throw new Error(errText(activeError) || "Could not load orders.");
+  if (active?.id) return String(active.id);
+
+  const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  const { data: recent, error: recentError } = await db
+    .from("orders")
+    .select("id")
+    .eq("customer_id", userId)
+    .eq("status", "delivered")
+    .gte("placed_at", since)
+    .order("placed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (recentError) throw new Error(errText(recentError) || "Could not load orders.");
+  return recent?.id ? String(recent.id) : null;
+}
+
 export async function escalateComplaint(
   db: Db,
   userId: string,
   args: { order_id?: unknown; issue_type?: unknown; description?: unknown },
 ): Promise<ToolOutcome> {
-  if (!isUuid(args.order_id)) {
-    return { data: { error: "order_id is required." }, cards: [], conflict: null };
-  }
   const issueType = typeof args.issue_type === "string" ? args.issue_type.trim().slice(0, 80) : "";
   const description = typeof args.description === "string" ? args.description.trim().slice(0, 1000) : "";
   if (!issueType || !description) {
     return { data: { error: "issue_type and description are required." }, cards: [], conflict: null };
   }
 
+  const orderId = await resolveEscalateOrderId(db, userId, args.order_id);
+  if (!orderId) {
+    return {
+      data: {
+        error: "NO_ORDER",
+        message:
+          "No recent order to attach a ticket to. Place an order first, or pass a specific order_id from track_order.",
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
   const { data: order, error: orderError } = await db
     .from("orders")
     .select("id, customer_id, status")
-    .eq("id", args.order_id)
+    .eq("id", orderId)
     .maybeSingle();
   if (orderError) throw new Error(errText(orderError) || "Could not load order.");
   if (!order || order.customer_id !== userId) {
@@ -859,7 +1489,7 @@ export async function escalateComplaint(
   const { data: ticket, error } = await db
     .from("support_tickets")
     .insert({
-      order_id: args.order_id,
+      order_id: orderId,
       customer_id: userId,
       issue_type: issueType,
       description,
@@ -873,7 +1503,8 @@ export async function escalateComplaint(
   return {
     data: {
       ticket,
-      message: `Opened a ${urgency}-urgency support ticket. Support will follow up.`,
+      order_id: orderId,
+      message: `Opened a ${urgency}-urgency support ticket on order ${orderId}. Support will follow up.`,
     },
     cards: ticket
       ? [
@@ -887,6 +1518,82 @@ export async function escalateComplaint(
           },
         ]
       : [],
+    conflict: null,
+  };
+}
+
+/** Re-add lines from the customer's latest delivered order (range-guarded). */
+export async function reorderLast(
+  db: Db,
+  userId: string,
+  deliveryLat: number | null = null,
+  deliveryLng: number | null = null,
+): Promise<ToolOutcome> {
+  const { data: order, error } = await db
+    .from("orders")
+    .select("id, restaurant_id, order_items(menu_item_id, item_name, quantity)")
+    .eq("customer_id", userId)
+    .eq("status", "delivered")
+    .order("placed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(errText(error) || "Could not load past orders.");
+  if (!order) {
+    return {
+      data: { error: "NO_HISTORY", message: "No delivered orders to reorder yet." },
+      cards: [],
+      conflict: null,
+    };
+  }
+  const kitchens = await loadKitchens(db, [order.restaurant_id]);
+  const kitchen = kitchens[0];
+  const outOfRange = rangeError(deliveryLat, deliveryLng, {
+    lat: kitchen?.lat,
+    lng: kitchen?.lng,
+    name: kitchen?.name,
+  });
+  if (outOfRange) {
+    return { data: { error: "DELIVERY_RANGE", message: outOfRange }, cards: [], conflict: null };
+  }
+  if (kitchen && kitchen.is_open === false) {
+    return {
+      data: { error: "RESTAURANT_CLOSED", message: `${kitchen.name} is closed right now.` },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  const items = (order.order_items ?? []) as { menu_item_id: string | null; item_name: string; quantity: number }[];
+  const usable = items.filter((row) => isUuid(row.menu_item_id));
+  if (usable.length === 0) {
+    return {
+      data: { error: "NO_ITEMS", message: "That past order has no reorderable menu items." },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  await db.from("cart_items").delete().eq("customer_id", userId);
+  for (const row of usable.slice(0, 10)) {
+    const { error: insertError } = await db.from("cart_items").insert({
+      customer_id: userId,
+      menu_item_id: row.menu_item_id,
+      restaurant_id: order.restaurant_id,
+      quantity: Math.max(1, Number(row.quantity) || 1),
+    });
+    if (insertError) throw new Error(errText(insertError) || "Could not rebuild cart.");
+  }
+
+  const cart = await readCart(db);
+  return {
+    data: {
+      reordered: true,
+      from_order_id: order.id,
+      restaurant_name: kitchen?.name ?? cart.restaurantName,
+      ...cartPayload(cart),
+      message: "Cart rebuilt from your last delivered order. Call request_checkout when they are ready.",
+    },
+    cards: cart.lines.length ? [await cartCard(cart, false, false)] : [],
     conflict: null,
   };
 }

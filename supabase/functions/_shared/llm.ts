@@ -140,14 +140,18 @@ export async function readActiveLlmConfig(
   return value;
 }
 
-/**
- * One function for every chat provider: POST /v1/chat/completions with
- * base_url / model / key swapped from the active llm_config row.
- */
-export async function callLLM(options: CallLlmOptions): Promise<CallLlmResult> {
-  const active = await readActiveLlmConfig(options.db);
-  const endpoint = resolveProviderEndpoint(active.provider, active.chat_model);
+function shouldFailover(status: number) {
+  return status === 429 || status >= 500;
+}
 
+function otherProvider(provider: LlmProvider): LlmProvider {
+  return provider === "groq" ? "ollama" : "groq";
+}
+
+async function postChatCompletion(
+  endpoint: ReturnType<typeof resolveProviderEndpoint>,
+  options: CallLlmOptions,
+): Promise<{ response: Response; payload: any }> {
   const body: Record<string, unknown> = {
     model: endpoint.model,
     messages: options.messages,
@@ -172,6 +176,28 @@ export async function callLLM(options: CallLlmOptions): Promise<CallLlmResult> {
   } catch {
     payload = null;
   }
+  return { response, payload };
+}
+
+/**
+ * One function for every chat provider: POST /v1/chat/completions with
+ * base_url / model / key swapped from the active llm_config row.
+ * On 429/5xx, retry once on the other provider.
+ */
+export async function callLLM(options: CallLlmOptions): Promise<CallLlmResult> {
+  const active = await readActiveLlmConfig(options.db);
+  let endpoint = resolveProviderEndpoint(active.provider, active.chat_model);
+  let { response, payload } = await postChatCompletion(endpoint, options);
+
+  if (!response.ok && shouldFailover(response.status)) {
+    try {
+      const alt = otherProvider(active.provider);
+      endpoint = resolveProviderEndpoint(alt, fallbackModel(alt));
+      ({ response, payload } = await postChatCompletion(endpoint, options));
+    } catch {
+      // Keep original failure if alternate provider is not configured.
+    }
+  }
 
   return {
     provider: endpoint.provider,
@@ -181,18 +207,10 @@ export async function callLLM(options: CallLlmOptions): Promise<CallLlmResult> {
   };
 }
 
-/**
- * Stream final assistant text (no tools). Used after the tool loop so the UI
- * can paint tokens before the full reply is ready.
- */
-export async function streamLLM(options: StreamLlmOptions): Promise<{
-  provider: LlmProvider;
-  model: string;
-  text: string;
-}> {
-  const active = await readActiveLlmConfig(options.db);
-  const endpoint = resolveProviderEndpoint(active.provider, active.chat_model);
-
+async function openStream(
+  endpoint: ReturnType<typeof resolveProviderEndpoint>,
+  options: StreamLlmOptions,
+): Promise<Response> {
   const body: Record<string, unknown> = {
     model: endpoint.model,
     messages: options.messages,
@@ -201,11 +219,36 @@ export async function streamLLM(options: StreamLlmOptions): Promise<{
     stream: true,
   };
 
-  const response = await fetch(`${endpoint.baseUrl}/chat/completions`, {
+  return fetch(`${endpoint.baseUrl}/chat/completions`, {
     method: "POST",
     headers: endpoint.headers,
     body: JSON.stringify(body),
   });
+}
+
+/**
+ * Stream final assistant text (no tools). Used after the tool loop so the UI
+ * can paint tokens before the full reply is ready.
+ * On 429/5xx before the body opens, retry once on the other provider.
+ */
+export async function streamLLM(options: StreamLlmOptions): Promise<{
+  provider: LlmProvider;
+  model: string;
+  text: string;
+}> {
+  const active = await readActiveLlmConfig(options.db);
+  let endpoint = resolveProviderEndpoint(active.provider, active.chat_model);
+  let response = await openStream(endpoint, options);
+
+  if ((!response.ok || !response.body) && shouldFailover(response.status)) {
+    try {
+      const alt = otherProvider(active.provider);
+      endpoint = resolveProviderEndpoint(alt, fallbackModel(alt));
+      response = await openStream(endpoint, options);
+    } catch {
+      // Keep original failure if alternate provider is not configured.
+    }
+  }
 
   if (!response.ok || !response.body) {
     let payload: any = null;
@@ -236,10 +279,8 @@ export async function streamLLM(options: StreamLlmOptions): Promise<{
       try {
         const parsed = JSON.parse(data);
         const delta = parsed?.choices?.[0]?.delta;
-        const piece =
-          (typeof delta?.content === "string" && delta.content) ||
-          (typeof delta?.reasoning === "string" && delta.reasoning) ||
-          "";
+        // Never stream model "reasoning" into the customer UI — only assistant content.
+        const piece = typeof delta?.content === "string" ? delta.content : "";
         if (piece) {
           text += piece;
           options.onToken(piece);

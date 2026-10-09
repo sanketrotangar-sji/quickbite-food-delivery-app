@@ -19,7 +19,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EAS_BUILD_DISABLE_EXPO_DOCTOR_PHASE": "1"
+        "EAS_BUILD_DISABLE_EXPO_DOCTOR_STEP": "1"
       }
     },
     "production": {

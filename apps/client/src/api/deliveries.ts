@@ -3,6 +3,31 @@ import type { OrderStatus } from '@/constants/orderStatus';
 import { throwApiError } from './errors';
 import { supabase } from './supabaseClient';
 
+export type RiderRatingSummary = {
+  average: number;
+  count: number;
+  label: string;
+};
+
+export async function fetchRiderDeliveryRating(riderId: string): Promise<RiderRatingSummary> {
+  const { data, error } = await supabase
+    .from('ratings')
+    .select('delivery_rating')
+    .eq('rider_id', riderId)
+    .not('delivery_rating', 'is', null);
+  if (error) throwApiError(error, 'Could not load rider rating.');
+  const scores = (data ?? [])
+    .map((row) => Number(row.delivery_rating))
+    .filter((value) => Number.isFinite(value) && value >= 1 && value <= 5);
+  if (scores.length === 0) return { average: 0, count: 0, label: 'New' };
+  const average = scores.reduce((sum, value) => sum + value, 0) / scores.length;
+  return {
+    average,
+    count: scores.length,
+    label: average.toFixed(1),
+  };
+}
+
 export type RiderDelivery = {
   id: string;
   status: OrderStatus;

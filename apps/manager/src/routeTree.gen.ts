@@ -22,7 +22,10 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAiRouteImport } from './routes/admin/ai'
 import { Route as AdminApplicationsRouteImport } from './routes/admin/applications'
 import { Route as AdminHighlightsRouteImport } from './routes/admin/highlights'
+import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminRestaurantsRouteImport } from './routes/admin/restaurants'
+import { Route as AdminRidersRouteImport } from './routes/admin/riders'
+import { Route as AdminTicketsRouteImport } from './routes/admin/tickets'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 
 const IndexRoute = IndexRouteImport.update({
@@ -90,9 +93,24 @@ const AdminHighlightsRoute = AdminHighlightsRouteImport.update({
   path: '/highlights',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminRestaurantsRoute = AdminRestaurantsRouteImport.update({
   id: '/restaurants',
   path: '/restaurants',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRidersRoute = AdminRidersRouteImport.update({
+  id: '/riders',
+  path: '/riders',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTicketsRoute = AdminTicketsRouteImport.update({
+  id: '/tickets',
+  path: '/tickets',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -114,7 +132,10 @@ export interface FileRoutesByFullPath {
   '/admin/ai': typeof AdminAiRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/highlights': typeof AdminHighlightsRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
+  '/admin/riders': typeof AdminRidersRoute
+  '/admin/tickets': typeof AdminTicketsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -130,7 +151,10 @@ export interface FileRoutesByTo {
   '/admin/ai': typeof AdminAiRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/highlights': typeof AdminHighlightsRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
+  '/admin/riders': typeof AdminRidersRoute
+  '/admin/tickets': typeof AdminTicketsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -148,7 +172,10 @@ export interface FileRoutesById {
   '/admin/ai': typeof AdminAiRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/highlights': typeof AdminHighlightsRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
+  '/admin/riders': typeof AdminRidersRoute
+  '/admin/tickets': typeof AdminTicketsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -167,7 +194,10 @@ export interface FileRouteTypes {
     | '/admin/ai'
     | '/admin/applications'
     | '/admin/highlights'
+    | '/admin/orders'
     | '/admin/restaurants'
+    | '/admin/riders'
+    | '/admin/tickets'
     | '/admin/users'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -183,7 +213,10 @@ export interface FileRouteTypes {
     | '/admin/ai'
     | '/admin/applications'
     | '/admin/highlights'
+    | '/admin/orders'
     | '/admin/restaurants'
+    | '/admin/riders'
+    | '/admin/tickets'
     | '/admin/users'
     | '/admin'
   id:
@@ -200,7 +233,10 @@ export interface FileRouteTypes {
     | '/admin/ai'
     | '/admin/applications'
     | '/admin/highlights'
+    | '/admin/orders'
     | '/admin/restaurants'
+    | '/admin/riders'
+    | '/admin/tickets'
     | '/admin/users'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -310,11 +346,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminHighlightsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/restaurants': {
       id: '/admin/restaurants'
       path: '/restaurants'
       fullPath: '/admin/restaurants'
       preLoaderRoute: typeof AdminRestaurantsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/riders': {
+      id: '/admin/riders'
+      path: '/riders'
+      fullPath: '/admin/riders'
+      preLoaderRoute: typeof AdminRidersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/tickets': {
+      id: '/admin/tickets'
+      path: '/tickets'
+      fullPath: '/admin/tickets'
+      preLoaderRoute: typeof AdminTicketsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/users': {
@@ -331,7 +388,10 @@ interface AdminRouteChildren {
   AdminAiRoute: typeof AdminAiRoute
   AdminApplicationsRoute: typeof AdminApplicationsRoute
   AdminHighlightsRoute: typeof AdminHighlightsRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
   AdminRestaurantsRoute: typeof AdminRestaurantsRoute
+  AdminRidersRoute: typeof AdminRidersRoute
+  AdminTicketsRoute: typeof AdminTicketsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -340,7 +400,10 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAiRoute: AdminAiRoute,
   AdminApplicationsRoute: AdminApplicationsRoute,
   AdminHighlightsRoute: AdminHighlightsRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
   AdminRestaurantsRoute: AdminRestaurantsRoute,
+  AdminRidersRoute: AdminRidersRoute,
+  AdminTicketsRoute: AdminTicketsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }

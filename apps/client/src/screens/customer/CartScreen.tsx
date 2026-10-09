@@ -145,7 +145,9 @@ export function CartScreen() {
           <View style={styles.lineCopy}>
             <AppText weight="semibold">Offers</AppText>
             <AppText muted style={styles.price}>
-              No coupons on this order. Kitchen offers stay on Explore.
+              {cart.offerPercent > 0
+                ? `${cart.offerPercent}% kitchen offer applied at checkout.`
+                : 'Kitchen offers apply automatically when the restaurant has one. Coupons come later.'}
             </AppText>
           </View>
         </View>
@@ -155,7 +157,11 @@ export function CartScreen() {
             Bill details
           </AppText>
           <PriceRow label="Item total" value={formatInr(cart.subtotal)} />
+          {cart.discountAmount > 0 ? (
+            <PriceRow label={`Kitchen offer (${cart.offerPercent}% off)`} value={`- ${formatInr(cart.discountAmount)}`} />
+          ) : null}
           <PriceRow label="Delivery fee" value={formatInr(cart.deliveryFee)} />
+          <PriceRow label="Total" value={formatInr(cart.total)} emphasize />
           <View style={styles.divider} />
           <PriceRow label="Grand total" value={formatInr(cart.total)} strong />
           <AppText muted style={styles.note}>

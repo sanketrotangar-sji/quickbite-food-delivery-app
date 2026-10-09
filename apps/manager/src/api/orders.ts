@@ -19,6 +19,7 @@ type OrderQueryRow = {
   placed_at: string;
   updated_at: string;
   customer: { full_name: string | null } | null;
+  rider: { full_name: string | null; phone: string | null } | null;
   order_items: {
     item_name: string;
     quantity: number;
@@ -29,16 +30,31 @@ type OrderQueryRow = {
   order_status_history: { status: OrderStatusDb; changed_at: string }[] | null;
 };
 
-const KITCHEN_STATUSES: OrderStatus[] = ['placed', 'preparing', 'ready'];
-
 export function shortOrderId(id: string) {
   return id.replace(/-/g, '').slice(-6).toUpperCase();
 }
 
+export function riderPanelLabel(order: Pick<Order, 'status' | 'riderId' | 'riderName'>): string {
+  const name = order.riderName?.trim();
+  if (order.status === 'out_for_delivery' && order.riderId) {
+    return name ? `On the way · ${name}` : 'On the way';
+  }
+  if (order.riderId) {
+    return name ? `Assigned · ${name}` : 'Assigned';
+  }
+  return 'Unassigned';
+}
+
 function fulfillmentFor(row: OrderQueryRow) {
-  if (row.rider_id) return 'Delivery · Rider assigned';
-  if (row.status === 'ready') return 'Pickup · Waiting for rider';
-  return 'Delivery · Rider assignment pending';
+  const name = row.rider?.full_name?.trim();
+  if (row.status === 'out_for_delivery' && row.rider_id) {
+    return name ? `On the way · ${name}` : 'On the way';
+  }
+  if (row.rider_id) {
+    return name ? `Assigned · ${name}` : 'Assigned';
+  }
+  if (row.status === 'ready') return 'Unassigned · Waiting for rider';
+  return 'Unassigned';
 }
 
 export function toUiOrder(row: OrderQueryRow): Order {
@@ -61,6 +77,8 @@ export function toUiOrder(row: OrderQueryRow): Order {
     address: row.delivery_address,
     placedAt: row.placed_at,
     riderId: row.rider_id,
+    riderName: row.rider?.full_name?.trim() || null,
+    riderPhone: row.rider?.phone?.trim() || null,
     history: [...(row.order_status_history ?? [])]
       .sort((a, b) => new Date(a.changed_at).getTime() - new Date(b.changed_at).getTime())
       .map((entry) => ({ status: entry.status, changedAt: entry.changed_at })),
@@ -91,6 +109,7 @@ export async function listRestaurantOrders(restaurantId: string): Promise<Order[
       placed_at,
       updated_at,
       customer:profiles!orders_customer_id_fkey (full_name),
+      rider:profiles!orders_rider_id_fkey (full_name, phone),
       order_items (
         item_name,
         quantity,
@@ -110,25 +129,36 @@ export async function listRestaurantOrders(restaurantId: string): Promise<Order[
 }
 
 export type PerformanceOrder = {
+  id: string;
   restaurant_id: string;
   status: OrderStatusDb;
   total_amount: number;
   placed_at: string;
+  order_status_history: { status: OrderStatusDb; changed_at: string }[] | null;
 };
 
 export async function listPerformanceOrders(restaurantIds: string[]): Promise<PerformanceOrder[]> {
   if (restaurantIds.length === 0) return [];
   const since = new Date();
-  since.setDate(since.getDate() - 30);
+  since.setDate(since.getDate() - 60);
   const { data, error } = await supabase
     .from('orders')
-    .select('restaurant_id, status, total_amount, placed_at')
+    .select(
+      `
+      id,
+      restaurant_id,
+      status,
+      total_amount,
+      placed_at,
+      order_status_history (status, changed_at)
+    `,
+    )
     .in('restaurant_id', restaurantIds)
     .gte('placed_at', since.toISOString())
     .order('placed_at', { ascending: false })
-    .limit(500);
+    .limit(800);
   if (error) throwApiError(error, 'Could not load performance.');
-  return data ?? [];
+  return (data ?? []) as unknown as PerformanceOrder[];
 }
 
 export async function listRestaurantOrderStats(restaurantId: string): Promise<DbOrder[]> {

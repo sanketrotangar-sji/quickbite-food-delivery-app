@@ -16,6 +16,8 @@ export type RioRestaurant = {
   veg: boolean;
   offerPercent: number | null;
   prepMinutes: number | null;
+  /** Straight-line km from delivery pin when known. */
+  distanceKm?: number | null;
 };
 
 export type RioMenuItem = {
@@ -37,9 +39,15 @@ export type RioCard =
       kind: 'cart';
       restaurantName: string;
       lines: { name: string; quantity: number; unitPrice: number }[];
+      subtotal?: number;
+      offerPercent?: number;
+      discountAmount?: number;
+      deliveryFee?: number;
       total: number;
       confirm: boolean;
       needsAddress: boolean;
+      settled?: boolean;
+      cartHash?: string;
     }
   | {
       kind: 'order';
@@ -71,16 +79,19 @@ export type RioResponse = {
   text: string;
   cards: RioCard[];
   conflict: RioConflict | null;
+  threadId?: string | null;
 };
 
 type RioRequest = {
   messages?: { role: 'user' | 'assistant'; content: string }[];
+  threadId?: string | null;
   deliveryAddress?: string | null;
   deliveryAddressId?: string | null;
   deliveryLat?: number | null;
   deliveryLng?: number | null;
   action?: 'confirm_order' | 'replace_cart';
   menuItemId?: string;
+  cartHash?: string;
   context?: string;
 };
 
@@ -114,11 +125,13 @@ export async function askRio(input: RioRequest): Promise<RioResponse> {
     text: payload.text,
     cards: Array.isArray(payload.cards) ? payload.cards : [],
     conflict: payload.conflict ?? null,
+    threadId: typeof payload.threadId === 'string' ? payload.threadId : null,
   };
 }
 
 export type AskRioStreamHandlers = {
   onToken?: (token: string) => void;
+  onProgress?: (text: string) => void;
 };
 
 /** NDJSON stream for chat turns — tokens paint live; cards arrive on done. */
@@ -166,6 +179,7 @@ export async function askRioStream(input: RioRequest, handlers: AskRioStreamHand
   let finalText = '';
   let cards: RioCard[] = [];
   let conflict: RioConflict | null = null;
+  let threadId: string | null = null;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -176,19 +190,29 @@ export async function askRioStream(input: RioRequest, handlers: AskRioStreamHand
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed) continue;
-      let event: { type?: string; text?: string; cards?: RioCard[]; conflict?: RioConflict | null; error?: string };
+      let event: {
+        type?: string;
+        text?: string;
+        cards?: RioCard[];
+        conflict?: RioConflict | null;
+        error?: string;
+        threadId?: string | null;
+      };
       try {
         event = JSON.parse(trimmed);
       } catch {
         continue;
       }
-      if (event.type === 'token' && typeof event.text === 'string') {
+      if (event.type === 'progress' && typeof event.text === 'string') {
+        handlers.onProgress?.(event.text);
+      } else if (event.type === 'token' && typeof event.text === 'string') {
         finalText += event.text;
         handlers.onToken?.(event.text);
       } else if (event.type === 'done') {
         if (typeof event.text === 'string' && event.text) finalText = event.text;
         cards = Array.isArray(event.cards) ? event.cards : [];
         conflict = event.conflict ?? null;
+        if (typeof event.threadId === 'string') threadId = event.threadId;
       } else if (event.type === 'error') {
         throw new Error(userFacingRioError(event.error ?? RIO_USER_ERROR));
       }
@@ -196,7 +220,7 @@ export async function askRioStream(input: RioRequest, handlers: AskRioStreamHand
   }
 
   if (!finalText) throw new Error(RIO_USER_ERROR);
-  return { text: finalText, cards, conflict };
+  return { text: finalText, cards, conflict, threadId };
 }
 
 function parseNdjsonBody(body: string, onToken?: (token: string) => void): RioResponse {

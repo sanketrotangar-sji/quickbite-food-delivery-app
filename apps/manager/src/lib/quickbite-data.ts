@@ -19,6 +19,8 @@ export type Order = {
   address: string;
   placedAt: string;
   riderId: string | null;
+  riderName: string | null;
+  riderPhone: string | null;
   history: { status: OrderStatus; changedAt: string }[];
 };
 

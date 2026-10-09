@@ -22,6 +22,7 @@ import { SectionHeader } from '@/components/SectionHeader';
 import { colors, formatInr, radii, screenTopGap } from '@/constants/theme';
 import { useCart } from '@/hooks/useCart';
 import { useCartReplacePrompt } from '@/hooks/useCartReplacePrompt';
+import { useDeliveryRangeGuard } from '@/hooks/useDeliveryRangeGuard';
 import { useMenu, useRestaurant, useRestaurantRatings } from '@/hooks/useRestaurants';
 import { useSavedHearts } from '@/hooks/useSavedHearts';
 import { formatPriceRange } from '@/lib/explore-filters';
@@ -39,6 +40,7 @@ export function RestaurantDetailScreen({ restaurantId }: { restaurantId?: string
   const ratingsQuery = useRestaurantRatings(restaurantId);
   const cart = useCart();
   const replace = useCartReplacePrompt();
+  const { ensureDeliverable } = useDeliveryRangeGuard();
   const hearts = useSavedHearts();
   const scrollRef = useRef<ScrollView>(null);
   const sectionY = useRef<Record<string, number>>({});
@@ -104,6 +106,15 @@ export function RestaurantDetailScreen({ restaurantId }: { restaurantId?: string
   }
 
   async function addItem(item: MenuItem) {
+    if (
+      !ensureDeliverable(id, {
+        lat: restaurant?.lat,
+        lng: restaurant?.lng,
+        name: restaurant?.name,
+      })
+    ) {
+      return;
+    }
     const input = { menuItemId: item.id, restaurantId: id, preview: previewFor(item) };
     try {
       await replace.runWithReplacePrompt(() => cart.addItem.mutateAsync(input));

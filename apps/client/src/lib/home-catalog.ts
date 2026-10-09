@@ -31,6 +31,10 @@ export type HomePlace = {
   categoryIds: string[];
   offerPercent: number | null;
   prepMinutes: number | null;
+  lat: number | null;
+  lng: number | null;
+  /** Set client-side from selected address; null when unknown. */
+  distanceKm: number | null;
 };
 
 export type HomeHighlight = {

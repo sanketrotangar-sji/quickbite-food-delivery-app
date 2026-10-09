@@ -36,14 +36,20 @@ export async function loadLatestRioThread(customerId: string): Promise<{
     .limit(MAX_MESSAGES);
   if (msgError) throwApiError(msgError, 'Could not load RIO messages.');
 
-  const messages: RioChatMessage[] = (rows ?? []).map((row) => ({
-    id: row.id,
-    from: row.role as 'rio' | 'you',
-    text: row.content,
-    at: new Date(row.created_at).getTime(),
-    cards: (row.cards as RioCard[] | null) ?? undefined,
-    conflict: (row.conflict as RioConflict | null) ?? null,
-  }));
+  const messages: RioChatMessage[] = (rows ?? []).map((row) => {
+    const cards = (row.cards as RioCard[] | null) ?? undefined;
+    const settled =
+      Array.isArray(cards) && cards.some((card) => card.kind === 'cart' && card.settled === true);
+    return {
+      id: row.id,
+      from: row.role as 'rio' | 'you',
+      text: row.content,
+      at: new Date(row.created_at).getTime(),
+      cards,
+      conflict: settled ? null : ((row.conflict as RioConflict | null) ?? null),
+      settled: settled || undefined,
+    };
+  });
 
   return { threadId: thread.id, messages };
 }
@@ -78,6 +84,43 @@ export async function appendRioMessages(
   const { error } = await supabase.from('rio_messages').insert(rows);
   if (error) throwApiError(error, 'Could not save RIO chat.');
   await supabase.from('rio_threads').update({ updated_at: new Date().toISOString() }).eq('id', threadId);
+}
+
+function withSettledCarts(cards: RioCard[]): RioCard[] {
+  return cards.map((card) =>
+    card.kind === 'cart' ? { ...card, confirm: false, settled: true } : card,
+  );
+}
+
+/** Persist confirm/conflict settlement so reload cannot re-offer Confirm. */
+export async function settleRioMessageCards(messageId: string, cards: RioCard[]) {
+  const settledCards = withSettledCarts(cards);
+  const { error } = await supabase
+    .from('rio_messages')
+    .update({ cards: settledCards, conflict: null })
+    .eq('id', messageId);
+  if (error) throwApiError(error, 'Could not update RIO chat.');
+  return settledCards;
+}
+
+/** Best-effort: settle any cloud cart cards still showing Confirm in this thread. */
+export async function settleOpenConfirmInThread(threadId: string | null) {
+  if (!threadId) return;
+  const { data: rows, error } = await supabase
+    .from('rio_messages')
+    .select('id, cards')
+    .eq('thread_id', threadId)
+    .order('created_at', { ascending: false })
+    .limit(20);
+  if (error || !rows) return;
+  for (const row of rows) {
+    const cards = (row.cards as RioCard[] | null) ?? [];
+    if (!cards.some((card) => card.kind === 'cart' && card.confirm === true && !card.settled)) continue;
+    await supabase
+      .from('rio_messages')
+      .update({ cards: withSettledCarts(cards), conflict: null })
+      .eq('id', row.id);
+  }
 }
 
 /** Trim oldest cloud messages beyond cap (best-effort). */

@@ -83,6 +83,40 @@ export function useAdvanceOrder() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ['manager-orders'] });
+      void queryClient.invalidateQueries({ queryKey: ['manager-order-stats'] });
+    },
+  });
+}
+
+export function useCancelOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (orderId: string) => {
+      await setRestaurantOrderStatus(orderId, 'cancelled');
+    },
+    onMutate: async (orderId) => {
+      await queryClient.cancelQueries({ queryKey: ['manager-orders'] });
+      const previous = queryClient.getQueriesData<Order[]>({ queryKey: ['manager-orders'] });
+      for (const [key, data] of previous) {
+        if (!data) continue;
+        queryClient.setQueryData(
+          key,
+          data.map((order) =>
+            order.id === orderId ? { ...order, status: 'cancelled' as OrderStatus } : order,
+          ),
+        );
+      }
+      return { previous };
+    },
+    onError: (error, _input, context) => {
+      for (const [key, data] of context?.previous ?? []) {
+        queryClient.setQueryData(key, data);
+      }
+      window.alert(error instanceof Error ? error.message : 'Could not cancel this order.');
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['manager-orders'] });
+      void queryClient.invalidateQueries({ queryKey: ['manager-order-stats'] });
     },
   });
 }

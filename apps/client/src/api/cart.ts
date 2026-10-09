@@ -17,21 +17,36 @@ export async function listCart(): Promise<CartLine[]> {
     const kitchen = kitchens.get(row.restaurant_id);
     return {
       ...row,
-      restaurants: kitchen ? { id: kitchen.id, name: kitchen.name, is_open: kitchen.is_open } : null,
+      restaurants: kitchen
+        ? {
+            id: kitchen.id,
+            name: kitchen.name,
+            is_open: kitchen.is_open,
+            offer_percent: kitchen.offer_percent,
+          }
+        : null,
     } as CartLine;
   });
 }
 
 async function browseById(ids: string[]) {
   const unique = [...new Set(ids)];
-  const map = new Map<string, { id: string; name: string; is_open: boolean }>();
+  const map = new Map<string, { id: string; name: string; is_open: boolean; offer_percent: number | null }>();
   if (unique.length === 0) return map;
   const { data, error } = await supabase
     .from('restaurant_browse')
-    .select('id, name, is_open')
+    .select('id, name, is_open, offer_percent')
     .in('id', unique);
   if (error) throwApiError(error, 'Could not load cart.');
-  for (const row of data ?? []) map.set(row.id, row);
+  for (const row of data ?? []) {
+    if (!row.id) continue;
+    map.set(row.id, {
+      id: row.id,
+      name: row.name ?? 'Kitchen',
+      is_open: Boolean(row.is_open),
+      offer_percent: row.offer_percent,
+    });
+  }
   return map;
 }
 

@@ -5,6 +5,7 @@ import { AppText } from '@/components/AppText';
 import { VegMark } from '@/components/VegMark';
 import { colors, radii } from '@/constants/theme';
 import type { HomePlace } from '@/lib/home-catalog';
+import { formatKm } from '@/lib/geo';
 import { placePresentation } from '@/lib/home-presentation';
 import { RemoteImage } from '@/components/RemoteImage';
 
@@ -68,6 +69,7 @@ export function RestaurantStripCard({
             {place.cuisine} · {diet}
           </AppText>
           <AppText muted numberOfLines={1} style={styles.listMeta}>
+            {place.distanceKm != null ? `${formatKm(place.distanceKm)} · ` : ''}
             {offer.eta} · Free delivery above ₹{offer.freeAbove}
           </AppText>
         </View>
@@ -107,6 +109,10 @@ export function RestaurantStripCard({
           </AppText>
           <VegMark veg={place.veg} size={10} />
         </View>
+        <AppText muted numberOfLines={1} style={styles.meta}>
+          {place.distanceKm != null ? `${formatKm(place.distanceKm)} · ` : ''}
+          {place.isOpen ? 'Open' : 'Closed'}
+        </AppText>
         <AppText muted numberOfLines={1} style={styles.meta}>
           {place.cuisine} · {diet}
         </AppText>

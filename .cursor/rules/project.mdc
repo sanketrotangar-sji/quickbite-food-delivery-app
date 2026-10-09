@@ -1,0 +1,46 @@
+---
+description: QuickBite project rules for Cursor agents
+alwaysApply: true
+---
+
+# QuickBite — agent rules
+
+## Source of truth
+
+- Product, roles, sidebars, workflow, tables, naming, RPCs, auth, and RLS: **`docs/REQUIREMENTS.md`**
+- Status and decisions: **`docs/PROGRESS.md`** — update after every meaningful task
+- Pre-submission backlog: **`docs/PLAN.md`**
+- Pitch / setup / deploy: **`README.md`**
+- Schema DDL: **`supabase/migrations/`** (apply order = filename). If code and REQUIREMENTS disagree, fix migrations first, then docs
+
+## Stay in scope
+
+- Do **not** add features, pages, tables, or refactors that are not requested
+- Do **not** “improve” unrelated files while fixing one bug
+- Do **not** create new `.md` files unless the user explicitly asks
+- Prefer the smallest change that satisfies the request
+
+## Database
+
+- **Ask before** creating, altering, or dropping tables/columns, changing RLS, or editing RPCs
+- New migrations: schema / RPC / RLS / indexes only — **no demo INSERT data** (use `supabase/seed.sql` for local demos)
+- Never put `SUPABASE_SERVICE_ROLE_KEY` in `EXPO_PUBLIC_*` or `VITE_*`
+- Cloud Supabase is the day-to-day database unless the user says otherwise
+
+## Product invariants
+
+- One account = one `profiles.role` (no multi-role)
+- Order status changes only through security-definer RPCs
+- Customers browse via safe views; riders use redacted pool RPC for unclaimed jobs
+- Lovable may touch `apps/manager` UI only — never invent migrations from Lovable
+
+## Deleting / destructive ops
+
+- **Ask before** deleting files, wiping cloud data, or running destructive SQL
+- Do not commit secrets (`.env`); only `.env.example`
+
+## After finishing work
+
+1. Keep code aligned with `docs/REQUIREMENTS.md`
+2. Update **Done / In progress / Next / Decisions** in `docs/PROGRESS.md` when status changed
+3. Do not sprawl documentation outside the approved files (`README`, `REQUIREMENTS`, `PROGRESS`, `PLAN`, `.cursor/rules`)

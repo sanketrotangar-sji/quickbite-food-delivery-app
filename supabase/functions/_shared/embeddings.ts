@@ -1,12 +1,12 @@
 /**
- * Embeddings helper — always Ollama nomic-embed-text (768-d).
+ * Embeddings helper — Ollama qwen3-embedding:0.6b (1024-d).
  *
  * Chat provider (Groq vs Ollama) can switch freely; the RAG index cannot.
  * Mixing embedding models would make cosine search meaningless across rows.
  */
 
-export const EMBEDDING_MODEL = "nomic-embed-text";
-export const EMBEDDING_DIMENSIONS = 768;
+export const EMBEDDING_MODEL = "qwen3-embedding:0.6b";
+export const EMBEDDING_DIMENSIONS = 1024;
 
 function trimSlash(url: string) {
   return url.replace(/\/+$/, "");
@@ -18,7 +18,7 @@ function ollamaBaseUrl() {
 }
 
 /**
- * Call Ollama's native /api/embed endpoint and return a 768-float vector.
+ * Call Ollama's native /api/embed endpoint and return a 1024-float vector.
  */
 export async function embedText(text: string): Promise<number[]> {
   const input = text.trim();

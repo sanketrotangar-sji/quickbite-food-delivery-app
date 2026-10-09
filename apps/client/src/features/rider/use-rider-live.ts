@@ -4,6 +4,7 @@ import { Alert } from 'react-native';
 
 import {
   claimDelivery,
+  fetchRiderDeliveryRating,
   listAvailableDeliveries,
   listDeliveryHistory,
   listMyDeliveries,
@@ -148,7 +149,11 @@ export function recentEarnings(orders: RiderDelivery[]) {
     }));
 }
 
-export function todayStats(history: RiderDelivery[], active: RiderDelivery | null): RiderStats {
+export function todayStats(
+  history: RiderDelivery[],
+  active: RiderDelivery | null,
+  ratingLabel = 'New',
+): RiderStats {
   const now = new Date();
   const today = history.filter((order) => order.status === 'delivered' && inRange(order.deliveredAt ?? order.placedAt, 'today', now));
   const counted = active ? [...today, active] : today;
@@ -166,8 +171,24 @@ export function todayStats(history: RiderDelivery[], active: RiderDelivery | nul
     deliveries: counted.length,
     earnings,
     activeTime,
-    rating: 'New',
+    rating: ratingLabel,
   };
+}
+
+export const riderRatingKey = ['rider-rating'] as const;
+
+export function useRiderRating() {
+  const { session } = useAuth();
+  const userId = session?.user.id;
+  return useQuery({
+    queryKey: riderRatingKey,
+    queryFn: async () => {
+      if (!userId) throw new Error('Not signed in.');
+      return fetchRiderDeliveryRating(userId);
+    },
+    enabled: !!userId,
+    staleTime: 60_000,
+  });
 }
 
 export function pickActive(mine: RiderDelivery[]) {
@@ -201,7 +222,7 @@ export function useRiderOrders() {
   });
 }
 
-/** Delivered/cancelled history for earnings — not loaded on home. */
+/** Delivered/cancelled history for earnings and home today stats. */
 export function useRiderHistory() {
   const { session } = useAuth();
   const userId = session?.user.id;

@@ -1,0 +1,3716 @@
+[
+  {
+    "canonical_key": "masala_dosa",
+    "name": "Masala Dosa",
+    "category": "main",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "breakfast",
+      "south_indian"
+    ],
+    "descriptions": [
+      "Crispy fermented crepe filled with spiced potato masala.",
+      "Golden dosa wrapped around soft potato filling.",
+      "Thin crisp dosa with classic potato masala."
+    ],
+    "aliases": [
+      "masala dose",
+      "dosa masala"
+    ],
+    "price_min": 80,
+    "price_max": 160
+  },
+  {
+    "canonical_key": "chicken_biryani",
+    "name": "Chicken Biryani",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "filling"
+    ],
+    "descriptions": [
+      "Fragrant basmati layered with spiced chicken and fried onions.",
+      "Dum-style chicken biryani with warm spices.",
+      "Aromatic rice and tender chicken in biryani masala."
+    ],
+    "aliases": [
+      "chicken dum biryani"
+    ],
+    "price_min": 220,
+    "price_max": 380
+  },
+  {
+    "canonical_key": "chilli_paneer_dry",
+    "name": "Chilli Paneer Dry",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": true,
+    "tags": [
+      "spicy",
+      "savory",
+      "hot",
+      "main",
+      "chinese",
+      "street_food"
+    ],
+    "descriptions": [
+      "Crispy paneer tossed in spicy chilli sauce, dry style.",
+      "Indo-Chinese dry chilli paneer with peppers.",
+      "Wok-tossed paneer cubes in tangy chilli glaze."
+    ],
+    "aliases": [
+      "dry chilli paneer"
+    ],
+    "price_min": 160,
+    "price_max": 260
+  },
+  {
+    "canonical_key": "chilli_paneer_gravy",
+    "name": "Chilli Paneer Gravy",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": true,
+    "tags": [
+      "spicy",
+      "savory",
+      "hot",
+      "main",
+      "chinese"
+    ],
+    "descriptions": [
+      "Soft paneer in glossy chilli-garlic gravy.",
+      "Indo-Chinese chilli paneer with rich gravy.",
+      "Paneer simmered in spicy chilli sauce."
+    ],
+    "aliases": [
+      "gravy chilli paneer"
+    ],
+    "price_min": 170,
+    "price_max": 280
+  },
+  {
+    "canonical_key": "filter_coffee",
+    "name": "Filter Coffee",
+    "category": "beverage",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "hot",
+      "beverage",
+      "south_indian",
+      "comfort"
+    ],
+    "descriptions": [
+      "South Indian filter coffee with chicory and frothy milk.",
+      "Strong decoction topped with steamed milk foam.",
+      "Classic filter coffee, sweet and aromatic."
+    ],
+    "aliases": [
+      "kaapi",
+      "south indian coffee"
+    ],
+    "price_min": 40,
+    "price_max": 90
+  },
+  {
+    "canonical_key": "ukadiche_modak",
+    "name": "Ukadiche Modak",
+    "category": "dessert",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "hot",
+      "dessert",
+      "maharashtrian"
+    ],
+    "descriptions": [
+      "Steamed rice-flour dumplings with coconut-jaggery filling.",
+      "Soft ukadiche modak, festive Maharashtrian sweet.",
+      "Delicate steamed modaks with sweet coconut stuffing."
+    ],
+    "aliases": [
+      "modak",
+      "steamed modak"
+    ],
+    "price_min": 60,
+    "price_max": 140
+  },
+  {
+    "canonical_key": "kothimbir_vadi",
+    "name": "Kothimbir Vadi",
+    "category": "snack",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "snack",
+      "maharashtrian",
+      "street_food"
+    ],
+    "descriptions": [
+      "Coriander gram-flour bites, steamed then crisp-fried.",
+      "Spiced kothimbir vadi with sesame crunch.",
+      "Maharashtrian coriander fritters, snack-ready."
+    ],
+    "aliases": [
+      "kothimbir wadi"
+    ],
+    "price_min": 70,
+    "price_max": 140
+  },
+  {
+    "canonical_key": "margherita_pizza",
+    "name": "Margherita Pizza",
+    "category": "main",
+    "cuisine": "italian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "italian"
+    ],
+    "descriptions": [
+      "Wood-fired base with tomato, mozzarella, and basil.",
+      "Classic margherita with fresh mozzarella melt.",
+      "Simple tomato-cheese pizza, oven-baked."
+    ],
+    "aliases": [
+      "pizza margherita"
+    ],
+    "price_min": 180,
+    "price_max": 320
+  },
+  {
+    "canonical_key": "kingfish_curry",
+    "name": "Kingfish Curry",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "seafood"
+    ],
+    "descriptions": [
+      "Goan kingfish simmered in coconut-chilli curry.",
+      "Tangy Goan fish curry with thick kingfish steaks.",
+      "Coastal kingfish curry with warm spice paste."
+    ],
+    "aliases": [
+      "isda curry",
+      "surmai curry"
+    ],
+    "price_min": 280,
+    "price_max": 420
+  },
+  {
+    "canonical_key": "veggie_paradise_pizza",
+    "name": "Veggie Paradise Pizza",
+    "category": "main",
+    "cuisine": "italian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "italian",
+      "loaded"
+    ],
+    "descriptions": [
+      "Loaded veg pizza with peppers, corn, olives, and cheese.",
+      "Colourful veggie paradise topped with mozzarella.",
+      "Garden veg pizza on a crisp base."
+    ],
+    "aliases": [
+      "veg paradise pizza"
+    ],
+    "price_min": 220,
+    "price_max": 360
+  },
+  {
+    "canonical_key": "loaded_chicken_pizza",
+    "name": "Loaded Chicken Pizza",
+    "category": "main",
+    "cuisine": "italian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "italian",
+      "loaded",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Chicken pizza piled with cheese, peppers, and sauce.",
+      "Loaded chicken pizza with generous toppings.",
+      "Hearty chicken and cheese pizza, fully loaded."
+    ],
+    "aliases": [
+      "chicken loaded pizza"
+    ],
+    "price_min": 260,
+    "price_max": 420
+  },
+  {
+    "canonical_key": "mint_soda",
+    "name": "Mint Soda",
+    "category": "beverage",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "cold",
+      "refreshing",
+      "beverage",
+      "light"
+    ],
+    "descriptions": [
+      "Chilled soda with fresh mint and a citrus kick.",
+      "Fizzy mint soda, cool and refreshing.",
+      "Iced mint soda for a tangy lift."
+    ],
+    "aliases": [
+      "pudina soda"
+    ],
+    "price_min": 50,
+    "price_max": 100
+  },
+  {
+    "canonical_key": "lemon_juice",
+    "name": "Lemon Juice",
+    "category": "beverage",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "cold",
+      "refreshing",
+      "beverage",
+      "light",
+      "healthy"
+    ],
+    "descriptions": [
+      "Fresh-squeezed lemon juice over ice.",
+      "Tangy nimbu pani, chilled and bright.",
+      "Cold lemon juice with a pinch of salt."
+    ],
+    "aliases": [
+      "nimbu pani",
+      "lemonade"
+    ],
+    "price_min": 40,
+    "price_max": 90
+  },
+  {
+    "canonical_key": "cold_coffee",
+    "name": "Cold Coffee",
+    "category": "beverage",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "cold",
+      "refreshing",
+      "beverage",
+      "creamy",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Blended cold coffee with ice cream swirl.",
+      "Chilled creamy coffee shake.",
+      "Iced cold coffee, sweet and frothy."
+    ],
+    "aliases": [
+      "iced coffee",
+      "coffee shake"
+    ],
+    "price_min": 80,
+    "price_max": 160
+  },
+  {
+    "canonical_key": "cheese_burger",
+    "name": "Cheese Burger",
+    "category": "main",
+    "cuisine": "fast_food",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "fast_food",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Grilled patty with melted cheese in a soft bun.",
+      "Classic cheese burger with lettuce and sauce.",
+      "Juicy burger stacked with cheese."
+    ],
+    "aliases": [
+      "cheeseburger"
+    ],
+    "price_min": 120,
+    "price_max": 220
+  },
+  {
+    "canonical_key": "fries",
+    "name": "Fries",
+    "category": "side",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "side",
+      "fast_food"
+    ],
+    "descriptions": [
+      "Crisp golden fries lightly salted.",
+      "Hot french fries, crunchy outside.",
+      "Classic potato fries, snack-ready."
+    ],
+    "aliases": [
+      "french fries",
+      "potato fries"
+    ],
+    "price_min": 60,
+    "price_max": 120
+  },
+  {
+    "canonical_key": "pastry",
+    "name": "Pastry",
+    "category": "dessert",
+    "cuisine": "italian",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "cold",
+      "dessert",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Fresh cream pastry with soft sponge layers.",
+      "Sweet pastry slice with frosting.",
+      "Bakery pastry for a light dessert."
+    ],
+    "aliases": [
+      "cream pastry",
+      "cake pastry"
+    ],
+    "price_min": 50,
+    "price_max": 120
+  },
+  {
+    "canonical_key": "prawn_curry",
+    "name": "Prawn Curry",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "seafood"
+    ],
+    "descriptions": [
+      "Juicy prawns in Goan coconut curry.",
+      "Spicy coastal prawn curry.",
+      "Goan-style prawn gravy with chilli."
+    ],
+    "aliases": [
+      "sungta curry"
+    ],
+    "price_min": 260,
+    "price_max": 400
+  },
+  {
+    "canonical_key": "fish_recheado",
+    "name": "Fish Recheado",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "seafood"
+    ],
+    "descriptions": [
+      "Pomfret stuffed with fiery recheado masala.",
+      "Goan recheado fish, pan-seared.",
+      "Stuffed fish with vinegar-chilli paste."
+    ],
+    "aliases": [
+      "recheado pomfret"
+    ],
+    "price_min": 300,
+    "price_max": 450
+  },
+  {
+    "canonical_key": "pork_vindaloo",
+    "name": "Pork Vindaloo",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "filling"
+    ],
+    "descriptions": [
+      "Slow-cooked pork in sharp vindaloo masala.",
+      "Classic Goan pork vindaloo.",
+      "Tangy-spicy pork curry, Goan style."
+    ],
+    "aliases": [
+      "vindaloo"
+    ],
+    "price_min": 240,
+    "price_max": 380
+  },
+  {
+    "canonical_key": "chicken_cafreal",
+    "name": "Chicken Cafreal",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan"
+    ],
+    "descriptions": [
+      "Green cafreal-marinated chicken, pan-fried.",
+      "Goan chicken cafreal with coriander paste.",
+      "Spiced cafreal chicken, aromatic and hot."
+    ],
+    "aliases": [
+      "cafreal"
+    ],
+    "price_min": 220,
+    "price_max": 340
+  },
+  {
+    "canonical_key": "chicken_xacuti",
+    "name": "Chicken Xacuti",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "creamy"
+    ],
+    "descriptions": [
+      "Chicken in roasted coconut xacuti gravy.",
+      "Complex Goan xacuti with warm spices.",
+      "Creamy coconut chicken xacuti."
+    ],
+    "aliases": [
+      "xacuti"
+    ],
+    "price_min": 230,
+    "price_max": 360
+  },
+  {
+    "canonical_key": "goan_fish_thali",
+    "name": "Goan Fish Thali",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "seafood",
+      "filling"
+    ],
+    "descriptions": [
+      "Fish curry, rice, vegetables, and pickle on one plate.",
+      "Complete Goan fish thali.",
+      "Coastal thali with fish curry and sides."
+    ],
+    "aliases": [
+      "fish thali"
+    ],
+    "price_min": 280,
+    "price_max": 420
+  },
+  {
+    "canonical_key": "sorpotel",
+    "name": "Sorpotel",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan"
+    ],
+    "descriptions": [
+      "Rich Goan pork sorpotel with vinegar spice.",
+      "Festive sorpotel, slow-cooked.",
+      "Spicy pork offal stew, Goan classic."
+    ],
+    "aliases": [],
+    "price_min": 260,
+    "price_max": 400
+  },
+  {
+    "canonical_key": "bebinca",
+    "name": "Bebinca",
+    "category": "dessert",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "hot",
+      "dessert",
+      "goan",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Layered Goan bebinca with coconut milk.",
+      "Warm multi-layer bebinca slice.",
+      "Classic Goan dessert, rich and sweet."
+    ],
+    "aliases": [],
+    "price_min": 80,
+    "price_max": 160
+  },
+  {
+    "canonical_key": "sol_kadi",
+    "name": "Sol Kadi",
+    "category": "beverage",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "cold",
+      "refreshing",
+      "beverage",
+      "goan"
+    ],
+    "descriptions": [
+      "Kokum and coconut sol kadi, chilled.",
+      "Tangy Goan sol kadhi.",
+      "Cooling kokum-coconut drink."
+    ],
+    "aliases": [
+      "sol kadhi"
+    ],
+    "price_min": 50,
+    "price_max": 100
+  },
+  {
+    "canonical_key": "prawn_balchao",
+    "name": "Prawn Balchao",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "seafood",
+      "tangy"
+    ],
+    "descriptions": [
+      "Prawns pickled in fiery balchao masala.",
+      "Tangy-spicy Goan prawn balchao.",
+      "Preserve-style prawn relish curry."
+    ],
+    "aliases": [],
+    "price_min": 270,
+    "price_max": 410
+  },
+  {
+    "canonical_key": "mushroom_xacuti",
+    "name": "Mushroom Xacuti",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "creamy"
+    ],
+    "descriptions": [
+      "Mushrooms in roasted spice xacuti gravy.",
+      "Vegetarian Goan xacuti.",
+      "Creamy coconut mushroom curry."
+    ],
+    "aliases": [],
+    "price_min": 180,
+    "price_max": 280
+  },
+  {
+    "canonical_key": "paneer_cafreal",
+    "name": "Paneer Cafreal",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan"
+    ],
+    "descriptions": [
+      "Paneer coated in green cafreal masala.",
+      "Vegetarian cafreal with soft paneer.",
+      "Herb-spiced paneer cafreal."
+    ],
+    "aliases": [],
+    "price_min": 170,
+    "price_max": 270
+  },
+  {
+    "canonical_key": "goan_sausage_pulao",
+    "name": "Goan Sausage Pulao",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "filling"
+    ],
+    "descriptions": [
+      "Spiced Goan sausage stirred into fragrant pulao.",
+      "Chorizo-style sausage rice.",
+      "Hearty Goan sausage pulao."
+    ],
+    "aliases": [],
+    "price_min": 200,
+    "price_max": 320
+  },
+  {
+    "canonical_key": "crab_curry",
+    "name": "Crab Curry",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "seafood"
+    ],
+    "descriptions": [
+      "Whole crab in thick Goan masala.",
+      "Coastal crab curry.",
+      "Spicy crab gravy, Goan style."
+    ],
+    "aliases": [],
+    "price_min": 320,
+    "price_max": 480
+  },
+  {
+    "canonical_key": "kalchi_kodi",
+    "name": "Kalchi Kodi",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan"
+    ],
+    "descriptions": [
+      "Yesterday's chicken curry, deeper and richer.",
+      "Goan kalchi kodi, slow-developed flavour.",
+      "Reheated spice-forward chicken curry."
+    ],
+    "aliases": [],
+    "price_min": 210,
+    "price_max": 330
+  },
+  {
+    "canonical_key": "pois",
+    "name": "Poee",
+    "category": "side",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "side",
+      "goan"
+    ],
+    "descriptions": [
+      "Soft Goan poee bread pouches.",
+      "Fresh local poee for curry mopping.",
+      "Light Goan flatbread."
+    ],
+    "aliases": [
+      "poi",
+      "poee bread"
+    ],
+    "price_min": 40,
+    "price_max": 80
+  },
+  {
+    "canonical_key": "kismoor",
+    "name": "Kismoor",
+    "category": "side",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "cold",
+      "side",
+      "goan",
+      "seafood"
+    ],
+    "descriptions": [
+      "Dried shrimp kismoor salad with onion.",
+      "Tangy Goan kismoor.",
+      "Spicy dried fish relish."
+    ],
+    "aliases": [],
+    "price_min": 80,
+    "price_max": 150
+  },
+  {
+    "canonical_key": "cashew_feni_chicken",
+    "name": "Cashew Chicken Roast",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "smoky"
+    ],
+    "descriptions": [
+      "Roasted chicken with Goan cashew spice rub.",
+      "Smoky cashew-roasted chicken.",
+      "Goan roast chicken, spice-crusted."
+    ],
+    "aliases": [],
+    "price_min": 240,
+    "price_max": 360
+  },
+  {
+    "canonical_key": "veg_thali_goan",
+    "name": "Goan Veg Thali",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "goan",
+      "filling"
+    ],
+    "descriptions": [
+      "Vegetable curries, rice, and pickle plate.",
+      "Complete vegetarian Goan thali.",
+      "Coastal veg thali with coconut gravies."
+    ],
+    "aliases": [],
+    "price_min": 180,
+    "price_max": 280
+  },
+  {
+    "canonical_key": "amot_tik",
+    "name": "Amot Tik Fish",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "seafood",
+      "tangy"
+    ],
+    "descriptions": [
+      "Sweet-sour-spicy amot tik fish curry.",
+      "Goan amot tik with tender fish.",
+      "Tangy fish gravy, coastal style."
+    ],
+    "aliases": [],
+    "price_min": 260,
+    "price_max": 390
+  },
+  {
+    "canonical_key": "sannas",
+    "name": "Sannas",
+    "category": "side",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "mild",
+      "sweet",
+      "hot",
+      "side",
+      "goan",
+      "breakfast"
+    ],
+    "descriptions": [
+      "Steamed Goan rice sannas, soft and mildly sweet.",
+      "Fluffy idli-like sannas.",
+      "Light fermented rice cakes."
+    ],
+    "aliases": [],
+    "price_min": 40,
+    "price_max": 90
+  },
+  {
+    "canonical_key": "dodol",
+    "name": "Dodol",
+    "category": "dessert",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "cold",
+      "dessert",
+      "goan"
+    ],
+    "descriptions": [
+      "Dense coconut-jaggery dodol slices.",
+      "Goan dodol, sticky and sweet.",
+      "Traditional coconut fudge dessert."
+    ],
+    "aliases": [],
+    "price_min": 60,
+    "price_max": 130
+  },
+  {
+    "canonical_key": "rissois",
+    "name": "Rissois",
+    "category": "snack",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "snack",
+      "goan",
+      "seafood"
+    ],
+    "descriptions": [
+      "Crisp prawn rissois pastries.",
+      "Goan prawn turnovers.",
+      "Golden prawn-filled snacks."
+    ],
+    "aliases": [
+      "rissois de camarao"
+    ],
+    "price_min": 90,
+    "price_max": 180
+  },
+  {
+    "canonical_key": "chicken_lollipop_goan",
+    "name": "Goan Chicken Lollipop",
+    "category": "snack",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "snack",
+      "goan",
+      "street_food"
+    ],
+    "descriptions": [
+      "Frenched chicken wings in Goan spice.",
+      "Crispy chicken lollipops, coastal masala.",
+      "Spicy Goan-style chicken lollipops."
+    ],
+    "aliases": [],
+    "price_min": 160,
+    "price_max": 260
+  },
+  {
+    "canonical_key": "mushroom_recheado",
+    "name": "Mushroom Recheado",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan"
+    ],
+    "descriptions": [
+      "Mushrooms stuffed with recheado paste.",
+      "Vegetarian recheado mushrooms.",
+      "Spicy stuffed mushrooms, Goan style."
+    ],
+    "aliases": [],
+    "price_min": 160,
+    "price_max": 250
+  },
+  {
+    "canonical_key": "paneer_xacuti",
+    "name": "Paneer Xacuti",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "creamy"
+    ],
+    "descriptions": [
+      "Paneer cubes in xacuti coconut gravy.",
+      "Vegetarian paneer xacuti.",
+      "Rich spice-roasted paneer curry."
+    ],
+    "aliases": [],
+    "price_min": 180,
+    "price_max": 280
+  },
+  {
+    "canonical_key": "coconut_water",
+    "name": "Tender Coconut Water",
+    "category": "beverage",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "mild",
+      "cold",
+      "refreshing",
+      "beverage",
+      "healthy",
+      "light"
+    ],
+    "descriptions": [
+      "Chilled tender coconut water.",
+      "Fresh coconut water, lightly sweet.",
+      "Cooling natural coconut drink."
+    ],
+    "aliases": [
+      "nariyal pani"
+    ],
+    "price_min": 40,
+    "price_max": 80
+  },
+  {
+    "canonical_key": "kokum_sherbet",
+    "name": "Kokum Sherbet",
+    "category": "beverage",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "sweet",
+      "cold",
+      "refreshing",
+      "beverage",
+      "goan"
+    ],
+    "descriptions": [
+      "Sweet-tangy kokum sherbet over ice.",
+      "Chilled kokum cooler.",
+      "Refreshing Goan kokum drink."
+    ],
+    "aliases": [],
+    "price_min": 50,
+    "price_max": 100
+  },
+  {
+    "canonical_key": "misal_pav",
+    "name": "Misal Pav",
+    "category": "main",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "maharashtrian",
+      "street_food",
+      "filling"
+    ],
+    "descriptions": [
+      "Spicy sprout misal topped with farsan and pav.",
+      "Fiery Kolhapuri-style misal pav.",
+      "Tarri misal with soft pav."
+    ],
+    "aliases": [],
+    "price_min": 100,
+    "price_max": 180
+  },
+  {
+    "canonical_key": "pav_bhaji",
+    "name": "Pav Bhaji",
+    "category": "main",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "maharashtrian",
+      "street_food",
+      "comfort"
+    ],
+    "descriptions": [
+      "Buttery mashed veg bhaji with toasted pav.",
+      "Classic Mumbai pav bhaji.",
+      "Spiced vegetable mash and soft rolls."
+    ],
+    "aliases": [],
+    "price_min": 90,
+    "price_max": 170
+  },
+  {
+    "canonical_key": "vada_pav",
+    "name": "Vada Pav",
+    "category": "snack",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "snack",
+      "maharashtrian",
+      "street_food"
+    ],
+    "descriptions": [
+      "Fried batata vada in pav with chutneys.",
+      "Mumbai vada pav street snack.",
+      "Spicy potato fritter burger."
+    ],
+    "aliases": [],
+    "price_min": 40,
+    "price_max": 80
+  },
+  {
+    "canonical_key": "puraan_poli",
+    "name": "Puran Poli",
+    "category": "dessert",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "hot",
+      "dessert",
+      "maharashtrian"
+    ],
+    "descriptions": [
+      "Flatbread stuffed with sweet chana dal puran.",
+      "Warm puran poli with ghee.",
+      "Festive Maharashtrian sweet poli."
+    ],
+    "aliases": [
+      "puran poli"
+    ],
+    "price_min": 60,
+    "price_max": 140
+  },
+  {
+    "canonical_key": "thalipeeth",
+    "name": "Thalipeeth",
+    "category": "breakfast",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "breakfast",
+      "maharashtrian",
+      "healthy"
+    ],
+    "descriptions": [
+      "Multigrain thalipeeth with butter.",
+      "Spiced Maharashtrian flatbread.",
+      "Crisp-edged thalipeeth, wholesome."
+    ],
+    "aliases": [],
+    "price_min": 70,
+    "price_max": 130
+  },
+  {
+    "canonical_key": "bharli_vangi",
+    "name": "Bharli Vangi",
+    "category": "main",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "maharashtrian"
+    ],
+    "descriptions": [
+      "Stuffed baby brinjals in peanut-coconut gravy.",
+      "Maharashtrian bharli vangi.",
+      "Spice-stuffed eggplant curry."
+    ],
+    "aliases": [],
+    "price_min": 140,
+    "price_max": 240
+  },
+  {
+    "canonical_key": "zunka_bhakar",
+    "name": "Zunka Bhakar",
+    "category": "main",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "maharashtrian",
+      "filling"
+    ],
+    "descriptions": [
+      "Spiced gram flour zunka with jowar bhakri.",
+      "Rustic zunka bhakar plate.",
+      "Maharashtrian pithla-style dry zunka."
+    ],
+    "aliases": [
+      "jhunka bhakar"
+    ],
+    "price_min": 100,
+    "price_max": 180
+  },
+  {
+    "canonical_key": "sabudana_khichdi",
+    "name": "Sabudana Khichdi",
+    "category": "breakfast",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "breakfast",
+      "maharashtrian",
+      "light"
+    ],
+    "descriptions": [
+      "Tapioca pearls with peanut and potato.",
+      "Fasting-style sabudana khichdi.",
+      "Light sabudana breakfast bowl."
+    ],
+    "aliases": [],
+    "price_min": 80,
+    "price_max": 150
+  },
+  {
+    "canonical_key": "batata_bhaji",
+    "name": "Batata Bhaji",
+    "category": "side",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "side",
+      "maharashtrian",
+      "breakfast"
+    ],
+    "descriptions": [
+      "Soft potato bhaji with mustard tempering.",
+      "Simple batata bhaji for poori.",
+      "Mild spiced potato side."
+    ],
+    "aliases": [],
+    "price_min": 60,
+    "price_max": 110
+  },
+  {
+    "canonical_key": "poha",
+    "name": "Kanda Poha",
+    "category": "breakfast",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "breakfast",
+      "maharashtrian",
+      "light"
+    ],
+    "descriptions": [
+      "Flattened rice with onion, peanut, and lemon.",
+      "Classic Indori-style kanda poha.",
+      "Light breakfast poha, tangy finish."
+    ],
+    "aliases": [
+      "pohe"
+    ],
+    "price_min": 50,
+    "price_max": 100
+  },
+  {
+    "canonical_key": "shrikhand",
+    "name": "Shrikhand",
+    "category": "dessert",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "cold",
+      "dessert",
+      "maharashtrian",
+      "creamy"
+    ],
+    "descriptions": [
+      "Saffron shrikhand, chilled and creamy.",
+      "Sweet hung-curd shrikhand.",
+      "Cardamom-saffron dessert bowl."
+    ],
+    "aliases": [],
+    "price_min": 70,
+    "price_max": 140
+  },
+  {
+    "canonical_key": "solkadhi_mh",
+    "name": "Solkadhi",
+    "category": "beverage",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "cold",
+      "refreshing",
+      "beverage",
+      "maharashtrian"
+    ],
+    "descriptions": [
+      "Kokum-coconut solkadhi, cooling.",
+      "Maharashtrian solkadhi drink.",
+      "Tangy pink solkadhi, chilled."
+    ],
+    "aliases": [],
+    "price_min": 50,
+    "price_max": 100
+  },
+  {
+    "canonical_key": "chicken_sukha",
+    "name": "Chicken Sukha",
+    "category": "main",
+    "cuisine": "maharashtrian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "maharashtrian"
+    ],
+    "descriptions": [
+      "Dry Malvani chicken sukha.",
+      "Spiced chicken cooked dry-style.",
+      "Coastal Maharashtrian chicken sukka."
+    ],
+    "aliases": [
+      "chicken sukka"
+    ],
+    "price_min": 220,
+    "price_max": 340
+  },
+  {
+    "canonical_key": "mutton_rassa",
+    "name": "Mutton Rassa",
+    "category": "main",
+    "cuisine": "maharashtrian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "maharashtrian",
+      "filling"
+    ],
+    "descriptions": [
+      "Thin spicy mutton rassa gravy.",
+      "Kolhapuri mutton rassa.",
+      "Fiery mutton curry, Maharashtrian."
+    ],
+    "aliases": [],
+    "price_min": 280,
+    "price_max": 420
+  },
+  {
+    "canonical_key": "bombil_fry",
+    "name": "Bombil Fry",
+    "category": "snack",
+    "cuisine": "maharashtrian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "snack",
+      "maharashtrian",
+      "seafood",
+      "street_food"
+    ],
+    "descriptions": [
+      "Crispy fried Bombay duck.",
+      "Rava-coated bombil fry.",
+      "Coastal bombil crisp fry."
+    ],
+    "aliases": [
+      "bombay duck fry"
+    ],
+    "price_min": 180,
+    "price_max": 280
+  },
+  {
+    "canonical_key": "modak_fried",
+    "name": "Fried Modak",
+    "category": "dessert",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "hot",
+      "dessert",
+      "maharashtrian",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Deep-fried modak with coconut filling.",
+      "Crisp fried modaks.",
+      "Sweet festive fried dumplings."
+    ],
+    "aliases": [],
+    "price_min": 70,
+    "price_max": 140
+  },
+  {
+    "canonical_key": "alu_wadi",
+    "name": "Alu Wadi",
+    "category": "snack",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "snack",
+      "maharashtrian",
+      "street_food"
+    ],
+    "descriptions": [
+      "Rolled colocasia leaf wadis, fried.",
+      "Spiced alu wadi pinwheels.",
+      "Maharashtrian patra-style snack."
+    ],
+    "aliases": [
+      "patra"
+    ],
+    "price_min": 70,
+    "price_max": 130
+  },
+  {
+    "canonical_key": "puneri_misal",
+    "name": "Puneri Misal",
+    "category": "main",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "maharashtrian",
+      "street_food"
+    ],
+    "descriptions": [
+      "Milder Pune-style misal with kat.",
+      "Puneri misal pav plate.",
+      "Sprout misal with yogurt and farsan."
+    ],
+    "aliases": [],
+    "price_min": 100,
+    "price_max": 180
+  },
+  {
+    "canonical_key": "kolhapuri_chicken",
+    "name": "Kolhapuri Chicken",
+    "category": "main",
+    "cuisine": "maharashtrian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "maharashtrian"
+    ],
+    "descriptions": [
+      "Fiery Kolhapuri chicken curry.",
+      "Red spice chicken, Kolhapuri style.",
+      "Hot chicken gravy with ground masala."
+    ],
+    "aliases": [],
+    "price_min": 230,
+    "price_max": 360
+  },
+  {
+    "canonical_key": "bhel_puri",
+    "name": "Bhel Puri",
+    "category": "snack",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "spicy",
+      "cold",
+      "snack",
+      "maharashtrian",
+      "street_food",
+      "light"
+    ],
+    "descriptions": [
+      "Puffed rice bhel with chutneys and sev.",
+      "Tangy Mumbai bhel puri.",
+      "Crunchy chaat-style bhel."
+    ],
+    "aliases": [],
+    "price_min": 50,
+    "price_max": 100
+  },
+  {
+    "canonical_key": "sev_puri",
+    "name": "Sev Puri",
+    "category": "snack",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "spicy",
+      "cold",
+      "snack",
+      "maharashtrian",
+      "street_food"
+    ],
+    "descriptions": [
+      "Crisp puris topped with sev and chutney.",
+      "Classic sev puri chaat.",
+      "Tangy-spicy street sev puri."
+    ],
+    "aliases": [],
+    "price_min": 60,
+    "price_max": 110
+  },
+  {
+    "canonical_key": "dahi_puri",
+    "name": "Dahi Puri",
+    "category": "snack",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "sweet",
+      "cold",
+      "snack",
+      "maharashtrian",
+      "street_food",
+      "creamy"
+    ],
+    "descriptions": [
+      "Puris filled with curd, chutney, and sev.",
+      "Cool dahi puri chaat.",
+      "Creamy tangy dahi puri."
+    ],
+    "aliases": [],
+    "price_min": 70,
+    "price_max": 120
+  },
+  {
+    "canonical_key": "paneer_sukha",
+    "name": "Paneer Sukha",
+    "category": "main",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "maharashtrian"
+    ],
+    "descriptions": [
+      "Dry-spiced paneer sukha.",
+      "Maharashtrian-style paneer dry fry.",
+      "Aromatic paneer tossed in malvani spice."
+    ],
+    "aliases": [],
+    "price_min": 160,
+    "price_max": 260
+  },
+  {
+    "canonical_key": "mushroom_sukha",
+    "name": "Mushroom Sukha",
+    "category": "main",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "maharashtrian"
+    ],
+    "descriptions": [
+      "Dry mushroom sukha with coconut.",
+      "Spiced mushroom sukka.",
+      "Malvani-style dry mushrooms."
+    ],
+    "aliases": [],
+    "price_min": 150,
+    "price_max": 240
+  },
+  {
+    "canonical_key": "idli_sambar",
+    "name": "Idli Sambar",
+    "category": "breakfast",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "breakfast",
+      "south_indian",
+      "light"
+    ],
+    "descriptions": [
+      "Soft idlis with hot sambar and chutney.",
+      "Steamed rice cakes with lentil stew.",
+      "Classic idli sambar breakfast."
+    ],
+    "aliases": [],
+    "price_min": 60,
+    "price_max": 120
+  },
+  {
+    "canonical_key": "plain_dosa",
+    "name": "Plain Dosa",
+    "category": "breakfast",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "breakfast",
+      "south_indian"
+    ],
+    "descriptions": [
+      "Crisp plain dosa with coconut chutney.",
+      "Golden fermented crepe.",
+      "Simple dosa, light and crisp."
+    ],
+    "aliases": [],
+    "price_min": 50,
+    "price_max": 100
+  },
+  {
+    "canonical_key": "rava_dosa",
+    "name": "Rava Dosa",
+    "category": "breakfast",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "breakfast",
+      "south_indian"
+    ],
+    "descriptions": [
+      "Lacy rava dosa with onion and chilli.",
+      "Crisp semolina dosa.",
+      "Holey rava dosa, restaurant style."
+    ],
+    "aliases": [],
+    "price_min": 80,
+    "price_max": 150
+  },
+  {
+    "canonical_key": "onion_uttapam",
+    "name": "Onion Uttapam",
+    "category": "breakfast",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "breakfast",
+      "south_indian"
+    ],
+    "descriptions": [
+      "Thick uttapam topped with onions.",
+      "Soft onion uttapam.",
+      "Savoury rice pancake with onion."
+    ],
+    "aliases": [],
+    "price_min": 70,
+    "price_max": 140
+  },
+  {
+    "canonical_key": "medu_vada",
+    "name": "Medu Vada",
+    "category": "snack",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "snack",
+      "south_indian"
+    ],
+    "descriptions": [
+      "Crisp urad dal medu vada.",
+      "Donut-shaped fried vada.",
+      "South Indian medu vada with sambar."
+    ],
+    "aliases": [],
+    "price_min": 50,
+    "price_max": 100
+  },
+  {
+    "canonical_key": "pongal",
+    "name": "Ven Pongal",
+    "category": "breakfast",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "breakfast",
+      "south_indian",
+      "comfort"
+    ],
+    "descriptions": [
+      "Pepper-cumin ven pongal with ghee.",
+      "Soft rice-lentil pongal.",
+      "Comforting South Indian pongal."
+    ],
+    "aliases": [],
+    "price_min": 70,
+    "price_max": 130
+  },
+  {
+    "canonical_key": "lemon_rice",
+    "name": "Lemon Rice",
+    "category": "main",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "mild",
+      "hot",
+      "main",
+      "south_indian",
+      "light"
+    ],
+    "descriptions": [
+      "Tangy lemon rice with peanuts.",
+      "South Indian chitranna-style rice.",
+      "Bright lemon-tempered rice."
+    ],
+    "aliases": [],
+    "price_min": 80,
+    "price_max": 140
+  },
+  {
+    "canonical_key": "curd_rice",
+    "name": "Curd Rice",
+    "category": "main",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "mild",
+      "cold",
+      "main",
+      "south_indian",
+      "comfort",
+      "light"
+    ],
+    "descriptions": [
+      "Cool tempered curd rice.",
+      "Comfort thayir sadam.",
+      "Creamy yogurt rice, lightly spiced."
+    ],
+    "aliases": [
+      "thayir sadam"
+    ],
+    "price_min": 70,
+    "price_max": 130
+  },
+  {
+    "canonical_key": "chicken_chettinad",
+    "name": "Chicken Chettinad",
+    "category": "main",
+    "cuisine": "south_indian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "south_indian"
+    ],
+    "descriptions": [
+      "Peppery Chettinad chicken curry.",
+      "Fiery South Indian chicken.",
+      "Aromatic Chettinad spice chicken."
+    ],
+    "aliases": [],
+    "price_min": 220,
+    "price_max": 350
+  },
+  {
+    "canonical_key": "fish_moilee",
+    "name": "Fish Moilee",
+    "category": "main",
+    "cuisine": "south_indian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "south_indian",
+      "seafood",
+      "creamy"
+    ],
+    "descriptions": [
+      "Kerala fish moilee in coconut milk.",
+      "Mild creamy fish stew.",
+      "Coastal South Indian fish moilee."
+    ],
+    "aliases": [],
+    "price_min": 260,
+    "price_max": 390
+  },
+  {
+    "canonical_key": "appam_stew",
+    "name": "Appam Stew",
+    "category": "main",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "mild",
+      "creamy",
+      "hot",
+      "main",
+      "south_indian",
+      "breakfast"
+    ],
+    "descriptions": [
+      "Soft appams with vegetable stew.",
+      "Lace hoppers and mild coconut stew.",
+      "Kerala appam with veg stew."
+    ],
+    "aliases": [],
+    "price_min": 120,
+    "price_max": 220
+  },
+  {
+    "canonical_key": "rasam",
+    "name": "Tomato Rasam",
+    "category": "side",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "spicy",
+      "hot",
+      "side",
+      "south_indian",
+      "light"
+    ],
+    "descriptions": [
+      "Peppery tomato rasam.",
+      "Tangy South Indian rasam.",
+      "Light spicy rasam soup."
+    ],
+    "aliases": [],
+    "price_min": 40,
+    "price_max": 80
+  },
+  {
+    "canonical_key": "filter_coffee_strong",
+    "name": "Meter Coffee",
+    "category": "beverage",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "hot",
+      "beverage",
+      "south_indian"
+    ],
+    "descriptions": [
+      "Pulled meter coffee, frothy and strong.",
+      "Street-style meter coffee.",
+      "Sweet strong South Indian coffee."
+    ],
+    "aliases": [],
+    "price_min": 50,
+    "price_max": 100
+  },
+  {
+    "canonical_key": "paneer_dosa",
+    "name": "Paneer Dosa",
+    "category": "main",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "south_indian",
+      "breakfast"
+    ],
+    "descriptions": [
+      "Dosa filled with spiced paneer.",
+      "Crisp paneer masala dosa.",
+      "Stuffed dosa with soft paneer."
+    ],
+    "aliases": [],
+    "price_min": 120,
+    "price_max": 200
+  },
+  {
+    "canonical_key": "mushroom_dosa",
+    "name": "Mushroom Dosa",
+    "category": "main",
+    "cuisine": "south_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "south_indian"
+    ],
+    "descriptions": [
+      "Dosa stuffed with pepper mushroom.",
+      "Crisp mushroom masala dosa.",
+      "Earthy mushroom-filled dosa."
+    ],
+    "aliases": [],
+    "price_min": 110,
+    "price_max": 190
+  },
+  {
+    "canonical_key": "chicken_65",
+    "name": "Chicken 65",
+    "category": "snack",
+    "cuisine": "south_indian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "snack",
+      "south_indian",
+      "street_food"
+    ],
+    "descriptions": [
+      "Fiery deep-fried Chicken 65.",
+      "Spicy red chicken starter.",
+      "Classic South Indian Chicken 65."
+    ],
+    "aliases": [],
+    "price_min": 180,
+    "price_max": 280
+  },
+  {
+    "canonical_key": "butter_chicken",
+    "name": "Butter Chicken",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "north_indian",
+      "creamy",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Creamy tomato butter chicken.",
+      "Mild makhani chicken curry.",
+      "Restaurant butter chicken."
+    ],
+    "aliases": [
+      "murgh makhani"
+    ],
+    "price_min": 240,
+    "price_max": 380
+  },
+  {
+    "canonical_key": "dal_makhani",
+    "name": "Dal Makhani",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "north_indian",
+      "creamy",
+      "comfort"
+    ],
+    "descriptions": [
+      "Slow-cooked black dal with butter.",
+      "Creamy dal makhani.",
+      "Rich Punjabi dal makhani."
+    ],
+    "aliases": [],
+    "price_min": 140,
+    "price_max": 240
+  },
+  {
+    "canonical_key": "paneer_butter_masala",
+    "name": "Paneer Butter Masala",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "north_indian",
+      "creamy",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Paneer in buttery tomato gravy.",
+      "Classic paneer butter masala.",
+      "Creamy restaurant-style paneer."
+    ],
+    "aliases": [
+      "butter paneer"
+    ],
+    "price_min": 180,
+    "price_max": 300
+  },
+  {
+    "canonical_key": "chole_bhature",
+    "name": "Chole Bhature",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "north_indian",
+      "filling"
+    ],
+    "descriptions": [
+      "Spiced chole with fluffy bhature.",
+      "Punjabi chole bhature plate.",
+      "Hearty chickpea curry and fried bread."
+    ],
+    "aliases": [],
+    "price_min": 120,
+    "price_max": 220
+  },
+  {
+    "canonical_key": "aloo_paratha",
+    "name": "Aloo Paratha",
+    "category": "breakfast",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "breakfast",
+      "north_indian",
+      "filling"
+    ],
+    "descriptions": [
+      "Stuffed aloo paratha with butter.",
+      "Whole-wheat potato paratha.",
+      "Classic breakfast aloo paratha."
+    ],
+    "aliases": [],
+    "price_min": 60,
+    "price_max": 120
+  },
+  {
+    "canonical_key": "chicken_tikka",
+    "name": "Chicken Tikka",
+    "category": "snack",
+    "cuisine": "north_indian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "snack",
+      "north_indian",
+      "smoky"
+    ],
+    "descriptions": [
+      "Tandoor-smoked chicken tikka.",
+      "Yogurt-marinated chicken tikka.",
+      "Charred chicken tikka bites."
+    ],
+    "aliases": [],
+    "price_min": 200,
+    "price_max": 320
+  },
+  {
+    "canonical_key": "paneer_tikka",
+    "name": "Paneer Tikka",
+    "category": "snack",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "snack",
+      "north_indian",
+      "smoky"
+    ],
+    "descriptions": [
+      "Grilled paneer tikka with peppers.",
+      "Tandoori paneer tikka.",
+      "Smoky paneer tikka skewers."
+    ],
+    "aliases": [],
+    "price_min": 160,
+    "price_max": 260
+  },
+  {
+    "canonical_key": "mutton_rogan_josh",
+    "name": "Mutton Rogan Josh",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "north_indian",
+      "filling"
+    ],
+    "descriptions": [
+      "Kashmiri-style mutton rogan josh.",
+      "Red aromatic mutton curry.",
+      "Slow-cooked mutton rogan josh."
+    ],
+    "aliases": [],
+    "price_min": 300,
+    "price_max": 450
+  },
+  {
+    "canonical_key": "veg_biryani",
+    "name": "Veg Biryani",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "north_indian",
+      "filling"
+    ],
+    "descriptions": [
+      "Layered vegetable biryani.",
+      "Fragrant veg dum biryani.",
+      "Aromatic rice with mixed vegetables."
+    ],
+    "aliases": [],
+    "price_min": 160,
+    "price_max": 280
+  },
+  {
+    "canonical_key": "mushroom_biryani",
+    "name": "Mushroom Biryani",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "north_indian",
+      "filling"
+    ],
+    "descriptions": [
+      "Biryani layered with spiced mushrooms.",
+      "Fragrant mushroom dum biryani.",
+      "Aromatic rice and mushrooms."
+    ],
+    "aliases": [],
+    "price_min": 180,
+    "price_max": 300
+  },
+  {
+    "canonical_key": "paneer_biryani",
+    "name": "Paneer Biryani",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "north_indian",
+      "filling"
+    ],
+    "descriptions": [
+      "Biryani with soft paneer chunks.",
+      "Fragrant paneer dum biryani.",
+      "Layered rice and paneer masala."
+    ],
+    "aliases": [],
+    "price_min": 190,
+    "price_max": 310
+  },
+  {
+    "canonical_key": "garlic_naan",
+    "name": "Garlic Naan",
+    "category": "side",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "side",
+      "north_indian"
+    ],
+    "descriptions": [
+      "Tandoor garlic naan brushed with butter.",
+      "Soft garlic naan.",
+      "Fluffy garlic flatbread."
+    ],
+    "aliases": [],
+    "price_min": 50,
+    "price_max": 100
+  },
+  {
+    "canonical_key": "jeera_rice",
+    "name": "Jeera Rice",
+    "category": "side",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "side",
+      "north_indian"
+    ],
+    "descriptions": [
+      "Cumin-tempered basmati rice.",
+      "Simple jeera rice.",
+      "Fragrant cumin rice side."
+    ],
+    "aliases": [],
+    "price_min": 60,
+    "price_max": 120
+  },
+  {
+    "canonical_key": "palak_paneer",
+    "name": "Palak Paneer",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "north_indian",
+      "healthy"
+    ],
+    "descriptions": [
+      "Paneer in smooth spinach gravy.",
+      "Classic palak paneer.",
+      "Creamy spinach paneer curry."
+    ],
+    "aliases": [],
+    "price_min": 160,
+    "price_max": 270
+  },
+  {
+    "canonical_key": "malai_kofta",
+    "name": "Malai Kofta",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "north_indian",
+      "creamy",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Fried kofta in malai gravy.",
+      "Rich malai kofta curry.",
+      "Creamy kofta, festive style."
+    ],
+    "aliases": [],
+    "price_min": 180,
+    "price_max": 300
+  },
+  {
+    "canonical_key": "lassi_sweet",
+    "name": "Sweet Lassi",
+    "category": "beverage",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "cold",
+      "refreshing",
+      "beverage",
+      "north_indian",
+      "creamy"
+    ],
+    "descriptions": [
+      "Chilled sweet yogurt lassi.",
+      "Creamy sweet lassi.",
+      "Cool Punjabi sweet lassi."
+    ],
+    "aliases": [],
+    "price_min": 50,
+    "price_max": 100
+  },
+  {
+    "canonical_key": "lassi_salted",
+    "name": "Salted Lassi",
+    "category": "beverage",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "cold",
+      "refreshing",
+      "beverage",
+      "north_indian",
+      "creamy"
+    ],
+    "descriptions": [
+      "Salted spiced yogurt lassi.",
+      "Cool chaas-style lassi.",
+      "Refreshing salted lassi."
+    ],
+    "aliases": [
+      "chaas"
+    ],
+    "price_min": 40,
+    "price_max": 90
+  },
+  {
+    "canonical_key": "chicken_korma",
+    "name": "Chicken Korma",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "north_indian",
+      "creamy"
+    ],
+    "descriptions": [
+      "Mild creamy chicken korma.",
+      "Mughlai-style chicken korma.",
+      "Yogurt-cashew chicken gravy."
+    ],
+    "aliases": [],
+    "price_min": 230,
+    "price_max": 360
+  },
+  {
+    "canonical_key": "egg_curry",
+    "name": "Egg Curry",
+    "category": "main",
+    "cuisine": "north_indian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "north_indian"
+    ],
+    "descriptions": [
+      "Boiled eggs in onion-tomato curry.",
+      "Home-style egg curry.",
+      "Spiced anda curry."
+    ],
+    "aliases": [
+      "anda curry"
+    ],
+    "price_min": 120,
+    "price_max": 200
+  },
+  {
+    "canonical_key": "hakka_noodles",
+    "name": "Veg Hakka Noodles",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "chinese",
+      "street_food"
+    ],
+    "descriptions": [
+      "Stir-fried hakka noodles with veg.",
+      "Classic veg hakka noodles.",
+      "Wok-tossed Indo-Chinese noodles."
+    ],
+    "aliases": [],
+    "price_min": 120,
+    "price_max": 200
+  },
+  {
+    "canonical_key": "chicken_hakka_noodles",
+    "name": "Chicken Hakka Noodles",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "chinese"
+    ],
+    "descriptions": [
+      "Hakka noodles with chicken strips.",
+      "Chicken hakka noodles.",
+      "Wok noodles and chicken."
+    ],
+    "aliases": [],
+    "price_min": 150,
+    "price_max": 240
+  },
+  {
+    "canonical_key": "veg_manchurian",
+    "name": "Veg Manchurian",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "chinese",
+      "street_food"
+    ],
+    "descriptions": [
+      "Veg balls in Manchurian sauce.",
+      "Indo-Chinese veg Manchurian.",
+      "Crisp veg Manchurian gravy."
+    ],
+    "aliases": [],
+    "price_min": 130,
+    "price_max": 220
+  },
+  {
+    "canonical_key": "chicken_manchurian",
+    "name": "Chicken Manchurian",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "chinese"
+    ],
+    "descriptions": [
+      "Chicken in spicy Manchurian sauce.",
+      "Indo-Chinese chicken Manchurian.",
+      "Glossy chicken Manchurian."
+    ],
+    "aliases": [],
+    "price_min": 170,
+    "price_max": 270
+  },
+  {
+    "canonical_key": "fried_rice_veg",
+    "name": "Veg Fried Rice",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "chinese"
+    ],
+    "descriptions": [
+      "Wok veg fried rice.",
+      "Classic Indo-Chinese fried rice.",
+      "Light vegetable fried rice."
+    ],
+    "aliases": [],
+    "price_min": 110,
+    "price_max": 190
+  },
+  {
+    "canonical_key": "fried_rice_chicken",
+    "name": "Chicken Fried Rice",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "chinese"
+    ],
+    "descriptions": [
+      "Chicken fried rice, wok-tossed.",
+      "Classic chicken fried rice.",
+      "Savoury rice with chicken."
+    ],
+    "aliases": [],
+    "price_min": 140,
+    "price_max": 230
+  },
+  {
+    "canonical_key": "spring_rolls",
+    "name": "Veg Spring Rolls",
+    "category": "snack",
+    "cuisine": "chinese",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "snack",
+      "chinese"
+    ],
+    "descriptions": [
+      "Crisp veg spring rolls.",
+      "Fried spring rolls with dip.",
+      "Crunchy Indo-Chinese starter."
+    ],
+    "aliases": [],
+    "price_min": 80,
+    "price_max": 150
+  },
+  {
+    "canonical_key": "hot_sour_soup",
+    "name": "Hot and Sour Soup",
+    "category": "side",
+    "cuisine": "chinese",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "spicy",
+      "hot",
+      "side",
+      "chinese",
+      "light"
+    ],
+    "descriptions": [
+      "Tangy hot and sour soup.",
+      "Spicy Indo-Chinese soup.",
+      "Warming hot-sour bowl."
+    ],
+    "aliases": [],
+    "price_min": 80,
+    "price_max": 140
+  },
+  {
+    "canonical_key": "chilli_chicken_dry",
+    "name": "Chilli Chicken Dry",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "chinese",
+      "street_food"
+    ],
+    "descriptions": [
+      "Dry chilli chicken with peppers.",
+      "Indo-Chinese dry chilli chicken.",
+      "Wok chilli chicken, dry style."
+    ],
+    "aliases": [],
+    "price_min": 180,
+    "price_max": 290
+  },
+  {
+    "canonical_key": "chilli_chicken_gravy",
+    "name": "Chilli Chicken Gravy",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "chinese"
+    ],
+    "descriptions": [
+      "Chilli chicken in glossy gravy.",
+      "Gravy chilli chicken.",
+      "Spicy Indo-Chinese chicken gravy."
+    ],
+    "aliases": [],
+    "price_min": 190,
+    "price_max": 300
+  },
+  {
+    "canonical_key": "chilli_mushroom_dry",
+    "name": "Chilli Mushroom Dry",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "chinese"
+    ],
+    "descriptions": [
+      "Dry chilli mushrooms.",
+      "Spicy mushroom chilli fry.",
+      "Wok-tossed chilli mushrooms."
+    ],
+    "aliases": [],
+    "price_min": 140,
+    "price_max": 230
+  },
+  {
+    "canonical_key": "schezwan_fried_rice",
+    "name": "Schezwan Fried Rice",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "chinese"
+    ],
+    "descriptions": [
+      "Spicy Schezwan veg fried rice.",
+      "Fiery Schezwan rice.",
+      "Indo-Chinese Schezwan rice."
+    ],
+    "aliases": [],
+    "price_min": 130,
+    "price_max": 210
+  },
+  {
+    "canonical_key": "schezwan_noodles",
+    "name": "Schezwan Noodles",
+    "category": "main",
+    "cuisine": "chinese",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "chinese"
+    ],
+    "descriptions": [
+      "Schezwan chilli noodles.",
+      "Spicy Schezwan hakka noodles.",
+      "Fiery wok noodles."
+    ],
+    "aliases": [],
+    "price_min": 130,
+    "price_max": 210
+  },
+  {
+    "canonical_key": "pasta_arrabbiata",
+    "name": "Pasta Arrabbiata",
+    "category": "main",
+    "cuisine": "italian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "italian"
+    ],
+    "descriptions": [
+      "Penne in spicy tomato arrabbiata.",
+      "Classic arrabbiata pasta.",
+      "Chilli-garlic tomato pasta."
+    ],
+    "aliases": [],
+    "price_min": 160,
+    "price_max": 280
+  },
+  {
+    "canonical_key": "pasta_alfredo",
+    "name": "Pasta Alfredo",
+    "category": "main",
+    "cuisine": "italian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "italian",
+      "creamy",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Creamy alfredo fettuccine.",
+      "Rich white-sauce pasta.",
+      "Cheese alfredo pasta."
+    ],
+    "aliases": [],
+    "price_min": 180,
+    "price_max": 300
+  },
+  {
+    "canonical_key": "chicken_alfredo",
+    "name": "Chicken Alfredo Pasta",
+    "category": "main",
+    "cuisine": "italian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "italian",
+      "creamy"
+    ],
+    "descriptions": [
+      "Alfredo pasta with grilled chicken.",
+      "Creamy chicken alfredo.",
+      "White sauce pasta and chicken."
+    ],
+    "aliases": [],
+    "price_min": 220,
+    "price_max": 360
+  },
+  {
+    "canonical_key": "garlic_bread",
+    "name": "Garlic Bread",
+    "category": "side",
+    "cuisine": "italian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "side",
+      "italian"
+    ],
+    "descriptions": [
+      "Toasted garlic bread sticks.",
+      "Buttery garlic bread.",
+      "Crisp garlic side bread."
+    ],
+    "aliases": [],
+    "price_min": 60,
+    "price_max": 120
+  },
+  {
+    "canonical_key": "farmhouse_pizza",
+    "name": "Farmhouse Pizza",
+    "category": "main",
+    "cuisine": "italian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "italian",
+      "loaded"
+    ],
+    "descriptions": [
+      "Farmhouse veg pizza loaded with toppings.",
+      "Veg farmhouse pizza.",
+      "Cheese pizza with mixed vegetables."
+    ],
+    "aliases": [],
+    "price_min": 220,
+    "price_max": 360
+  },
+  {
+    "canonical_key": "pepperoni_pizza",
+    "name": "Pepperoni Pizza",
+    "category": "main",
+    "cuisine": "italian",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "italian",
+      "loaded"
+    ],
+    "descriptions": [
+      "Pepperoni pizza with mozzarella.",
+      "Classic pepperoni pie.",
+      "Spicy pepperoni cheese pizza."
+    ],
+    "aliases": [],
+    "price_min": 260,
+    "price_max": 400
+  },
+  {
+    "canonical_key": "mushroom_pizza",
+    "name": "Mushroom Pizza",
+    "category": "main",
+    "cuisine": "italian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "italian"
+    ],
+    "descriptions": [
+      "Mushroom pizza with herbs.",
+      "Cheese and mushroom pizza.",
+      "Earthy mushroom pizza."
+    ],
+    "aliases": [],
+    "price_min": 200,
+    "price_max": 340
+  },
+  {
+    "canonical_key": "paneer_pizza",
+    "name": "Paneer Pizza",
+    "category": "main",
+    "cuisine": "italian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "italian"
+    ],
+    "descriptions": [
+      "Indian-style paneer pizza.",
+      "Paneer tikka pizza.",
+      "Cheese pizza with spiced paneer."
+    ],
+    "aliases": [],
+    "price_min": 210,
+    "price_max": 350
+  },
+  {
+    "canonical_key": "tiramisu",
+    "name": "Tiramisu",
+    "category": "dessert",
+    "cuisine": "italian",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "cold",
+      "dessert",
+      "italian",
+      "indulgent",
+      "creamy"
+    ],
+    "descriptions": [
+      "Coffee-soaked tiramisu slice.",
+      "Classic chilled tiramisu.",
+      "Creamy mascarpone tiramisu."
+    ],
+    "aliases": [],
+    "price_min": 120,
+    "price_max": 220
+  },
+  {
+    "canonical_key": "veg_burger",
+    "name": "Veg Burger",
+    "category": "main",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "fast_food"
+    ],
+    "descriptions": [
+      "Crisp veg patty burger.",
+      "Classic veggie burger.",
+      "Soft bun with veg patty."
+    ],
+    "aliases": [],
+    "price_min": 90,
+    "price_max": 160
+  },
+  {
+    "canonical_key": "chicken_burger",
+    "name": "Chicken Burger",
+    "category": "main",
+    "cuisine": "fast_food",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "fast_food"
+    ],
+    "descriptions": [
+      "Crispy chicken burger.",
+      "Classic chicken burger.",
+      "Bun with fried chicken patty."
+    ],
+    "aliases": [],
+    "price_min": 110,
+    "price_max": 200
+  },
+  {
+    "canonical_key": "loaded_fries",
+    "name": "Loaded Fries",
+    "category": "side",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "side",
+      "fast_food",
+      "loaded",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Fries loaded with cheese and sauces.",
+      "Fully loaded cheese fries.",
+      "Indulgent topped fries."
+    ],
+    "aliases": [],
+    "price_min": 100,
+    "price_max": 180
+  },
+  {
+    "canonical_key": "onion_rings",
+    "name": "Onion Rings",
+    "category": "side",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "side",
+      "fast_food"
+    ],
+    "descriptions": [
+      "Crisp battered onion rings.",
+      "Golden onion rings.",
+      "Fried onion ring side."
+    ],
+    "aliases": [],
+    "price_min": 80,
+    "price_max": 140
+  },
+  {
+    "canonical_key": "chicken_wings",
+    "name": "Chicken Wings",
+    "category": "snack",
+    "cuisine": "fast_food",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "snack",
+      "fast_food"
+    ],
+    "descriptions": [
+      "Spicy glazed chicken wings.",
+      "Crispy chicken wings.",
+      "Hot wings with dip."
+    ],
+    "aliases": [],
+    "price_min": 180,
+    "price_max": 300
+  },
+  {
+    "canonical_key": "milkshake_chocolate",
+    "name": "Chocolate Milkshake",
+    "category": "beverage",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "cold",
+      "beverage",
+      "creamy",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Thick chocolate milkshake.",
+      "Chilled chocolate shake.",
+      "Creamy cocoa milkshake."
+    ],
+    "aliases": [],
+    "price_min": 90,
+    "price_max": 180
+  },
+  {
+    "canonical_key": "milkshake_strawberry",
+    "name": "Strawberry Milkshake",
+    "category": "beverage",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "cold",
+      "beverage",
+      "creamy",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Strawberry cream milkshake.",
+      "Chilled strawberry shake.",
+      "Sweet berry milkshake."
+    ],
+    "aliases": [],
+    "price_min": 90,
+    "price_max": 180
+  },
+  {
+    "canonical_key": "mango_smoothie",
+    "name": "Mango Smoothie",
+    "category": "beverage",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "cold",
+      "refreshing",
+      "beverage",
+      "healthy"
+    ],
+    "descriptions": [
+      "Chilled mango smoothie.",
+      "Fresh mango blend.",
+      "Thick mango cooler."
+    ],
+    "aliases": [],
+    "price_min": 80,
+    "price_max": 160
+  },
+  {
+    "canonical_key": "orange_juice",
+    "name": "Orange Juice",
+    "category": "beverage",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "tangy",
+      "cold",
+      "refreshing",
+      "beverage",
+      "healthy",
+      "light"
+    ],
+    "descriptions": [
+      "Fresh orange juice over ice.",
+      "Chilled sweet-tangy OJ.",
+      "Cold pressed-style orange juice."
+    ],
+    "aliases": [],
+    "price_min": 60,
+    "price_max": 120
+  },
+  {
+    "canonical_key": "sweet_lime",
+    "name": "Sweet Lime Juice",
+    "category": "beverage",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "tangy",
+      "cold",
+      "refreshing",
+      "beverage",
+      "healthy",
+      "light"
+    ],
+    "descriptions": [
+      "Fresh mosambi juice, chilled.",
+      "Sweet lime cooler.",
+      "Cold sweet lime juice."
+    ],
+    "aliases": [
+      "mosambi juice"
+    ],
+    "price_min": 50,
+    "price_max": 110
+  },
+  {
+    "canonical_key": "jaljeera",
+    "name": "Jaljeera",
+    "category": "beverage",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "spicy",
+      "cold",
+      "refreshing",
+      "beverage",
+      "street_food"
+    ],
+    "descriptions": [
+      "Tangy jaljeera cooler.",
+      "Spiced cumin-mint drink.",
+      "Chilled jaljeera, street style."
+    ],
+    "aliases": [],
+    "price_min": 40,
+    "price_max": 90
+  },
+  {
+    "canonical_key": "buttermilk",
+    "name": "Chaas",
+    "category": "beverage",
+    "cuisine": "north_indian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "cold",
+      "refreshing",
+      "beverage",
+      "light",
+      "healthy"
+    ],
+    "descriptions": [
+      "Spiced buttermilk chaas.",
+      "Cool salted chaas.",
+      "Light yogurt cooler."
+    ],
+    "aliases": [
+      "buttermilk"
+    ],
+    "price_min": 30,
+    "price_max": 70
+  },
+  {
+    "canonical_key": "brownie",
+    "name": "Chocolate Brownie",
+    "category": "dessert",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "hot",
+      "dessert",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Warm chocolate brownie.",
+      "Fudgy brownie square.",
+      "Rich cocoa brownie."
+    ],
+    "aliases": [],
+    "price_min": 70,
+    "price_max": 150
+  },
+  {
+    "canonical_key": "ice_cream_scoop",
+    "name": "Ice Cream Scoop",
+    "category": "dessert",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "cold",
+      "dessert",
+      "indulgent",
+      "creamy"
+    ],
+    "descriptions": [
+      "Single scoop ice cream.",
+      "Chilled ice cream scoop.",
+      "Creamy frozen dessert."
+    ],
+    "aliases": [],
+    "price_min": 50,
+    "price_max": 120
+  },
+  {
+    "canonical_key": "garlic_bread_cheese",
+    "name": "Cheese Garlic Bread",
+    "category": "side",
+    "cuisine": "italian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "side",
+      "italian",
+      "indulgent"
+    ],
+    "descriptions": [
+      "Garlic bread loaded with cheese.",
+      "Cheesy garlic bread.",
+      "Melted cheese garlic toast."
+    ],
+    "aliases": [],
+    "price_min": 80,
+    "price_max": 150
+  },
+  {
+    "canonical_key": "coleslaw",
+    "name": "Coleslaw",
+    "category": "side",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "tangy",
+      "cold",
+      "side",
+      "light",
+      "healthy"
+    ],
+    "descriptions": [
+      "Creamy cold coleslaw.",
+      "Tangy cabbage slaw.",
+      "Chilled coleslaw side."
+    ],
+    "aliases": [],
+    "price_min": 40,
+    "price_max": 90
+  },
+  {
+    "canonical_key": "corn_on_cob",
+    "name": "Butter Corn",
+    "category": "snack",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "snack",
+      "street_food"
+    ],
+    "descriptions": [
+      "Buttered corn on the cob.",
+      "Masala butter corn.",
+      "Hot sweet corn snack."
+    ],
+    "aliases": [],
+    "price_min": 50,
+    "price_max": 100
+  },
+  {
+    "canonical_key": "paneer_wrap",
+    "name": "Paneer Wrap",
+    "category": "main",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "fast_food"
+    ],
+    "descriptions": [
+      "Spiced paneer wrap.",
+      "Grilled paneer roll.",
+      "Soft wrap with paneer filling."
+    ],
+    "aliases": [],
+    "price_min": 120,
+    "price_max": 200
+  },
+  {
+    "canonical_key": "chicken_wrap",
+    "name": "Chicken Wrap",
+    "category": "main",
+    "cuisine": "fast_food",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "fast_food"
+    ],
+    "descriptions": [
+      "Grilled chicken wrap.",
+      "Soft tortilla chicken roll.",
+      "Chicken wrap with veggies."
+    ],
+    "aliases": [],
+    "price_min": 140,
+    "price_max": 230
+  },
+  {
+    "canonical_key": "mushroom_wrap",
+    "name": "Mushroom Wrap",
+    "category": "main",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "main",
+      "fast_food"
+    ],
+    "descriptions": [
+      "Pepper mushroom wrap.",
+      "Sauteed mushroom roll.",
+      "Soft wrap with mushrooms."
+    ],
+    "aliases": [],
+    "price_min": 110,
+    "price_max": 190
+  },
+  {
+    "canonical_key": "veg_sandwich",
+    "name": "Veg Sandwich",
+    "category": "snack",
+    "cuisine": "fast_food",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "cold",
+      "snack",
+      "fast_food",
+      "light"
+    ],
+    "descriptions": [
+      "Fresh veg sandwich.",
+      "Grilled veggie sandwich.",
+      "Cold vegetable sandwich."
+    ],
+    "aliases": [],
+    "price_min": 70,
+    "price_max": 140
+  },
+  {
+    "canonical_key": "club_sandwich",
+    "name": "Club Sandwich",
+    "category": "snack",
+    "cuisine": "fast_food",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "snack",
+      "fast_food",
+      "loaded"
+    ],
+    "descriptions": [
+      "Loaded club sandwich with chicken.",
+      "Triple-decker club.",
+      "Hearty club sandwich."
+    ],
+    "aliases": [],
+    "price_min": 150,
+    "price_max": 250
+  },
+  {
+    "canonical_key": "fish_curry_goan",
+    "name": "Goan Fish Curry",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "seafood"
+    ],
+    "descriptions": [
+      "Everyday Goan fish curry with coconut.",
+      "Tangy coastal fish gravy.",
+      "Home-style Goan fish curry."
+    ],
+    "aliases": [],
+    "price_min": 240,
+    "price_max": 380
+  },
+  {
+    "canonical_key": "prawn_curry_dry",
+    "name": "Dry Prawn Fry",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan",
+      "seafood"
+    ],
+    "descriptions": [
+      "Dry-spiced Goan prawn fry.",
+      "Crisp coastal prawn sukha.",
+      "Spicy dry prawns."
+    ],
+    "aliases": [],
+    "price_min": 250,
+    "price_max": 390
+  },
+  {
+    "canonical_key": "veg_cafreal",
+    "name": "Vegetable Cafreal",
+    "category": "main",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "goan"
+    ],
+    "descriptions": [
+      "Mixed vegetables in green cafreal.",
+      "Vegetarian cafreal bowl.",
+      "Herb-spiced veg cafreal."
+    ],
+    "aliases": [],
+    "price_min": 140,
+    "price_max": 220
+  },
+  {
+    "canonical_key": "ros_omelette",
+    "name": "Ros Omelette",
+    "category": "breakfast",
+    "cuisine": "goan",
+    "is_veg": false,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "breakfast",
+      "goan",
+      "street_food"
+    ],
+    "descriptions": [
+      "Goan ros omelette with spicy gravy.",
+      "Street-style ros omelette.",
+      "Egg omelette drowned in ros."
+    ],
+    "aliases": [],
+    "price_min": 80,
+    "price_max": 150
+  },
+  {
+    "canonical_key": "neer_dosa_goan",
+    "name": "Neer Dosa",
+    "category": "breakfast",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "breakfast",
+      "goan",
+      "light"
+    ],
+    "descriptions": [
+      "Soft neer dosa with coconut chutney.",
+      "Thin rice neer dosa.",
+      "Delicate Goan-coast neer dosa."
+    ],
+    "aliases": [],
+    "price_min": 60,
+    "price_max": 120
+  },
+  {
+    "canonical_key": "pitta",
+    "name": "Pitta Bread",
+    "category": "side",
+    "cuisine": "goan",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "side",
+      "goan"
+    ],
+    "descriptions": [
+      "Soft local pitta for curry.",
+      "Warm Goan pitta bread.",
+      "Simple bread side."
+    ],
+    "aliases": [],
+    "price_min": 30,
+    "price_max": 70
+  },
+  {
+    "canonical_key": "modak_steamed_extra",
+    "name": "Kesari Modak",
+    "category": "dessert",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "hot",
+      "dessert",
+      "maharashtrian"
+    ],
+    "descriptions": [
+      "Saffron-tinged steamed modak.",
+      "Kesari ukadiche modak.",
+      "Festive saffron modak."
+    ],
+    "aliases": [],
+    "price_min": 70,
+    "price_max": 150
+  },
+  {
+    "canonical_key": "pithla_bhakri",
+    "name": "Pithla Bhakri",
+    "category": "main",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "maharashtrian",
+      "comfort",
+      "filling"
+    ],
+    "descriptions": [
+      "Besan pithla with jowar bhakri.",
+      "Rustic pithla bhakri meal.",
+      "Maharashtrian comfort plate."
+    ],
+    "aliases": [],
+    "price_min": 90,
+    "price_max": 160
+  },
+  {
+    "canonical_key": "matki_usaf",
+    "name": "Matki Usal",
+    "category": "main",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "main",
+      "maharashtrian",
+      "healthy"
+    ],
+    "descriptions": [
+      "Sprouted matki usal.",
+      "Spiced moth-bean usal.",
+      "Protein-rich Maharashtrian usal."
+    ],
+    "aliases": [],
+    "price_min": 80,
+    "price_max": 150
+  },
+  {
+    "canonical_key": "sheera",
+    "name": "Sheera",
+    "category": "dessert",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "sweet",
+      "hot",
+      "dessert",
+      "maharashtrian",
+      "comfort"
+    ],
+    "descriptions": [
+      "Soft rava sheera with ghee.",
+      "Warm semolina sheera.",
+      "Sweet Maharashtrian sheera."
+    ],
+    "aliases": [
+      "sooji halwa"
+    ],
+    "price_min": 50,
+    "price_max": 110
+  },
+  {
+    "canonical_key": "kanda_bhaji",
+    "name": "Kanda Bhaji",
+    "category": "snack",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "spicy",
+      "hot",
+      "snack",
+      "maharashtrian",
+      "street_food"
+    ],
+    "descriptions": [
+      "Crisp onion pakora bhajis.",
+      "Monsoon kanda bhaji.",
+      "Fried onion fritters."
+    ],
+    "aliases": [],
+    "price_min": 40,
+    "price_max": 90
+  },
+  {
+    "canonical_key": "sabudana_vada",
+    "name": "Sabudana Vada",
+    "category": "snack",
+    "cuisine": "maharashtrian",
+    "is_veg": true,
+    "tags": [
+      "savory",
+      "mild",
+      "hot",
+      "snack",
+      "maharashtrian"
+    ],
+    "descriptions": [
+      "Crisp sabudana vada with peanut.",
+      "Fasting sabudana fritters.",
+      "Golden tapioca vadas."
+    ],
+    "aliases": [],
+    "price_min": 60,
+    "price_max": 120
+  }
+]

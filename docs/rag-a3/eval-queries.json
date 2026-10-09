@@ -1,0 +1,1305 @@
+{
+  "k": 5,
+  "embedding_model": "qwen3-embedding:0.6b",
+  "label_field": "expected_canonical_keys",
+  "hit_rule": "Any top-k menu_item.canonical_key matches expected (underscore/hyphen normalized; style variants classic_/loaded_/… share dish stem). Null canonical_key falls back to slugified name.",
+  "generated_at": "2026-10-09",
+  "queries": [
+    {
+      "id": "ex01",
+      "bucket": "exact",
+      "split": "dev",
+      "query": "Masala Dosa",
+      "expected_canonical_keys": [
+        "masala_dosa",
+        "classic_masala_dosa",
+        "masala-dosa"
+      ]
+    },
+    {
+      "id": "ex02",
+      "bucket": "exact",
+      "split": "test",
+      "query": "Chicken Biryani",
+      "expected_canonical_keys": [
+        "chicken_biryani",
+        "butter_chicken_biryani",
+        "classic_chicken_biryani",
+        "chicken-biryani"
+      ]
+    },
+    {
+      "id": "ex03",
+      "bucket": "exact",
+      "split": "dev",
+      "query": "Chilli Paneer",
+      "expected_canonical_keys": [
+        "chilli_paneer_dry",
+        "chilli_paneer_gravy",
+        "schezwan_chilli_paneer_dry",
+        "loaded_chilli_paneer_dry",
+        "classic_chilli_paneer_dry",
+        "schezwan_chilli_paneer_gravy",
+        "loaded_chilli_paneer_gravy",
+        "classic_chilli_paneer_gravy",
+        "chilli-paneer",
+        "chilli_paneer"
+      ]
+    },
+    {
+      "id": "ex04",
+      "bucket": "exact",
+      "split": "test",
+      "query": "Filter Coffee",
+      "expected_canonical_keys": [
+        "filter_coffee",
+        "filter_coffee_strong",
+        "filter-coffee"
+      ]
+    },
+    {
+      "id": "ex05",
+      "bucket": "exact",
+      "split": "dev",
+      "query": "Ukadiche Modak",
+      "expected_canonical_keys": [
+        "ukadiche_modak",
+        "ukadiche-modak"
+      ]
+    },
+    {
+      "id": "ex06",
+      "bucket": "exact",
+      "split": "test",
+      "query": "Kothimbir Vadi",
+      "expected_canonical_keys": [
+        "kothimbir_vadi",
+        "classic_kothimbir_vadi",
+        "kothimbir_vadi_dry",
+        "kothimbir_vadi_gravy",
+        "kothimbir-vadi"
+      ]
+    },
+    {
+      "id": "ex07",
+      "bucket": "exact",
+      "split": "dev",
+      "query": "Margherita",
+      "expected_canonical_keys": [
+        "margherita_pizza",
+        "schezwan_margherita_pizza",
+        "butter_margherita_pizza",
+        "loaded_margherita_pizza",
+        "classic_margherita_pizza",
+        "margherita-pizza"
+      ]
+    },
+    {
+      "id": "ex08",
+      "bucket": "exact",
+      "split": "test",
+      "query": "Kingfish Curry",
+      "expected_canonical_keys": [
+        "kingfish_curry",
+        "classic_kingfish_curry",
+        "kingfish_curry_dry",
+        "kingfish_curry_gravy",
+        "kingfish-curry"
+      ]
+    },
+    {
+      "id": "ex09",
+      "bucket": "exact",
+      "split": "dev",
+      "query": "Butter Chicken",
+      "expected_canonical_keys": [
+        "butter_chicken",
+        "butter_chicken_dry",
+        "butter_chicken_gravy",
+        "chicken"
+      ]
+    },
+    {
+      "id": "ex10",
+      "bucket": "exact",
+      "split": "test",
+      "query": "Idli Sambar",
+      "expected_canonical_keys": [
+        "idli_sambar",
+        "classic_idli_sambar",
+        "idli-sambar"
+      ]
+    },
+    {
+      "id": "ex11",
+      "bucket": "exact",
+      "split": "dev",
+      "query": "Paneer Tikka",
+      "expected_canonical_keys": [
+        "paneer_tikka",
+        "butter_paneer_tikka",
+        "classic_paneer_tikka",
+        "paneer_tikka_dry",
+        "paneer_tikka_gravy",
+        "paneer-tikka"
+      ]
+    },
+    {
+      "id": "ex12",
+      "bucket": "exact",
+      "split": "test",
+      "query": "Medu Vada",
+      "expected_canonical_keys": [
+        "medu_vada",
+        "classic_medu_vada",
+        "medu-vada"
+      ]
+    },
+    {
+      "id": "ex13",
+      "bucket": "exact",
+      "split": "dev",
+      "query": "Dal Makhani",
+      "expected_canonical_keys": [
+        "dal_makhani",
+        "butter_dal_makhani",
+        "classic_dal_makhani",
+        "dal_makhani_dry",
+        "dal_makhani_gravy",
+        "dal-makhani"
+      ]
+    },
+    {
+      "id": "ex14",
+      "bucket": "exact",
+      "split": "test",
+      "query": "Misal Pav",
+      "expected_canonical_keys": [
+        "misal_pav",
+        "classic_misal_pav",
+        "misal_pav_dry",
+        "misal_pav_gravy",
+        "misal-pav"
+      ]
+    },
+    {
+      "id": "ex15",
+      "bucket": "exact",
+      "split": "dev",
+      "query": "Pork Vindaloo",
+      "expected_canonical_keys": [
+        "pork_vindaloo",
+        "classic_pork_vindaloo",
+        "pork_vindaloo_dry",
+        "pork_vindaloo_gravy",
+        "pork-vindaloo"
+      ]
+    },
+    {
+      "id": "ex16",
+      "bucket": "exact",
+      "split": "test",
+      "query": "Goan Fish Curry",
+      "expected_canonical_keys": [
+        "fish_curry_goan",
+        "fish-curry-goan",
+        "goan_fish_thali",
+        "classic_goan_fish_thali",
+        "goan-fish-thali",
+        "amot_tik",
+        "amot-tik"
+      ]
+    },
+    {
+      "id": "ex17",
+      "bucket": "exact",
+      "split": "dev",
+      "query": "Bebinca",
+      "expected_canonical_keys": [
+        "bebinca"
+      ]
+    },
+    {
+      "id": "ex18",
+      "bucket": "exact",
+      "split": "test",
+      "query": "Chicken Tikka",
+      "expected_canonical_keys": [
+        "chicken_tikka",
+        "butter_chicken_tikka",
+        "classic_chicken_tikka",
+        "chicken_tikka_dry",
+        "chicken_tikka_gravy",
+        "chicken-tikka"
+      ]
+    },
+    {
+      "id": "ex19",
+      "bucket": "exact",
+      "split": "dev",
+      "query": "Sol Kadhi",
+      "expected_canonical_keys": [
+        "sol_kadi",
+        "sol-kadi",
+        "solkadhi_mh",
+        "solkadhi-mh"
+      ]
+    },
+    {
+      "id": "ex20",
+      "bucket": "exact",
+      "split": "test",
+      "query": "Pepperoni",
+      "expected_canonical_keys": [
+        "pepperoni_pizza",
+        "schezwan_pepperoni_pizza",
+        "butter_pepperoni_pizza",
+        "loaded_pepperoni_pizza",
+        "classic_pepperoni_pizza",
+        "pepperoni-pizza"
+      ]
+    },
+    {
+      "id": "ty01",
+      "bucket": "typo",
+      "split": "test",
+      "query": "masale dose",
+      "expected_canonical_keys": [
+        "masala_dosa",
+        "classic_masala_dosa",
+        "masala-dosa"
+      ]
+    },
+    {
+      "id": "ty02",
+      "bucket": "typo",
+      "split": "dev",
+      "query": "biryany",
+      "expected_canonical_keys": [
+        "chicken_biryani",
+        "butter_chicken_biryani",
+        "classic_chicken_biryani",
+        "chicken-biryani"
+      ]
+    },
+    {
+      "id": "ty03",
+      "bucket": "typo",
+      "split": "test",
+      "query": "margheryta",
+      "expected_canonical_keys": [
+        "margherita_pizza",
+        "schezwan_margherita_pizza",
+        "butter_margherita_pizza",
+        "loaded_margherita_pizza",
+        "classic_margherita_pizza",
+        "margherita-pizza"
+      ]
+    },
+    {
+      "id": "ty04",
+      "bucket": "typo",
+      "split": "dev",
+      "query": "kothimbir wadi",
+      "expected_canonical_keys": [
+        "kothimbir_vadi",
+        "classic_kothimbir_vadi",
+        "kothimbir_vadi_dry",
+        "kothimbir_vadi_gravy",
+        "kothimbir-vadi"
+      ]
+    },
+    {
+      "id": "ty05",
+      "bucket": "typo",
+      "split": "test",
+      "query": "chilli panir",
+      "expected_canonical_keys": [
+        "chilli_paneer_dry",
+        "chilli_paneer_gravy",
+        "schezwan_chilli_paneer_dry",
+        "loaded_chilli_paneer_dry",
+        "classic_chilli_paneer_dry",
+        "schezwan_chilli_paneer_gravy",
+        "loaded_chilli_paneer_gravy",
+        "classic_chilli_paneer_gravy",
+        "chilli-paneer",
+        "chilli_paneer"
+      ]
+    },
+    {
+      "id": "ty06",
+      "bucket": "typo",
+      "split": "dev",
+      "query": "filter coffe",
+      "expected_canonical_keys": [
+        "filter_coffee",
+        "filter_coffee_strong",
+        "filter-coffee"
+      ]
+    },
+    {
+      "id": "ty07",
+      "bucket": "typo",
+      "split": "test",
+      "query": "ukadiche modhak",
+      "expected_canonical_keys": [
+        "ukadiche_modak",
+        "ukadiche-modak"
+      ]
+    },
+    {
+      "id": "ty08",
+      "bucket": "typo",
+      "split": "dev",
+      "query": "kingfish curri",
+      "expected_canonical_keys": [
+        "kingfish_curry",
+        "classic_kingfish_curry",
+        "kingfish_curry_dry",
+        "kingfish_curry_gravy",
+        "kingfish-curry"
+      ]
+    },
+    {
+      "id": "ty09",
+      "bucket": "typo",
+      "split": "test",
+      "query": "butter chiken",
+      "expected_canonical_keys": [
+        "butter_chicken",
+        "butter_chicken_dry",
+        "butter_chicken_gravy",
+        "chicken"
+      ]
+    },
+    {
+      "id": "ty10",
+      "bucket": "typo",
+      "split": "dev",
+      "query": "paneer tika",
+      "expected_canonical_keys": [
+        "paneer_tikka",
+        "butter_paneer_tikka",
+        "classic_paneer_tikka",
+        "paneer_tikka_dry",
+        "paneer_tikka_gravy",
+        "paneer-tikka"
+      ]
+    },
+    {
+      "id": "ty11",
+      "bucket": "typo",
+      "split": "test",
+      "query": "dal makhni",
+      "expected_canonical_keys": [
+        "dal_makhani",
+        "butter_dal_makhani",
+        "classic_dal_makhani",
+        "dal_makhani_dry",
+        "dal_makhani_gravy",
+        "dal-makhani"
+      ]
+    },
+    {
+      "id": "ty12",
+      "bucket": "typo",
+      "split": "dev",
+      "query": "idli sambhar",
+      "expected_canonical_keys": [
+        "idli_sambar",
+        "classic_idli_sambar",
+        "idli-sambar"
+      ]
+    },
+    {
+      "id": "ty13",
+      "bucket": "typo",
+      "split": "test",
+      "query": "misal pao",
+      "expected_canonical_keys": [
+        "misal_pav",
+        "classic_misal_pav",
+        "misal_pav_dry",
+        "misal_pav_gravy",
+        "misal-pav",
+        "puneri_misal",
+        "classic_puneri_misal",
+        "puneri_misal_dry",
+        "puneri_misal_gravy",
+        "puneri-misal"
+      ]
+    },
+    {
+      "id": "ty14",
+      "bucket": "typo",
+      "split": "dev",
+      "query": "pork vindalu",
+      "expected_canonical_keys": [
+        "pork_vindaloo",
+        "classic_pork_vindaloo",
+        "pork_vindaloo_dry",
+        "pork_vindaloo_gravy",
+        "pork-vindaloo"
+      ]
+    },
+    {
+      "id": "ty15",
+      "bucket": "typo",
+      "split": "test",
+      "query": "medu wada",
+      "expected_canonical_keys": [
+        "medu_vada",
+        "classic_medu_vada",
+        "medu-vada"
+      ]
+    },
+    {
+      "id": "in01",
+      "bucket": "intent",
+      "split": "dev",
+      "query": "something refreshing",
+      "expected_canonical_keys": [
+        "mint_soda",
+        "mint-soda",
+        "lemon_juice",
+        "lemon-juice",
+        "sweet_lime",
+        "sweet-lime",
+        "kokum_sherbet",
+        "kokum-sherbet",
+        "coconut_water",
+        "coconut-water",
+        "sol_kadi",
+        "sol-kadi",
+        "cold_coffee",
+        "cold-coffee",
+        "orange_juice",
+        "orange-juice",
+        "jaljeera",
+        "buttermilk"
+      ]
+    },
+    {
+      "id": "in02",
+      "bucket": "intent",
+      "split": "test",
+      "query": "tangy drink",
+      "expected_canonical_keys": [
+        "mint_soda",
+        "mint-soda",
+        "lemon_juice",
+        "lemon-juice",
+        "sweet_lime",
+        "sweet-lime",
+        "kokum_sherbet",
+        "kokum-sherbet",
+        "jaljeera",
+        "sol_kadi",
+        "sol-kadi"
+      ]
+    },
+    {
+      "id": "in03",
+      "bucket": "intent",
+      "split": "dev",
+      "query": "something sweet",
+      "expected_canonical_keys": [
+        "ukadiche_modak",
+        "ukadiche-modak",
+        "bebinca",
+        "tiramisu",
+        "dodol",
+        "sheera",
+        "shrikhand",
+        "brownie",
+        "pastry",
+        "ice_cream_scoop",
+        "ice-cream-scoop",
+        "puraan_poli",
+        "puraan-poli",
+        "modak_fried",
+        "modak-fried"
+      ]
+    },
+    {
+      "id": "in04",
+      "bucket": "intent",
+      "split": "test",
+      "query": "full loaded chicken pizza",
+      "expected_canonical_keys": [
+        "loaded_chicken_pizza",
+        "chicken_pizza",
+        "schezwan_chicken_pizza",
+        "butter_chicken_pizza",
+        "classic_chicken_pizza",
+        "chicken-pizza",
+        "pepperoni_pizza",
+        "schezwan_pepperoni_pizza",
+        "butter_pepperoni_pizza",
+        "loaded_pepperoni_pizza",
+        "classic_pepperoni_pizza",
+        "pepperoni-pizza"
+      ]
+    },
+    {
+      "id": "in05",
+      "bucket": "intent",
+      "split": "dev",
+      "query": "light breakfast",
+      "expected_canonical_keys": [
+        "idli_sambar",
+        "classic_idli_sambar",
+        "idli-sambar",
+        "plain_dosa",
+        "classic_plain_dosa",
+        "plain-dosa",
+        "masala_dosa",
+        "classic_masala_dosa",
+        "masala-dosa",
+        "medu_vada",
+        "classic_medu_vada",
+        "medu-vada",
+        "poha",
+        "pongal",
+        "sabudana_khichdi",
+        "classic_sabudana_khichdi",
+        "sabudana_khichdi_dry",
+        "sabudana_khichdi_gravy",
+        "sabudana-khichdi",
+        "neer_dosa_goan",
+        "neer-dosa-goan"
+      ]
+    },
+    {
+      "id": "in06",
+      "bucket": "intent",
+      "split": "test",
+      "query": "spicy chicken starter",
+      "expected_canonical_keys": [
+        "chicken_tikka",
+        "butter_chicken_tikka",
+        "classic_chicken_tikka",
+        "chicken_tikka_dry",
+        "chicken_tikka_gravy",
+        "chicken-tikka",
+        "chicken_65",
+        "classic_chicken_65",
+        "chicken-65",
+        "chicken_lollipop_goan",
+        "chicken-lollipop-goan",
+        "chilli_chicken_dry",
+        "chilli_chicken_gravy",
+        "schezwan_chilli_chicken_dry",
+        "loaded_chilli_chicken_dry",
+        "classic_chilli_chicken_dry",
+        "schezwan_chilli_chicken_gravy",
+        "loaded_chilli_chicken_gravy",
+        "classic_chilli_chicken_gravy",
+        "chilli-chicken",
+        "chilli_chicken",
+        "chicken_wings",
+        "schezwan_chicken_wings",
+        "butter_chicken_wings",
+        "loaded_chicken_wings",
+        "classic_chicken_wings",
+        "chicken-wings",
+        "chicken_cafreal",
+        "classic_chicken_cafreal",
+        "chicken_cafreal_dry",
+        "chicken_cafreal_gravy",
+        "chicken-cafreal"
+      ]
+    },
+    {
+      "id": "in07",
+      "bucket": "intent",
+      "split": "dev",
+      "query": "healthy bowl",
+      "expected_canonical_keys": [
+        "poha",
+        "curd_rice",
+        "classic_curd_rice",
+        "curd-rice",
+        "lemon_rice",
+        "classic_lemon_rice",
+        "lemon-rice",
+        "coleslaw",
+        "sabudana_khichdi",
+        "classic_sabudana_khichdi",
+        "sabudana_khichdi_dry",
+        "sabudana_khichdi_gravy",
+        "sabudana-khichdi"
+      ]
+    },
+    {
+      "id": "in08",
+      "bucket": "intent",
+      "split": "test",
+      "query": "goan seafood main",
+      "expected_canonical_keys": [
+        "kingfish_curry",
+        "classic_kingfish_curry",
+        "kingfish_curry_dry",
+        "kingfish_curry_gravy",
+        "kingfish-curry",
+        "prawn_balchao",
+        "classic_prawn_balchao",
+        "prawn_balchao_dry",
+        "prawn_balchao_gravy",
+        "prawn-balchao",
+        "fish_recheado",
+        "classic_fish_recheado",
+        "fish_recheado_dry",
+        "fish_recheado_gravy",
+        "fish-recheado",
+        "prawn_curry",
+        "prawn_curry_dry",
+        "classic_prawn_curry",
+        "prawn_curry_gravy",
+        "prawn-curry",
+        "crab_curry",
+        "classic_crab_curry",
+        "crab_curry_dry",
+        "crab_curry_gravy",
+        "crab-curry",
+        "fish_curry_goan",
+        "fish-curry-goan",
+        "goan_fish_thali",
+        "classic_goan_fish_thali",
+        "goan-fish-thali",
+        "amot_tik",
+        "amot-tik"
+      ]
+    },
+    {
+      "id": "in09",
+      "bucket": "intent",
+      "split": "dev",
+      "query": "crispy south indian snack",
+      "expected_canonical_keys": [
+        "medu_vada",
+        "classic_medu_vada",
+        "medu-vada",
+        "masala_dosa",
+        "classic_masala_dosa",
+        "masala-dosa",
+        "rava_dosa",
+        "classic_rava_dosa",
+        "rava-dosa",
+        "plain_dosa",
+        "classic_plain_dosa",
+        "plain-dosa",
+        "onion_uttapam",
+        "classic_onion_uttapam",
+        "onion-uttapam"
+      ]
+    },
+    {
+      "id": "in10",
+      "bucket": "intent",
+      "split": "test",
+      "query": "comfort indian gravy",
+      "expected_canonical_keys": [
+        "butter_chicken",
+        "butter_chicken_dry",
+        "butter_chicken_gravy",
+        "chicken",
+        "dal_makhani",
+        "butter_dal_makhani",
+        "classic_dal_makhani",
+        "dal_makhani_dry",
+        "dal_makhani_gravy",
+        "dal-makhani",
+        "chicken_chettinad",
+        "classic_chicken_chettinad",
+        "chicken-chettinad",
+        "paneer_butter_masala",
+        "classic_paneer_butter_masala",
+        "paneer_butter_masala_dry",
+        "paneer_butter_masala_gravy",
+        "paneer-butter-masala",
+        "chicken_korma",
+        "butter_chicken_korma",
+        "classic_chicken_korma",
+        "chicken_korma_dry",
+        "chicken_korma_gravy",
+        "chicken-korma"
+      ]
+    },
+    {
+      "id": "in11",
+      "bucket": "intent",
+      "split": "dev",
+      "query": "coffee to wake me up",
+      "expected_canonical_keys": [
+        "filter_coffee",
+        "filter_coffee_strong",
+        "filter-coffee",
+        "cold_coffee",
+        "cold-coffee"
+      ]
+    },
+    {
+      "id": "in12",
+      "bucket": "intent",
+      "split": "test",
+      "query": "maharashtrian street food",
+      "expected_canonical_keys": [
+        "misal_pav",
+        "classic_misal_pav",
+        "misal_pav_dry",
+        "misal_pav_gravy",
+        "misal-pav",
+        "puneri_misal",
+        "classic_puneri_misal",
+        "puneri_misal_dry",
+        "puneri_misal_gravy",
+        "puneri-misal",
+        "kothimbir_vadi",
+        "classic_kothimbir_vadi",
+        "kothimbir_vadi_dry",
+        "kothimbir_vadi_gravy",
+        "kothimbir-vadi",
+        "sabudana_vada",
+        "classic_sabudana_vada",
+        "sabudana_vada_dry",
+        "sabudana_vada_gravy",
+        "sabudana-vada",
+        "vada_pav",
+        "classic_vada_pav",
+        "vada_pav_dry",
+        "vada_pav_gravy",
+        "vada-pav",
+        "pav_bhaji",
+        "classic_pav_bhaji",
+        "pav_bhaji_dry",
+        "pav_bhaji_gravy",
+        "pav-bhaji",
+        "bhel_puri",
+        "classic_bhel_puri",
+        "bhel_puri_dry",
+        "bhel_puri_gravy",
+        "bhel-puri",
+        "sev_puri",
+        "classic_sev_puri",
+        "sev_puri_dry",
+        "sev_puri_gravy",
+        "sev-puri",
+        "kanda_bhaji",
+        "classic_kanda_bhaji",
+        "kanda_bhaji_dry",
+        "kanda_bhaji_gravy",
+        "kanda-bhaji"
+      ]
+    },
+    {
+      "id": "in13",
+      "bucket": "intent",
+      "split": "dev",
+      "query": "festive sweet dumpling",
+      "expected_canonical_keys": [
+        "ukadiche_modak",
+        "ukadiche-modak",
+        "modak_fried",
+        "modak-fried",
+        "modak_steamed_extra",
+        "modak-steamed-extra"
+      ]
+    },
+    {
+      "id": "in14",
+      "bucket": "intent",
+      "split": "test",
+      "query": "cheese tomato pizza",
+      "expected_canonical_keys": [
+        "margherita_pizza",
+        "schezwan_margherita_pizza",
+        "butter_margherita_pizza",
+        "loaded_margherita_pizza",
+        "classic_margherita_pizza",
+        "margherita-pizza"
+      ]
+    },
+    {
+      "id": "in15",
+      "bucket": "intent",
+      "split": "dev",
+      "query": "protein packed meal",
+      "expected_canonical_keys": [
+        "chicken_tikka",
+        "butter_chicken_tikka",
+        "classic_chicken_tikka",
+        "chicken_tikka_dry",
+        "chicken_tikka_gravy",
+        "chicken-tikka",
+        "chicken_biryani",
+        "butter_chicken_biryani",
+        "classic_chicken_biryani",
+        "chicken-biryani",
+        "chicken_souvlaki",
+        "chicken-souvlaki",
+        "grilled_chicken",
+        "grilled-chicken",
+        "chicken_wrap",
+        "schezwan_chicken_wrap",
+        "butter_chicken_wrap",
+        "loaded_chicken_wrap",
+        "classic_chicken_wrap",
+        "chicken-wrap",
+        "chicken_burger",
+        "schezwan_chicken_burger",
+        "butter_chicken_burger",
+        "loaded_chicken_burger",
+        "classic_chicken_burger",
+        "chicken-burger"
+      ]
+    },
+    {
+      "id": "in16",
+      "bucket": "intent",
+      "split": "test",
+      "query": "crispy fried fish",
+      "expected_canonical_keys": [
+        "bombil_fry",
+        "classic_bombil_fry",
+        "bombil_fry_dry",
+        "bombil-fry",
+        "fish_recheado",
+        "classic_fish_recheado",
+        "fish_recheado_dry",
+        "fish_recheado_gravy",
+        "fish-recheado",
+        "rissois",
+        "classic_rissois",
+        "rissois_dry",
+        "rissois_gravy"
+      ]
+    },
+    {
+      "id": "in17",
+      "bucket": "intent",
+      "split": "dev",
+      "query": "mushroom pasta fancy",
+      "expected_canonical_keys": [
+        "pasta_alfredo",
+        "schezwan_pasta_alfredo",
+        "butter_pasta_alfredo",
+        "loaded_pasta_alfredo",
+        "classic_pasta_alfredo",
+        "pasta-alfredo",
+        "pasta_arrabbiata",
+        "schezwan_pasta_arrabbiata",
+        "butter_pasta_arrabbiata",
+        "loaded_pasta_arrabbiata",
+        "classic_pasta_arrabbiata",
+        "pasta-arrabbiata",
+        "mushroom_pizza",
+        "loaded_mushroom_pizza",
+        "schezwan_mushroom_pizza",
+        "butter_mushroom_pizza",
+        "classic_mushroom_pizza",
+        "mushroom-pizza"
+      ]
+    },
+    {
+      "id": "in18",
+      "bucket": "intent",
+      "split": "test",
+      "query": "vegan wrap option",
+      "expected_canonical_keys": [
+        "paneer_wrap",
+        "schezwan_paneer_wrap",
+        "butter_paneer_wrap",
+        "loaded_paneer_wrap",
+        "classic_paneer_wrap",
+        "paneer-wrap",
+        "mushroom_wrap",
+        "schezwan_mushroom_wrap",
+        "butter_mushroom_wrap",
+        "loaded_mushroom_wrap",
+        "classic_mushroom_wrap",
+        "mushroom-wrap",
+        "veg_sandwich",
+        "schezwan_veg_sandwich",
+        "butter_veg_sandwich",
+        "loaded_veg_sandwich",
+        "classic_veg_sandwich",
+        "veg-sandwich"
+      ]
+    },
+    {
+      "id": "in19",
+      "bucket": "intent",
+      "split": "dev",
+      "query": "mango smoothie",
+      "expected_canonical_keys": [
+        "mango_smoothie",
+        "mango-smoothie"
+      ]
+    },
+    {
+      "id": "in20",
+      "bucket": "intent",
+      "split": "test",
+      "query": "garlic naan side",
+      "expected_canonical_keys": [
+        "garlic_naan",
+        "garlic-naan",
+        "garlic_bread",
+        "schezwan_garlic_bread",
+        "butter_garlic_bread",
+        "loaded_garlic_bread",
+        "garlic-bread",
+        "garlic_bread_cheese",
+        "garlic-bread-cheese"
+      ]
+    },
+    {
+      "id": "cn01",
+      "bucket": "constraint",
+      "split": "dev",
+      "query": "veg pizza",
+      "expected_canonical_keys": [
+        "margherita_pizza",
+        "schezwan_margherita_pizza",
+        "butter_margherita_pizza",
+        "loaded_margherita_pizza",
+        "classic_margherita_pizza",
+        "margherita-pizza",
+        "farmhouse_pizza",
+        "schezwan_farmhouse_pizza",
+        "butter_farmhouse_pizza",
+        "loaded_farmhouse_pizza",
+        "classic_farmhouse_pizza",
+        "farmhouse-pizza",
+        "mushroom_pizza",
+        "loaded_mushroom_pizza",
+        "schezwan_mushroom_pizza",
+        "butter_mushroom_pizza",
+        "classic_mushroom_pizza",
+        "mushroom-pizza",
+        "paneer_pizza",
+        "loaded_paneer_pizza",
+        "schezwan_paneer_pizza",
+        "butter_paneer_pizza",
+        "classic_paneer_pizza",
+        "paneer-pizza",
+        "veggie_paradise_pizza",
+        "schezwan_veggie_paradise_pizza",
+        "butter_veggie_paradise_pizza",
+        "loaded_veggie_paradise_pizza",
+        "classic_veggie_paradise_pizza",
+        "veggie-paradise-pizza"
+      ],
+      "is_veg": true
+    },
+    {
+      "id": "cn02",
+      "bucket": "constraint",
+      "split": "test",
+      "query": "non veg starters",
+      "expected_canonical_keys": [
+        "chicken_tikka",
+        "butter_chicken_tikka",
+        "classic_chicken_tikka",
+        "chicken_tikka_dry",
+        "chicken_tikka_gravy",
+        "chicken-tikka",
+        "chicken_65",
+        "classic_chicken_65",
+        "chicken-65",
+        "chicken_lollipop_goan",
+        "chicken-lollipop-goan",
+        "chilli_chicken_dry",
+        "chilli_chicken_gravy",
+        "schezwan_chilli_chicken_dry",
+        "loaded_chilli_chicken_dry",
+        "classic_chilli_chicken_dry",
+        "schezwan_chilli_chicken_gravy",
+        "loaded_chilli_chicken_gravy",
+        "classic_chilli_chicken_gravy",
+        "chilli-chicken",
+        "chilli_chicken",
+        "chicken_wings",
+        "schezwan_chicken_wings",
+        "butter_chicken_wings",
+        "loaded_chicken_wings",
+        "classic_chicken_wings",
+        "chicken-wings",
+        "bombil_fry",
+        "classic_bombil_fry",
+        "bombil_fry_dry",
+        "bombil-fry",
+        "rissois",
+        "classic_rissois",
+        "rissois_dry",
+        "rissois_gravy"
+      ],
+      "is_veg": false
+    },
+    {
+      "id": "cn03",
+      "bucket": "constraint",
+      "split": "dev",
+      "query": "vegetarian dosa",
+      "expected_canonical_keys": [
+        "masala_dosa",
+        "classic_masala_dosa",
+        "masala-dosa",
+        "plain_dosa",
+        "classic_plain_dosa",
+        "plain-dosa",
+        "rava_dosa",
+        "classic_rava_dosa",
+        "rava-dosa",
+        "paneer_dosa",
+        "classic_paneer_dosa",
+        "paneer-dosa",
+        "mushroom_dosa",
+        "classic_mushroom_dosa",
+        "mushroom-dosa",
+        "neer_dosa_goan",
+        "neer-dosa-goan"
+      ],
+      "is_veg": true
+    },
+    {
+      "id": "cn04",
+      "bucket": "constraint",
+      "split": "test",
+      "query": "non veg biryani",
+      "expected_canonical_keys": [
+        "chicken_biryani",
+        "butter_chicken_biryani",
+        "classic_chicken_biryani",
+        "chicken-biryani"
+      ],
+      "is_veg": false
+    },
+    {
+      "id": "cn05",
+      "bucket": "constraint",
+      "split": "dev",
+      "query": "veg starters",
+      "expected_canonical_keys": [
+        "chilli_paneer_dry",
+        "chilli_paneer_gravy",
+        "schezwan_chilli_paneer_dry",
+        "loaded_chilli_paneer_dry",
+        "classic_chilli_paneer_dry",
+        "schezwan_chilli_paneer_gravy",
+        "loaded_chilli_paneer_gravy",
+        "classic_chilli_paneer_gravy",
+        "chilli-paneer",
+        "chilli_paneer",
+        "kothimbir_vadi",
+        "classic_kothimbir_vadi",
+        "kothimbir_vadi_dry",
+        "kothimbir_vadi_gravy",
+        "kothimbir-vadi",
+        "spring_rolls",
+        "spring-rolls",
+        "onion_rings",
+        "schezwan_onion_rings",
+        "butter_onion_rings",
+        "loaded_onion_rings",
+        "onion-rings",
+        "kanda_bhaji",
+        "classic_kanda_bhaji",
+        "kanda_bhaji_dry",
+        "kanda_bhaji_gravy",
+        "kanda-bhaji",
+        "alu_wadi",
+        "classic_alu_wadi",
+        "alu_wadi_dry",
+        "alu_wadi_gravy",
+        "alu-wadi"
+      ],
+      "is_veg": true
+    },
+    {
+      "id": "cn06",
+      "bucket": "constraint",
+      "split": "test",
+      "query": "veg desserts",
+      "expected_canonical_keys": [
+        "ukadiche_modak",
+        "ukadiche-modak",
+        "bebinca",
+        "tiramisu",
+        "dodol",
+        "sheera",
+        "shrikhand",
+        "brownie",
+        "pastry",
+        "puraan_poli",
+        "puraan-poli"
+      ],
+      "is_veg": true
+    },
+    {
+      "id": "cn07",
+      "bucket": "constraint",
+      "split": "dev",
+      "query": "non veg pizza",
+      "expected_canonical_keys": [
+        "pepperoni_pizza",
+        "schezwan_pepperoni_pizza",
+        "butter_pepperoni_pizza",
+        "loaded_pepperoni_pizza",
+        "classic_pepperoni_pizza",
+        "pepperoni-pizza",
+        "loaded_chicken_pizza",
+        "chicken_pizza",
+        "schezwan_chicken_pizza",
+        "butter_chicken_pizza",
+        "classic_chicken_pizza",
+        "chicken-pizza"
+      ],
+      "is_veg": false
+    },
+    {
+      "id": "cn08",
+      "bucket": "constraint",
+      "split": "test",
+      "query": "veg healthy options",
+      "expected_canonical_keys": [
+        "poha",
+        "curd_rice",
+        "classic_curd_rice",
+        "curd-rice",
+        "lemon_rice",
+        "classic_lemon_rice",
+        "lemon-rice",
+        "sabudana_khichdi",
+        "classic_sabudana_khichdi",
+        "sabudana_khichdi_dry",
+        "sabudana_khichdi_gravy",
+        "sabudana-khichdi",
+        "coleslaw"
+      ],
+      "is_veg": true
+    },
+    {
+      "id": "cn09",
+      "bucket": "constraint",
+      "split": "dev",
+      "query": "non veg indian curry",
+      "expected_canonical_keys": [
+        "butter_chicken",
+        "butter_chicken_dry",
+        "butter_chicken_gravy",
+        "chicken",
+        "chicken_chettinad",
+        "classic_chicken_chettinad",
+        "chicken-chettinad",
+        "pork_vindaloo",
+        "classic_pork_vindaloo",
+        "pork_vindaloo_dry",
+        "pork_vindaloo_gravy",
+        "pork-vindaloo",
+        "chicken_korma",
+        "butter_chicken_korma",
+        "classic_chicken_korma",
+        "chicken_korma_dry",
+        "chicken_korma_gravy",
+        "chicken-korma",
+        "egg_curry",
+        "butter_egg_curry",
+        "classic_egg_curry",
+        "egg_curry_dry",
+        "egg_curry_gravy",
+        "egg-curry",
+        "mutton_rogan_josh",
+        "butter_mutton_rogan_josh",
+        "classic_mutton_rogan_josh",
+        "mutton_rogan_josh_dry",
+        "mutton_rogan_josh_gravy",
+        "mutton-rogan-josh"
+      ],
+      "is_veg": false
+    },
+    {
+      "id": "cn10",
+      "bucket": "constraint",
+      "split": "test",
+      "query": "veg beverages",
+      "expected_canonical_keys": [
+        "filter_coffee",
+        "filter_coffee_strong",
+        "filter-coffee",
+        "cold_coffee",
+        "cold-coffee",
+        "mint_soda",
+        "mint-soda",
+        "lemon_juice",
+        "lemon-juice",
+        "mango_smoothie",
+        "mango-smoothie",
+        "sol_kadi",
+        "sol-kadi",
+        "lassi_sweet",
+        "lassi-sweet",
+        "buttermilk"
+      ],
+      "is_veg": true
+    },
+    {
+      "id": "oc01",
+      "bucket": "out_of_catalog",
+      "split": "dev",
+      "query": "truffle wagyu steak",
+      "expected_canonical_keys": []
+    },
+    {
+      "id": "oc02",
+      "bucket": "out_of_catalog",
+      "split": "test",
+      "query": "vegan sushi rolls",
+      "expected_canonical_keys": []
+    },
+    {
+      "id": "oc03",
+      "bucket": "out_of_catalog",
+      "split": "dev",
+      "query": "kangaroo burger",
+      "expected_canonical_keys": []
+    },
+    {
+      "id": "oc04",
+      "bucket": "out_of_catalog",
+      "split": "test",
+      "query": "blue cheese ice cream waffle",
+      "expected_canonical_keys": []
+    },
+    {
+      "id": "oc05",
+      "bucket": "out_of_catalog",
+      "split": "dev",
+      "query": "molecular gastronomy foam",
+      "expected_canonical_keys": []
+    },
+    {
+      "id": "oc06",
+      "bucket": "out_of_catalog",
+      "split": "test",
+      "query": "reindeer stew lapland",
+      "expected_canonical_keys": []
+    },
+    {
+      "id": "oc07",
+      "bucket": "out_of_catalog",
+      "split": "dev",
+      "query": "durian pizza singapore",
+      "expected_canonical_keys": []
+    },
+    {
+      "id": "oc08",
+      "bucket": "out_of_catalog",
+      "split": "test",
+      "query": "gluten free vegan sushi under 50 rupees",
+      "expected_canonical_keys": []
+    }
+  ]
+}

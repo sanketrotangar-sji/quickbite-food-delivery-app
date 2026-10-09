@@ -15,6 +15,7 @@ import { colors, formatInr, radii } from '@/constants/theme';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
+import { useDeliveryRangeGuard } from '@/hooks/useDeliveryRangeGuard';
 import { usePlaceOrder } from '@/hooks/useOrders';
 import { displayNickname, formatDeliveryAddress } from '@/lib/addresses';
 
@@ -23,6 +24,7 @@ export function CheckoutScreen() {
   const { profile } = useAuth();
   const cart = useCart();
   const { selected } = useAddresses();
+  const { ensureDeliverable } = useDeliveryRangeGuard();
   const place = usePlaceOrder();
   const [notes, setNotes] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -36,6 +38,9 @@ export function CheckoutScreen() {
   async function onPlace() {
     if (!selected || selected.lat == null || selected.lng == null) {
       setSheetOpen(true);
+      return;
+    }
+    if (cart.restaurantId && !ensureDeliverable(cart.restaurantId, { name: cart.restaurantName })) {
       return;
     }
     setPlaceError('');
@@ -138,6 +143,14 @@ export function CheckoutScreen() {
             </AppText>
             <AppText muted>{formatInr(cart.subtotal)}</AppText>
           </View>
+          {cart.discountAmount > 0 ? (
+            <View style={styles.orderLine}>
+              <AppText muted style={{ flex: 1 }}>
+                Kitchen offer ({cart.offerPercent}% off)
+              </AppText>
+              <AppText muted>- {formatInr(cart.discountAmount)}</AppText>
+            </View>
+          ) : null}
           <View style={styles.orderLine}>
             <AppText muted style={{ flex: 1 }}>
               Delivery fee

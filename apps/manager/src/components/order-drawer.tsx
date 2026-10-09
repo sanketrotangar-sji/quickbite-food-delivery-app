@@ -1,5 +1,17 @@
-import { Check, Circle, Clock3, MapPin } from "lucide-react";
+import { Check, Circle, Clock3, MapPin, Phone, Bike } from "lucide-react";
+import { useState } from "react";
 import { ORDER_STATUS_LABELS } from "@quickbite/shared";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useMinuteTick } from "@/hooks/use-minute-tick";
@@ -41,136 +53,233 @@ function formatWhen(value: string) {
   });
 }
 
-export function OrderDrawer({ order, onClose, onAdvance }: { order?: Order | undefined; onClose: () => void; onAdvance: (id: string) => void }) {
+export function OrderDrawer({
+  order,
+  onClose,
+  onAdvance,
+  onCancel,
+}: {
+  order?: Order | undefined;
+  onClose: () => void;
+  onAdvance: (id: string) => void;
+  onCancel?: (id: string) => void;
+}) {
   const now = useMinuteTick();
+  const [riderOpen, setRiderOpen] = useState(false);
   const step = order ? statusStep[order.status] : 0;
   const subtotal = order ? order.items.reduce((sum, item) => sum + item.lineTotal, 0) : 0;
   const fee = order?.deliveryFee ?? 0;
   const canAdvance = order?.status === "placed" || order?.status === "preparing";
+  const canCancel = Boolean(onCancel) && (order?.status === "placed" || order?.status === "preparing");
   const history = order?.history.filter((entry) => entry.status !== "cancelled") ?? [];
   const useHistory = history.length > 0;
+  const hasRider = Boolean(order?.riderId);
 
   return (
-    <Sheet open={Boolean(order)} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full overflow-y-auto bg-card p-0 sm:max-w-lg">
-        {order && (
-          <>
-            <SheetHeader className="border-b border-border p-6 pr-14">
-              <div className="flex items-center gap-2">
-                <span className="rounded-md bg-status px-2 py-1 text-[10px] font-extrabold uppercase text-status-foreground">
-                  {order.status === "placed" ? "New order" : order.status.replaceAll("_", " ")}
-                </span>
-                <span className="text-xs text-muted-foreground">{orderElapsed(order.placedAt, now)}</span>
-              </div>
-              <SheetTitle className="text-2xl">Order #{order.displayId}</SheetTitle>
-              <SheetDescription>
-                {order.customer} · {order.fulfillment}
-              </SheetDescription>
-            </SheetHeader>
-            <div className="space-y-7 p-6">
-              <section>
-                <h3 className="mb-3 text-sm font-extrabold">Ordered items</h3>
-                <div className="space-y-3">
-                  {order.items.map((item) => (
-                    <div key={item.name} className="grid grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-3">
-                      {item.image ? <img src={displayImageUrl(item.image)} alt="" className="size-12 rounded-lg object-cover" /> : <span className="size-12 rounded-lg bg-secondary" />}
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold">{item.name}</p>
-                        <p className="text-xs text-muted-foreground">Qty {item.quantity}</p>
+    <>
+      <Sheet open={Boolean(order)} onOpenChange={(open) => !open && onClose()}>
+        <SheetContent className="w-full overflow-y-auto bg-card p-0 sm:max-w-lg">
+          {order && (
+            <>
+              <SheetHeader className="border-b border-border p-6 pr-14">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-md bg-status px-2 py-1 text-[10px] font-extrabold uppercase text-status-foreground">
+                    {order.status === "placed" ? "New order" : order.status.replaceAll("_", " ")}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{orderElapsed(order.placedAt, now)}</span>
+                </div>
+                <SheetTitle className="text-2xl">Order #{order.displayId}</SheetTitle>
+                <SheetDescription>
+                  {order.customer} · {order.fulfillment}
+                </SheetDescription>
+              </SheetHeader>
+              <div className="space-y-7 p-6">
+                <section>
+                  <h3 className="mb-3 text-sm font-extrabold">Ordered items</h3>
+                  <div className="space-y-3">
+                    {order.items.map((item) => (
+                      <div key={item.name} className="grid grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-3">
+                        {item.image ? (
+                          <img src={displayImageUrl(item.image)} alt="" className="size-12 rounded-lg object-cover" />
+                        ) : (
+                          <span className="size-12 rounded-lg bg-secondary" />
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">Qty {item.quantity}</p>
+                        </div>
+                        <span className="text-sm font-bold">₹{money(item.price)}</span>
                       </div>
-                      <span className="text-sm font-bold">₹{money(item.price)}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-              <section className="rounded-xl bg-secondary p-4">
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Subtotal</span>
-                  <span>₹{money(subtotal)}</span>
-                </div>
-                <div className="mt-2 flex justify-between text-sm text-muted-foreground">
-                  <span>Delivery fee</span>
-                  <span>₹{money(fee)}</span>
-                </div>
-                <div className="mt-3 flex justify-between border-t border-border pt-3 font-extrabold">
-                  <span>Total</span>
-                  <span>₹{money(order.total)}</span>
-                </div>
-              </section>
-              <section>
-                <h3 className="mb-3 flex items-center gap-2 text-sm font-extrabold">
-                  <MapPin className="size-4 text-primary" />
-                  Delivery details
-                </h3>
-                <p className="text-sm text-muted-foreground">{order.address}</p>
-              </section>
-              <section>
-                <h3 className="mb-4 flex items-center gap-2 text-sm font-extrabold">
-                  <Clock3 className="size-4 text-primary" />
-                  Order timeline
-                </h3>
-                <div className="space-y-0">
-                  {useHistory
-                    ? history.map((entry, index) => {
-                        const done = index < history.length - 1 || order.status === entry.status;
-                        const current = index === history.length - 1;
-                        return (
-                          <div key={`${entry.status}-${entry.changedAt}`} className="grid grid-cols-[24px_1fr] gap-3">
+                    ))}
+                  </div>
+                </section>
+                <section className="rounded-xl bg-secondary p-4">
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Subtotal</span>
+                    <span>₹{money(subtotal)}</span>
+                  </div>
+                  <div className="mt-2 flex justify-between text-sm text-muted-foreground">
+                    <span>Delivery fee</span>
+                    <span>₹{money(fee)}</span>
+                  </div>
+                  <div className="mt-3 flex justify-between border-t border-border pt-3 font-extrabold">
+                    <span>Total</span>
+                    <span>₹{money(order.total)}</span>
+                  </div>
+                </section>
+                <section>
+                  <h3 className="mb-3 flex items-center gap-2 text-sm font-extrabold">
+                    <MapPin className="size-4 text-primary" />
+                    Delivery details
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{order.address}</p>
+                </section>
+                <section>
+                  <h3 className="mb-3 flex items-center gap-2 text-sm font-extrabold">
+                    <Bike className="size-4 text-primary" />
+                    Rider
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{order.fulfillment}</p>
+                  {hasRider ? (
+                    <Button variant="outline" size="sm" className="mt-3" onClick={() => setRiderOpen(true)}>
+                      View rider details
+                    </Button>
+                  ) : null}
+                </section>
+                <section>
+                  <h3 className="mb-4 flex items-center gap-2 text-sm font-extrabold">
+                    <Clock3 className="size-4 text-primary" />
+                    Order timeline
+                  </h3>
+                  <div className="space-y-0">
+                    {useHistory
+                      ? history.map((entry, index) => {
+                          const done = index < history.length - 1 || order.status === entry.status;
+                          const current = index === history.length - 1;
+                          return (
+                            <div key={`${entry.status}-${entry.changedAt}`} className="grid grid-cols-[24px_1fr] gap-3">
+                              <div className="flex flex-col items-center">
+                                {done && !current ? (
+                                  <span className="grid size-5 place-items-center rounded-full bg-success text-success-foreground">
+                                    <Check size={12} />
+                                  </span>
+                                ) : current ? (
+                                  <span className="grid size-5 place-items-center rounded-full border-4 border-primary bg-card" />
+                                ) : (
+                                  <Circle className="size-5 text-border" />
+                                )}
+                                {index < history.length - 1 && <span className="h-8 w-px bg-border" />}
+                              </div>
+                              <div className="pb-2">
+                                <p className={current ? "text-sm font-bold" : "text-sm text-muted-foreground"}>
+                                  {historyLabel[entry.status] ?? entry.status.replaceAll("_", " ")}
+                                </p>
+                                <p className="text-xs text-muted-foreground">{formatWhen(entry.changedAt)}</p>
+                              </div>
+                            </div>
+                          );
+                        })
+                      : TIMELINE.map((item, index) => (
+                          <div key={item.status} className="grid grid-cols-[24px_1fr] gap-3">
                             <div className="flex flex-col items-center">
-                              {done && !current ? (
+                              {index < step ? (
                                 <span className="grid size-5 place-items-center rounded-full bg-success text-success-foreground">
                                   <Check size={12} />
                                 </span>
-                              ) : current ? (
+                              ) : index === step ? (
                                 <span className="grid size-5 place-items-center rounded-full border-4 border-primary bg-card" />
                               ) : (
                                 <Circle className="size-5 text-border" />
                               )}
-                              {index < history.length - 1 && <span className="h-8 w-px bg-border" />}
+                              {index < TIMELINE.length - 1 && <span className="h-8 w-px bg-border" />}
                             </div>
-                            <div className={current ? "pb-2" : "pb-2"}>
-                              <p className={current ? "text-sm font-bold" : "text-sm text-muted-foreground"}>
-                                {historyLabel[entry.status] ?? entry.status.replaceAll("_", " ")}
-                              </p>
-                              <p className="text-xs text-muted-foreground">{formatWhen(entry.changedAt)}</p>
-                            </div>
+                            <p className={index === step ? "text-sm font-bold" : "text-sm text-muted-foreground"}>
+                              {item.label}
+                            </p>
                           </div>
-                        );
-                      })
-                    : TIMELINE.map((item, index) => (
-                        <div key={item.status} className="grid grid-cols-[24px_1fr] gap-3">
-                          <div className="flex flex-col items-center">
-                            {index < step ? (
-                              <span className="grid size-5 place-items-center rounded-full bg-success text-success-foreground">
-                                <Check size={12} />
-                              </span>
-                            ) : index === step ? (
-                              <span className="grid size-5 place-items-center rounded-full border-4 border-primary bg-card" />
-                            ) : (
-                              <Circle className="size-5 text-border" />
-                            )}
-                            {index < TIMELINE.length - 1 && <span className="h-8 w-px bg-border" />}
-                          </div>
-                          <p className={index === step ? "text-sm font-bold" : "text-sm text-muted-foreground"}>{item.label}</p>
-                        </div>
-                      ))}
+                        ))}
+                  </div>
+                </section>
+              </div>
+              <div className="sticky bottom-0 space-y-2 border-t border-border bg-card p-5">
+                {canAdvance ? (
+                  <Button className="h-12 w-full" onClick={() => onAdvance(order.id)}>
+                    {order.status === "placed" ? "Accept order" : "Mark ready for pickup"}
+                  </Button>
+                ) : hasRider ? (
+                  <Button variant="outline" className="h-12 w-full" onClick={() => setRiderOpen(true)}>
+                    View rider details
+                  </Button>
+                ) : (
+                  <Button variant="outline" className="h-12 w-full" disabled>
+                    Waiting for rider
+                  </Button>
+                )}
+                {canCancel ? (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" className="h-11 w-full text-destructive hover:text-destructive">
+                        Cancel order
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Cancel order #{order.displayId}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          The customer will see this order as cancelled. This cannot be undone from the kitchen board.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Keep order</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => {
+                            onCancel?.(order.id);
+                            onClose();
+                          }}
+                        >
+                          Cancel order
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ) : null}
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={riderOpen && hasRider} onOpenChange={setRiderOpen}>
+        <SheetContent className="w-full bg-card sm:max-w-md">
+          {order ? (
+            <>
+              <SheetHeader>
+                <SheetTitle>Rider details</SheetTitle>
+                <SheetDescription>Contact for order #{order.displayId}</SheetDescription>
+              </SheetHeader>
+              <div className="mt-6 space-y-4">
+                <div>
+                  <p className="text-xs font-bold uppercase text-muted-foreground">Name</p>
+                  <p className="mt-1 text-lg font-extrabold">{order.riderName ?? "Assigned rider"}</p>
                 </div>
-              </section>
-            </div>
-            <div className="sticky bottom-0 border-t border-border bg-card p-5">
-              {canAdvance ? (
-                <Button className="h-12 w-full" onClick={() => onAdvance(order.id)}>
-                  {order.status === "placed" ? "Accept order" : "Mark ready for pickup"}
-                </Button>
-              ) : (
-                <Button variant="outline" className="h-12 w-full">
-                  View rider details
-                </Button>
-              )}
-            </div>
-          </>
-        )}
-      </SheetContent>
-    </Sheet>
+                <div>
+                  <p className="text-xs font-bold uppercase text-muted-foreground">Phone</p>
+                  <p className="mt-1 text-sm">{order.riderPhone ?? "No phone on file"}</p>
+                </div>
+                <p className="text-xs text-muted-foreground">{order.fulfillment}</p>
+                {order.riderPhone ? (
+                  <Button asChild className="w-full">
+                    <a href={`tel:${order.riderPhone}`}>
+                      <Phone className="size-4" />
+                      Call rider
+                    </a>
+                  </Button>
+                ) : null}
+              </div>
+            </>
+          ) : null}
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

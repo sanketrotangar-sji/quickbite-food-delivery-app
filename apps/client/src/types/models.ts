@@ -44,7 +44,7 @@ export function isPartner(profile: { role: AppRole } | null | undefined) {
 
 export type CartLine = CartItem & {
   menu_items: Pick<MenuItem, 'id' | 'name' | 'price' | 'image_url' | 'is_available' | 'is_veg'> | null;
-  restaurants: Pick<Restaurant, 'id' | 'name' | 'is_open'> | null;
+  restaurants: Pick<Restaurant, 'id' | 'name' | 'is_open' | 'offer_percent'> | null;
 };
 
 export type CustomerOrder = Order & {

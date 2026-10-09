@@ -1,0 +1,17 @@
+{
+  "taste": ["sweet", "tangy", "spicy", "mild", "savory", "creamy", "smoky"],
+  "mood": ["refreshing", "comfort", "light", "indulgent", "filling", "loaded", "healthy"],
+  "temperature": ["cold", "hot"],
+  "meal_type": ["breakfast", "snack", "main", "dessert", "beverage", "side"],
+  "style": [
+    "goan",
+    "maharashtrian",
+    "south_indian",
+    "north_indian",
+    "chinese",
+    "italian",
+    "fast_food",
+    "seafood",
+    "street_food"
+  ]
+}

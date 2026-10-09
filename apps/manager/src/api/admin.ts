@@ -35,6 +35,48 @@ export type AdminRestaurant = {
   owner_id: string;
   owner: string;
   managers: string[];
+  lat: number | null;
+  lng: number | null;
+  offer_percent: number | null;
+  prep_minutes: number | null;
+  capacity_threshold: number;
+};
+
+export type AdminTicket = {
+  id: string;
+  order_id: string;
+  customer_id: string;
+  issue_type: string;
+  description: string;
+  status: Database['public']['Enums']['ticket_status'];
+  urgency: Database['public']['Enums']['ticket_urgency'];
+  created_at: string;
+  customer_name: string | null;
+  customer_email: string | null;
+  order_status: string | null;
+  order_total: number | null;
+  restaurant_name: string | null;
+};
+
+export type AdminOrderRow = {
+  id: string;
+  status: Database['public']['Enums']['order_status'];
+  total_amount: number;
+  delivery_address: string;
+  placed_at: string;
+  restaurant_id: string;
+  restaurant_name: string | null;
+  customer_name: string | null;
+  refunded_at: string | null;
+};
+
+export type AdminRider = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  phone: string | null;
+  is_online: boolean;
+  active_orders: number;
 };
 
 export type AdminHighlight = Database['public']['Tables']['home_highlights']['Row'];
@@ -144,7 +186,12 @@ export async function loadAdminUsers(): Promise<AdminUser[]> {
 
 export async function loadAdminRestaurants(): Promise<AdminRestaurant[]> {
   const [restaurants, profiles, members] = await Promise.all([
-    supabase.from('restaurants').select('id, name, branch_name, cuisine, address, is_open, owner_id').order('name'),
+    supabase
+      .from('restaurants')
+      .select(
+        'id, name, branch_name, cuisine, address, is_open, owner_id, lat, lng, offer_percent, prep_minutes, capacity_threshold',
+      )
+      .order('name'),
     supabase.from('profiles').select('id, email, full_name'),
     supabase.from('restaurant_members').select('restaurant_id, user_id, status').eq('status', 'active'),
   ]);
@@ -175,12 +222,181 @@ export async function loadAdminRestaurants(): Promise<AdminRestaurant[]> {
     owner_id: row.owner_id,
     owner: byId.get(row.owner_id)?.name ?? 'Unknown owner',
     managers: managersByRestaurant.get(row.id) ?? [],
+    lat: row.lat,
+    lng: row.lng,
+    offer_percent: row.offer_percent,
+    prep_minutes: row.prep_minutes,
+    capacity_threshold: Number(row.capacity_threshold ?? 8),
   }));
 }
 
 export async function setAdminRestaurantOpen(id: string, isOpen: boolean) {
   const { error } = await supabase.from('restaurants').update({ is_open: isOpen }).eq('id', id);
   if (error) throw new Error(error.message);
+}
+
+export async function updateAdminRestaurantOps(
+  id: string,
+  patch: {
+    lat?: number | null;
+    lng?: number | null;
+    address?: string;
+    offer_percent?: number | null;
+    prep_minutes?: number | null;
+    capacity_threshold?: number;
+  },
+) {
+  const args: Database['public']['Functions']['admin_update_restaurant_ops']['Args'] = {
+    p_restaurant_id: id,
+  };
+  if (typeof patch.lat === 'number') args.p_lat = patch.lat;
+  if (typeof patch.lng === 'number') args.p_lng = patch.lng;
+  if (patch.address !== undefined) args.p_address = patch.address;
+  if (typeof patch.offer_percent === 'number') args.p_offer_percent = patch.offer_percent;
+  if (typeof patch.prep_minutes === 'number') args.p_prep_minutes = patch.prep_minutes;
+  if (typeof patch.capacity_threshold === 'number') args.p_capacity_threshold = patch.capacity_threshold;
+
+  const { error } = await supabase.rpc('admin_update_restaurant_ops', args);
+  if (error) throw new Error(error.message);
+}
+
+export async function loadAdminTickets(): Promise<AdminTicket[]> {
+  const { data, error } = await supabase
+    .from('support_tickets')
+    .select(
+      `
+      id, order_id, customer_id, issue_type, description, status, urgency, created_at,
+      customer:profiles!support_tickets_customer_id_fkey (full_name, email),
+      order:orders!support_tickets_order_id_fkey (
+        status, total_amount,
+        restaurant:restaurants!orders_restaurant_id_fkey (name)
+      )
+    `,
+    )
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((row) => {
+    const customer = normalizeProfile(row.customer);
+    const order = Array.isArray(row.order) ? row.order[0] : row.order;
+    const restaurant = order?.restaurant
+      ? Array.isArray(order.restaurant)
+        ? order.restaurant[0]
+        : order.restaurant
+      : null;
+    return {
+      id: row.id,
+      order_id: row.order_id,
+      customer_id: row.customer_id,
+      issue_type: row.issue_type,
+      description: row.description,
+      status: row.status,
+      urgency: row.urgency,
+      created_at: row.created_at,
+      customer_name: customer?.full_name ?? null,
+      customer_email: customer?.email ?? null,
+      order_status: order?.status ?? null,
+      order_total: order?.total_amount != null ? Number(order.total_amount) : null,
+      restaurant_name: restaurant?.name ?? null,
+    };
+  });
+}
+
+export async function setAdminTicketStatus(
+  ticketId: string,
+  status: Database['public']['Enums']['ticket_status'],
+) {
+  const { error } = await supabase.rpc('admin_set_ticket_status', {
+    p_ticket_id: ticketId,
+    p_status: status,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function loadAdminOrders(query: string): Promise<AdminOrderRow[]> {
+  const needle = query.trim().replace(/^#/, '');
+  let request = supabase
+    .from('orders')
+    .select(
+      `
+      id, status, total_amount, delivery_address, placed_at, restaurant_id, refunded_at,
+      restaurant:restaurants!orders_restaurant_id_fkey (name),
+      customer:profiles!orders_customer_id_fkey (full_name)
+    `,
+    )
+    .order('placed_at', { ascending: false })
+    .limit(40);
+  if (needle.length >= 4) {
+    request = request.or(`id.ilike.%${needle}%,delivery_address.ilike.%${needle}%`);
+  }
+  const { data, error } = await request;
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => {
+    const restaurant = Array.isArray(row.restaurant) ? row.restaurant[0] : row.restaurant;
+    const customer = normalizeProfile(row.customer);
+    return {
+      id: row.id,
+      status: row.status,
+      total_amount: Number(row.total_amount),
+      delivery_address: row.delivery_address,
+      placed_at: row.placed_at,
+      restaurant_id: row.restaurant_id,
+      restaurant_name: restaurant?.name ?? null,
+      customer_name: customer?.full_name ?? null,
+      refunded_at: row.refunded_at ?? null,
+    };
+  });
+}
+
+export async function adminForceOrderStatus(
+  orderId: string,
+  status: Database['public']['Enums']['order_status'],
+  note: string,
+) {
+  const { error } = await supabase.rpc('admin_force_order_status', {
+    p_order_id: orderId,
+    p_status: status,
+    p_note: note,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function adminMarkOrderRefunded(orderId: string, note: string) {
+  const { error } = await supabase.rpc('admin_mark_order_refunded', {
+    p_order_id: orderId,
+    p_note: note,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function loadAdminRiders(): Promise<AdminRider[]> {
+  const [profiles, live] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, email, full_name, phone, is_online')
+      .eq('role', 'rider')
+      .order('full_name'),
+    supabase
+      .from('orders')
+      .select('rider_id')
+      .in('status', ['preparing', 'ready', 'out_for_delivery'])
+      .not('rider_id', 'is', null),
+  ]);
+  if (profiles.error) throw new Error(profiles.error.message);
+  const counts = new Map<string, number>();
+  for (const row of live.data ?? []) {
+    if (!row.rider_id) continue;
+    counts.set(row.rider_id, (counts.get(row.rider_id) ?? 0) + 1);
+  }
+  return (profiles.data ?? []).map((row) => ({
+    id: row.id,
+    email: row.email,
+    full_name: row.full_name,
+    phone: row.phone,
+    is_online: Boolean(row.is_online),
+    active_orders: counts.get(row.id) ?? 0,
+  }));
 }
 
 export async function loadHighlights(): Promise<AdminHighlight[]> {

@@ -1,0 +1,292 @@
+{
+  "rebound_at": "2026-10-09T06:48:49.299Z",
+  "queries": {
+    "m1": {
+      "query": "Masala Dosa",
+      "old_ids": [
+        "7badbadb-a121-4008-8871-8a3aaebed76a",
+        "b1c891f7-db3d-446a-8d34-a6028b539b76",
+        "085300d1-443c-41c5-9f2a-3dec0815ecbb"
+      ],
+      "new_count": 5,
+      "new": [
+        {
+          "id": "7badbadb-a121-4008-8871-8a3aaebed76a",
+          "name": "Masala Dosa",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "315209be-24a6-4305-a40b-f059d08bda7c",
+          "name": "Masala Dosa",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "5d33068c-0a3d-47fd-b500-e2cb008ac7f0",
+          "name": "Masala Dosa",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "acf48b45-26af-41de-b1bf-c14d96cb0f36",
+          "name": "Masala Dosa",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "47d24451-0049-42e0-87b3-63b67f2cdf6e",
+          "name": "Mysore Masala Dosa",
+          "is_veg": true,
+          "is_available": true
+        }
+      ],
+      "warn": null
+    },
+    "m2": {
+      "query": "Chicken Biryani",
+      "old_ids": [
+        "d9661942-a16b-48b5-895b-50561a644191"
+      ],
+      "new_count": 1,
+      "new": [
+        {
+          "id": "d9661942-a16b-48b5-895b-50561a644191",
+          "name": "Chicken Biryani",
+          "is_veg": false,
+          "is_available": true
+        }
+      ],
+      "warn": null
+    },
+    "m3": {
+      "query": "Chilli paneer dry",
+      "old_ids": [
+        "7ad3dd6e-5979-4c02-bb82-0705769da628",
+        "adbf89b6-33f2-4dea-88ea-5c37f60aa559",
+        "cd8cdcce-3c63-4e48-bba3-592cc1b30804"
+      ],
+      "new_count": 1,
+      "new": [
+        {
+          "id": "7ad3dd6e-5979-4c02-bb82-0705769da628",
+          "name": "Chilli paneer dry",
+          "is_veg": true,
+          "is_available": true
+        }
+      ],
+      "warn": null
+    },
+    "m4": {
+      "query": "Filter Coffee",
+      "old_ids": [
+        "2c583544-bbf5-468e-b412-2025c83b5726",
+        "94090c7d-abdb-45be-82f5-0c1947bf63a7",
+        "cbeacbe3-30f6-4512-bab8-436b046ca0c6"
+      ],
+      "new_count": 9,
+      "new": [
+        {
+          "id": "2c583544-bbf5-468e-b412-2025c83b5726",
+          "name": "Filter Coffee",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "3ee2e6c6-2270-4df5-b483-115fd4ee0b0b",
+          "name": "Filter Coffee",
+          "is_veg": true,
+          "is_available": false
+        },
+        {
+          "id": "c8a7d8f5-e9a7-494c-b022-f0bb065dfa8b",
+          "name": "Filter Coffee",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "448e3ee0-20cf-4e58-88fe-f7e29f53295a",
+          "name": "Filter Coffee",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "934ecf13-8995-4005-9f4d-881edab5bd45",
+          "name": "Filter Coffee",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "993fc651-394d-46ec-a0a6-e551bab48a9f",
+          "name": "Filter Coffee",
+          "is_veg": true,
+          "is_available": false
+        },
+        {
+          "id": "7758b577-ccc9-4db5-93ce-c585959fd15e",
+          "name": "Filter Coffee",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "b2ce5c3d-25b3-400b-9c66-4bf4bf9bcaa8",
+          "name": "Filter Coffee",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "56974422-77b6-42fc-80e9-4d9e547248d1",
+          "name": "Filter Coffee",
+          "is_veg": true,
+          "is_available": false
+        }
+      ],
+      "warn": null
+    },
+    "m5": {
+      "query": "Ukadiche Modak",
+      "old_ids": [
+        "c331659a-2e89-4a5e-9a7a-1800ae1d51d2",
+        "ecc72763-53a8-48d2-af39-45f66c2f4aac",
+        "592f0079-5766-4696-8505-7515561c4f23"
+      ],
+      "new_count": 1,
+      "new": [
+        {
+          "id": "c331659a-2e89-4a5e-9a7a-1800ae1d51d2",
+          "name": "Ukadiche Modak",
+          "is_veg": true,
+          "is_available": true
+        }
+      ],
+      "warn": null
+    },
+    "m6": {
+      "query": "Kothimbir Vadi",
+      "old_ids": [
+        "adbf89b6-33f2-4dea-88ea-5c37f60aa559",
+        "cd8cdcce-3c63-4e48-bba3-592cc1b30804",
+        "6a08ab6b-1508-4421-be49-c8d287f1467a"
+      ],
+      "new_count": 1,
+      "new": [
+        {
+          "id": "adbf89b6-33f2-4dea-88ea-5c37f60aa559",
+          "name": "Kothimbir Vadi",
+          "is_veg": true,
+          "is_available": true
+        }
+      ],
+      "warn": null
+    },
+    "m7": {
+      "query": "Margherita",
+      "old_ids": [
+        "b771a676-7768-41c4-8fbc-3340c08663a3",
+        "d6662e28-8bb9-4f96-8565-fcb1f2e2a973"
+      ],
+      "new_count": 7,
+      "new": [
+        {
+          "id": "b771a676-7768-41c4-8fbc-3340c08663a3",
+          "name": "Margherita",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "90141361-0b76-4597-80a8-3fe94ebd34a8",
+          "name": "Margherita Pizza",
+          "is_veg": true,
+          "is_available": false
+        },
+        {
+          "id": "8b65d276-b217-4100-8c29-d2ad0d647310",
+          "name": "Margherita Pizza",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "7cff96de-f94d-48c8-95ab-3bd5ceddccf0",
+          "name": "Margherita Pizza",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "6d03a8e5-93fe-4dcd-ac85-c95e89351693",
+          "name": "Margherita Pizza",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "ce974f06-7119-4e62-99fc-a346914700d9",
+          "name": "Margherita Pizza",
+          "is_veg": true,
+          "is_available": true
+        },
+        {
+          "id": "64050da3-d4a4-417b-affb-fad3914e85f7",
+          "name": "Margherita Pizza",
+          "is_veg": true,
+          "is_available": true
+        }
+      ],
+      "warn": null
+    },
+    "m8": {
+      "query": "Kingfish curry",
+      "old_ids": [
+        "fa77d945-ff2b-4a80-8e0c-43f6306e5caa",
+        "ae6af968-2bc2-415d-9c24-9dddb000539b",
+        "d8ce96a3-5306-4fc3-8a51-cdea4b7dd7f1"
+      ],
+      "new_count": 1,
+      "new": [
+        {
+          "id": "fa77d945-ff2b-4a80-8e0c-43f6306e5caa",
+          "name": "Kingfish curry",
+          "is_veg": false,
+          "is_available": true
+        }
+      ],
+      "warn": null
+    },
+    "e1": {
+      "query": "vegan sushi rolls under 50 rupees gluten free",
+      "old_ids": [],
+      "new_count": 0,
+      "new": [],
+      "note": "out-of-catalog / vague — empty labels kept"
+    },
+    "e2": {
+      "query": "something nice maybe food?",
+      "old_ids": [],
+      "new_count": 0,
+      "new": [],
+      "note": "out-of-catalog / vague — empty labels kept"
+    },
+    "e3": {
+      "query": "extra spicy Chilli paneer dry under 180 veg only no onion quick delivery rating 5 stars",
+      "old_ids": [
+        "7ad3dd6e-5979-4c02-bb82-0705769da628",
+        "adbf89b6-33f2-4dea-88ea-5c37f60aa559"
+      ],
+      "new_count": 1,
+      "new": [
+        {
+          "id": "7ad3dd6e-5979-4c02-bb82-0705769da628",
+          "name": "Chilli paneer dry",
+          "is_veg": true,
+          "is_available": true
+        }
+      ],
+      "note": "veg-only chilli paneer dry for constraint query"
+    },
+    "e4": {
+      "query": "truffle wagyu steak well done",
+      "old_ids": [],
+      "new_count": 0,
+      "new": [],
+      "note": "out-of-catalog / vague — empty labels kept"
+    }
+  }
+}

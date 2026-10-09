@@ -26,7 +26,9 @@ import {
   toCurrentOrder,
   toNearbyOrder,
   useClaimDelivery,
+  useRiderHistory,
   useRiderOrders,
+  useRiderRating,
 } from '@/features/rider/use-rider-live';
 import { useAuth } from '@/hooks/useAuth';
 import { greetingName } from '@/lib/home-catalog';
@@ -37,6 +39,8 @@ export function RiderHomeScreen() {
   const queryClient = useQueryClient();
   const { profile, refreshProfile } = useAuth();
   const orders = useRiderOrders();
+  const history = useRiderHistory();
+  const rating = useRiderRating();
   const claim = useClaimDelivery();
   const tracking = useRiderTracking();
   const [dutyBusy, setDutyBusy] = useState(false);
@@ -48,8 +52,7 @@ export function RiderHomeScreen() {
   const mine = orders.data?.mine ?? [];
   const active = pickActive(mine);
   const nearby = (orders.data?.available ?? []).map(toNearbyOrder);
-  // Home skips history fetch; stats reflect active trip only until Earnings tab loads history.
-  const stats = todayStats([], active);
+  const stats = todayStats(history.data ?? [], active, rating.data?.label ?? 'New');
 
   useEffect(() => {
     setOptimisticOnline(null);

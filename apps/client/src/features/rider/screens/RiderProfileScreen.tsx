@@ -11,7 +11,13 @@ import { ProfileListItem } from '@/components/ProfileListItem';
 import { colors, radii, screenTopGap, tabBarInset } from '@/constants/theme';
 import { RiderStatsRow } from '@/features/rider/components/RiderStatsRow';
 import { stopRiderTracking } from '@/features/rider/rider-tracking';
-import { pickActive, todayStats, useRiderHistory, useRiderOrders } from '@/features/rider/use-rider-live';
+import {
+  pickActive,
+  todayStats,
+  useRiderHistory,
+  useRiderOrders,
+  useRiderRating,
+} from '@/features/rider/use-rider-live';
 import { useAuth } from '@/hooks/useAuth';
 import { greetingName } from '@/lib/home-catalog';
 import { rememberRole } from '@/lib/last-role';
@@ -29,8 +35,9 @@ export function RiderProfileScreen() {
   const { profile, refreshProfile, signOut } = useAuth();
   const orders = useRiderOrders();
   const history = useRiderHistory();
+  const rating = useRiderRating();
   const active = pickActive(orders.data?.mine ?? []);
-  const stats = todayStats(history.data ?? [], active);
+  const stats = todayStats(history.data ?? [], active, rating.data?.label ?? 'New');
   const name = profile?.full_name?.trim() || greetingName(profile?.full_name, profile?.email);
   const vehicle = [profile?.vehicle_label, profile?.plate].filter(Boolean).join(' · ') || 'Vehicle on file';
 

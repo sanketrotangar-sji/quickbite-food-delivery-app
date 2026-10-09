@@ -256,6 +256,9 @@ export function buildHomeCatalog(
       categoryIds,
       offerPercent: kitchen.offer_percent,
       prepMinutes: kitchen.prep_minutes,
+      lat: kitchen.lat ?? null,
+      lng: kitchen.lng ?? null,
+      distanceKm: null,
     };
   });
 
@@ -295,6 +298,9 @@ function buildShellPlaces(
     categoryIds: [],
     offerPercent: kitchen.offer_percent,
     prepMinutes: kitchen.prep_minutes,
+    lat: kitchen.lat ?? null,
+    lng: kitchen.lng ?? null,
+    distanceKm: null,
   }));
 }
 

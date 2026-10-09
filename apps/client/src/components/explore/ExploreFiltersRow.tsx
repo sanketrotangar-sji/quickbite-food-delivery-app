@@ -5,6 +5,7 @@ import { ExploreFilterChip } from './ExploreFilterChip';
 
 const QUICK_CHIPS: CuisineChip[] = [
   { id: 'all', label: 'All', icon: 'grid-outline' },
+  { id: 'near', label: 'Near me', icon: 'navigate-outline' },
   { id: 'veg', label: 'Pure Veg', icon: 'leaf', tint: '#2E9B57' },
   { id: 'fast', label: 'Fast Delivery', icon: 'flash-outline' },
   { id: 'offers', label: 'Offers', icon: 'pricetag-outline' },

@@ -130,7 +130,7 @@ async function assertRlsIsolation() {
 }
 
 async function assertMatchEmbeddingsNoPii() {
-  const zero = Array.from({ length: 768 }, () => 0);
+  const zero = Array.from({ length: 1024 }, () => 0);
   let data;
   let error;
   try {

@@ -372,9 +372,46 @@ function OrderItemsCard({ order }: { order: TrackedOrder }) {
           </View>
         ))}
       </View>
+      <BillBreakdown order={order} />
       <View style={styles.eco}>
         <Ionicons name="leaf-outline" size={14} color={colors.success} />
         <AppText style={styles.ecoText}>Eco-friendly delivery — Less carbon. A greener tomorrow.</AppText>
+      </View>
+    </View>
+  );
+}
+
+function BillBreakdown({ order }: { order: TrackedOrder }) {
+  const itemsTotal = order.items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
+  const discount = Number(order.discount_amount ?? 0);
+  const fee = Number(order.delivery_fee ?? 0);
+  const offer = order.offer_percent;
+
+  return (
+    <View style={styles.bill}>
+      <View style={styles.billRow}>
+        <AppText style={styles.billLabel}>Item total</AppText>
+        <AppText style={styles.billValue}>{formatInr(itemsTotal)}</AppText>
+      </View>
+      {discount > 0 ? (
+        <View style={styles.billRow}>
+          <AppText style={styles.billLabel}>
+            Kitchen offer{offer != null ? ` (${offer}% off)` : ''}
+          </AppText>
+          <AppText style={styles.billValue}>- {formatInr(discount)}</AppText>
+        </View>
+      ) : null}
+      <View style={styles.billRow}>
+        <AppText style={styles.billLabel}>Delivery fee</AppText>
+        <AppText style={styles.billValue}>{formatInr(fee)}</AppText>
+      </View>
+      <View style={styles.billRow}>
+        <AppText weight="bold" style={styles.billLabel}>
+          Total
+        </AppText>
+        <AppText weight="bold" style={styles.billValue}>
+          {formatInr(Number(order.total_amount))}
+        </AppText>
       </View>
     </View>
   );
@@ -508,6 +545,10 @@ const styles = StyleSheet.create({
   itemMeta: { fontSize: 11, color: TRACK_MUTED },
   itemQty: { fontSize: 11, color: TRACK_MUTED },
   itemPrice: { fontSize: 13, color: TRACK_TEXT },
+  bill: { gap: 6, paddingTop: 4, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+  billRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  billLabel: { fontSize: 13, color: TRACK_MUTED },
+  billValue: { fontSize: 13, color: TRACK_TEXT },
   eco: {
     flexDirection: 'row',
     alignItems: 'center',

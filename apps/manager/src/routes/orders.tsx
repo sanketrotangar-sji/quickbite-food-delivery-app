@@ -5,7 +5,7 @@ import { OrderDrawer } from "@/components/order-drawer";
 import { QuickBiteShell } from "@/components/quickbite-shell";
 import { Button } from "@/components/ui/button";
 import { ListShell } from "@/components/list-state";
-import { useAdvanceOrder, useManagerOrders } from "@/hooks/use-manager-orders";
+import { useAdvanceOrder, useCancelOrder, useManagerOrders } from "@/hooks/use-manager-orders";
 import type { Order } from "@/lib/quickbite-data";
 
 const statuses = ["all", "placed", "preparing", "ready"] as const;
@@ -39,23 +39,29 @@ function OrdersPage() {
   const ordersQuery = useManagerOrders();
   const orders = ordersQuery.data ?? [];
   const advanceOrder = useAdvanceOrder();
+  const cancelOrder = useCancelOrder();
   const [selected, setSelected] = useState<Order>();
   const [filter, setFilter] = useState<OrdersFilter>(status);
   const needle = q.trim().toLowerCase().replace(/^#/, "");
-  const shown = orders.filter((order) => {
-    const matchesStatus = filter === "all" || order.status === filter;
-    if (!matchesStatus) return false;
-    if (!needle) return true;
-    return (
-      order.displayId.toLowerCase().includes(needle) ||
-      order.customer.toLowerCase().includes(needle) ||
-      order.address.toLowerCase().includes(needle)
-    );
-  });
+  const shown = orders
+    .filter((order) => {
+      const matchesStatus = filter === "all" || order.status === filter;
+      if (!matchesStatus) return false;
+      if (!needle) return true;
+      return (
+        order.displayId.toLowerCase().includes(needle) ||
+        order.customer.toLowerCase().includes(needle) ||
+        order.address.toLowerCase().includes(needle)
+      );
+    })
+    .sort((a, b) => a.placedAt.localeCompare(b.placedAt));
   const current = useMemo(() => orders.find((order) => order.id === selected?.id), [orders, selected]);
   const advance = (id: string) => {
     const currentOrder = orders.find((order) => order.id === id);
     if (currentOrder) void advanceOrder.mutateAsync({ id: currentOrder.id, status: currentOrder.status });
+  };
+  const cancel = (id: string) => {
+    void cancelOrder.mutateAsync(id);
   };
   return (
     <QuickBiteShell>
@@ -110,7 +116,12 @@ function OrdersPage() {
             ))}
           </div>
         </ListShell>
-        <OrderDrawer order={current} onClose={() => setSelected(undefined)} onAdvance={advance} />
+        <OrderDrawer
+          order={current}
+          onClose={() => setSelected(undefined)}
+          onAdvance={advance}
+          onCancel={cancel}
+        />
       </div>
     </QuickBiteShell>
   );

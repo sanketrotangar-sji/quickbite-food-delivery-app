@@ -3,13 +3,16 @@ import { Alert } from 'react-native';
 import { userFacingMessage } from '@/api/errors';
 import { useCart, type CartItemPreview } from '@/hooks/useCart';
 import { useCartReplacePrompt } from '@/hooks/useCartReplacePrompt';
+import { useDeliveryRangeGuard } from '@/hooks/useDeliveryRangeGuard';
 import type { HomeDish } from '@/lib/home-catalog';
 
 export function useAddDish() {
   const cart = useCart();
   const replace = useCartReplacePrompt();
+  const { ensureDeliverable } = useDeliveryRangeGuard();
 
   async function addDish(dish: HomeDish) {
+    if (!ensureDeliverable(dish.restaurantId, { name: dish.restaurantName })) return;
     const input = {
       menuItemId: dish.id,
       restaurantId: dish.restaurantId,

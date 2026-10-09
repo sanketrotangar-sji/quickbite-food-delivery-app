@@ -3,7 +3,7 @@ import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { retrieveContext } from "./embeddings.ts";
 
 Deno.test("retrieveContext maps rpc rows to chunks", async () => {
-  const fakeVector = Array.from({ length: 768 }, (_, i) => i * 0.001);
+  const fakeVector = Array.from({ length: 1024 }, (_, i) => i * 0.001);
   const originalFetch = globalThis.fetch;
   globalThis.fetch = () =>
     Promise.resolve(

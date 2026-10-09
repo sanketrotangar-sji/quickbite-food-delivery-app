@@ -5,18 +5,19 @@ import {
   Bike,
   CheckCircle2,
   ChevronRight,
-  CircleDollarSign,
   Clock3,
   PackageCheck,
   Plus,
   ReceiptIndianRupee,
   Sparkles,
+  Timer,
   TrendingUp,
   Utensils,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
+import { riderPanelLabel } from "@/api/orders";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { OrderCard } from "@/components/order-card";
@@ -24,7 +25,12 @@ import { OrderDrawer } from "@/components/order-drawer";
 import { QuickBiteShell } from "@/components/quickbite-shell";
 import { LandingPage } from "@/features/landing/LandingPage";
 import { useAuth } from "@/hooks/use-auth";
-import { useAdvanceOrder, useManagerOrders, useManagerOrderStats } from "@/hooks/use-manager-orders";
+import {
+  useAdvanceOrder,
+  useCancelOrder,
+  useManagerOrders,
+  useManagerOrderStats,
+} from "@/hooks/use-manager-orders";
 import { useManagerMenu, useToggleMenuAvailability } from "@/hooks/use-manager-menu";
 import { useMinuteTick } from "@/hooks/use-minute-tick";
 import { useOwnedRestaurant, useRestaurantRatings } from "@/hooks/use-restaurant";
@@ -102,6 +108,7 @@ function Dashboard() {
   const statsRows = statsQuery.data ?? [];
   const menuItems = useManagerMenu().data ?? EMPTY_MENU;
   const advanceOrder = useAdvanceOrder();
+  const cancelOrder = useCancelOrder();
   const toggleAvailability = useToggleMenuAvailability();
   const [selected, setSelected] = useState<Order>();
   const [welcome, setWelcome] = useState(false);
@@ -116,7 +123,7 @@ function Dashboard() {
   const yesterdayStats = statsOnDay(statsRows, yesterday);
   const todayRevenue = statsRevenue(todayStats);
   const yesterdayRevenue = statsRevenue(yesterdayStats);
-  const load = kitchenLoad(preparing);
+  const load = kitchenLoad(preparing, restaurant?.capacity_threshold ?? undefined);
   const prep = avgPrepLabel(allOrders, now);
   const pace = hourlyPaceFromStats(statsRows, now);
   const selectedFresh = useMemo(
@@ -153,6 +160,17 @@ function Dashboard() {
     if (current) void advanceOrder.mutateAsync({ id: current.id, status: current.status });
   };
 
+  const cancel = (id: string) => {
+    void cancelOrder.mutateAsync(id);
+  };
+
+  const statuses = ["placed", "preparing", "ready"] as const;
+  const laneLabels: Record<(typeof statuses)[number], string> = {
+    placed: "Incoming",
+    preparing: "Preparing",
+    ready: "Ready",
+  };
+
   const statCards = [
     {
       label: "Orders today",
@@ -174,10 +192,14 @@ function Dashboard() {
           : percentChangeLabel(todayRevenue, yesterdayRevenue),
       icon: ReceiptIndianRupee,
     },
-    { label: "In preparation", value: liveLoading ? "…" : String(preparing), change: load.label, icon: Clock3 },
-    { label: "Average prep", value: prep.value, change: prep.change, icon: CircleDollarSign },
+    {
+      label: "In preparation",
+      value: liveLoading ? "…" : String(preparing),
+      change: `${load.preparing}/${load.threshold} · ${load.label}`,
+      icon: Clock3,
+    },
+    { label: "Avg prep (to ready)", value: prep.value, change: prep.change, icon: Timer },
   ];
-  const statuses = ["placed", "preparing", "ready"] as const;
 
   return (
     <QuickBiteShell>
@@ -220,12 +242,22 @@ function Dashboard() {
             </div>
             <div className="grid flex-1 items-stretch gap-4 lg:grid-cols-3">
               {statuses.map((status) => {
-                const laneOrders = orders.filter((order) => order.status === status);
+                const laneOrders = orders
+                  .filter((order) => order.status === status)
+                  .sort((a, b) => a.placedAt.localeCompare(b.placedAt));
                 const featured = laneOrders[0];
                 const listed = laneOrders.slice(1, 3);
                 const hidden = Math.max(0, laneOrders.length - 3);
                 return (
                   <div key={status} className="flex h-full min-h-52 min-w-0 flex-col gap-3">
+                    <div className="flex items-center justify-between gap-2 px-0.5">
+                      <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
+                        {laneLabels[status]}
+                      </p>
+                      <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-extrabold">
+                        {laneOrders.length}
+                      </span>
+                    </div>
                     {featured ? (
                       <OrderCard
                         order={featured}
@@ -348,7 +380,7 @@ function Dashboard() {
                 </span>
                 <div className="min-w-0">
                   <p className="text-sm font-extrabold">
-                    {riderOrder ? "Rider approaching" : "No rider assigned"}
+                    {riderOrder ? "Rider on order" : "No rider assigned"}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
                     {riderOrder
@@ -358,12 +390,12 @@ function Dashboard() {
                 </div>
                 <span
                   className={
-                    riderOrder
+                    riderOrder?.riderId
                       ? "text-xs font-bold text-success"
                       : "text-xs font-bold text-muted-foreground"
                   }
                 >
-                  {riderOrder ? "On time" : "Pending"}
+                  {riderOrder ? riderPanelLabel(riderOrder) : "Unassigned"}
                 </span>
               </div>
               <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-4">
@@ -385,14 +417,17 @@ function Dashboard() {
               <div className="flex items-center justify-between text-xs">
                 <span className="font-extrabold">Kitchen capacity</span>
                 <span className="font-extrabold text-success">
-                  {load.percent}% · {load.label}
+                  {load.preparing}/{load.threshold} · {load.label}
                 </span>
               </div>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-border">
-                <div className={`h-full rounded-full bg-success ${load.bar}`} />
+                <div
+                  className="h-full rounded-full bg-success transition-all"
+                  style={{ width: `${Math.min(100, load.percent)}%` }}
+                />
               </div>
               <p className="mt-2 text-[11px] text-muted-foreground">
-                Estimated preparation: {prep.value}
+                Avg prep (to ready): {prep.value}
               </p>
             </div>
           </aside>
@@ -524,6 +559,7 @@ function Dashboard() {
           order={selectedFresh}
           onClose={() => setSelected(undefined)}
           onAdvance={advance}
+          onCancel={cancel}
         />
       </div>
     </QuickBiteShell>

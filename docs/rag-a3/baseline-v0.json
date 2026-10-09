@@ -1,0 +1,1045 @@
+{
+  "phase": "0b",
+  "generated_at": "2026-10-09T06:49:44.907Z",
+  "label": "baseline-v0",
+  "description": "Honest before: rebound gold labels by dish name; UNCHANGED index (vector-only match_embeddings, old menu text, ~388 rows, qwen3-embedding:0.6b).",
+  "index": {
+    "embedding_model": "qwen3-embedding:0.6b",
+    "rpc": "match_embeddings",
+    "filter_source": [
+      "menu_items"
+    ],
+    "k": 5,
+    "embeddings_count": 388,
+    "menu_items_count": 388,
+    "menu_id_name_checksum_sha256": "0b4f66fb933b73c60b06708dcc6bc31756ae72505d0ac87c63f784eca5a34e0a",
+    "text_format": "restaurants.name · name · category · description",
+    "hybrid": false
+  },
+  "historical_a2_footnote": {
+    "matching_hit_rate": 0.375,
+    "matching_precision": 0.1,
+    "model": "nomic-embed-text",
+    "note": "Dirty/mismatched labels + different model — do not treat as comparable before."
+  },
+  "summary": {
+    "matching": {
+      "hit_rate": 0.5,
+      "precision_at_k": 0.2
+    },
+    "extreme": {
+      "hit_rate": 0,
+      "precision_at_k": 0
+    },
+    "noisy": {
+      "hit_rate": 0.2,
+      "precision_at_k": 0.06666666666666668
+    }
+  },
+  "sets": {
+    "matching": {
+      "name": "matching",
+      "rows": [
+        {
+          "id": "m1",
+          "query": "Masala Dosa",
+          "hitRate": 1,
+          "precisionAtK": 0.4,
+          "hits": 2,
+          "emptyExpected": false,
+          "expected": [
+            "7badbadb-a121-4008-8871-8a3aaebed76a",
+            "315209be-24a6-4305-a40b-f059d08bda7c",
+            "5d33068c-0a3d-47fd-b500-e2cb008ac7f0",
+            "acf48b45-26af-41de-b1bf-c14d96cb0f36",
+            "47d24451-0049-42e0-87b3-63b67f2cdf6e"
+          ],
+          "retrieved": [
+            {
+              "source_id": "acf48b45-26af-41de-b1bf-c14d96cb0f36",
+              "similarity": 0.769123618393829,
+              "preview": "Sakana · Masala Dosa · South Indian · Crisp rice and lentil crepe stuffed with spiced potato mash",
+              "in_gold": true
+            },
+            {
+              "source_id": "315209be-24a6-4305-a40b-f059d08bda7c",
+              "similarity": 0.754226802771875,
+              "preview": "Navtara Pure Veg · Masala Dosa · South Indian · Crisp rice and lentil crepe stuffed with spiced potato mash",
+              "in_gold": true
+            },
+            {
+              "source_id": "f95b76a9-6791-49f6-8adb-953db99003a0",
+              "similarity": 0.743117196296843,
+              "preview": "Ritz Classic · Pork Vindaloo · Indian · Traditional slow-cooked pork curry with vinegar and red toddy paste",
+              "in_gold": false
+            },
+            {
+              "source_id": "e4702059-f2a7-4f77-b7ee-af5bdd96be37",
+              "similarity": 0.737355618161638,
+              "preview": "Sakana · Rava Onion Dosa · South Indian · Crisp semolina crepe peppered with finely chopped onions and green chillies",
+              "in_gold": false
+            },
+            {
+              "source_id": "36ac62ca-491c-4a44-a175-9c61017898f5",
+              "similarity": 0.733280722312776,
+              "preview": "Botanico · Appam with Vegetable Stew · South Indian · Soft coconut appam served with aromatic vegetable and coconut milk",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "m2",
+          "query": "Chicken Biryani",
+          "hitRate": 0,
+          "precisionAtK": 0,
+          "hits": 0,
+          "emptyExpected": false,
+          "expected": [
+            "d9661942-a16b-48b5-895b-50561a644191"
+          ],
+          "retrieved": [
+            {
+              "source_id": "02e2162e-7927-4945-bdd1-1f37c309d6f1",
+              "similarity": 0.764771007441611,
+              "preview": "Burger Factory · Mutton Dum Biryani · Indian · Long-grain basmati rice layered with marinated mutton cooked under dum",
+              "in_gold": false
+            },
+            {
+              "source_id": "d59b2b6e-74eb-4294-a428-6b5e58b6589c",
+              "similarity": 0.763498896881777,
+              "preview": "Botanico · Mutton Dum Biryani · Indian · Long-grain basmati rice layered with marinated mutton cooked under dum",
+              "in_gold": false
+            },
+            {
+              "source_id": "f95b76a9-6791-49f6-8adb-953db99003a0",
+              "similarity": 0.745321756557829,
+              "preview": "Ritz Classic · Pork Vindaloo · Indian · Traditional slow-cooked pork curry with vinegar and red toddy paste",
+              "in_gold": false
+            },
+            {
+              "source_id": "3854a732-31ef-4ccf-8fbb-4a3aeb894406",
+              "similarity": 0.74530067280831,
+              "preview": "Susegado · Chettinad Chicken Curry · Indian · Fiery South Indian black pepper chicken curry with roasted spices",
+              "in_gold": false
+            },
+            {
+              "source_id": "753ffc28-16b7-4045-82d0-7821851db079",
+              "similarity": 0.742572396108199,
+              "preview": "Copperleaf · Mutton Dum Biryani · Indian · Long-grain basmati rice layered with marinated mutton cooked under dum",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "m3",
+          "query": "Chilli paneer dry",
+          "hitRate": 1,
+          "precisionAtK": 0.2,
+          "hits": 1,
+          "emptyExpected": false,
+          "expected": [
+            "7ad3dd6e-5979-4c02-bb82-0705769da628"
+          ],
+          "retrieved": [
+            {
+              "source_id": "995e7aae-b9eb-434d-8048-8f9c58610522",
+              "similarity": 0.751139849288487,
+              "preview": "Sublime · Paneer Tikka · Mains · Chargrilled cottage cheese cubes marinated in spiced yogurt and mustard oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "7ad3dd6e-5979-4c02-bb82-0705769da628",
+              "similarity": 0.728730369915131,
+              "preview": "Wok & Roll · Chilli paneer dry · Starters · Chilli paneer dry from the Starters menu — aromatic, kitchen-fresh, and made",
+              "in_gold": true
+            },
+            {
+              "source_id": "6b187df3-6ded-40c2-bfaf-794ac7b01e09",
+              "similarity": 0.718483004750852,
+              "preview": "Navtara Pure Veg · Chettinad Chicken Curry · Indian · Fiery South Indian black pepper chicken curry with roasted spices",
+              "in_gold": false
+            },
+            {
+              "source_id": "3854a732-31ef-4ccf-8fbb-4a3aeb894406",
+              "similarity": 0.716875433921814,
+              "preview": "Susegado · Chettinad Chicken Curry · Indian · Fiery South Indian black pepper chicken curry with roasted spices",
+              "in_gold": false
+            },
+            {
+              "source_id": "2c583544-bbf5-468e-b412-2025c83b5726",
+              "similarity": 0.699541950444325,
+              "preview": "Navtara Pure Veg · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "m4",
+          "query": "Filter Coffee",
+          "hitRate": 1,
+          "precisionAtK": 0.4,
+          "hits": 2,
+          "emptyExpected": false,
+          "expected": [
+            "2c583544-bbf5-468e-b412-2025c83b5726",
+            "3ee2e6c6-2270-4df5-b483-115fd4ee0b0b",
+            "c8a7d8f5-e9a7-494c-b022-f0bb065dfa8b",
+            "448e3ee0-20cf-4e58-88fe-f7e29f53295a",
+            "934ecf13-8995-4005-9f4d-881edab5bd45",
+            "993fc651-394d-46ec-a0a6-e551bab48a9f",
+            "7758b577-ccc9-4db5-93ce-c585959fd15e",
+            "b2ce5c3d-25b3-400b-9c66-4bf4bf9bcaa8",
+            "56974422-77b6-42fc-80e9-4d9e547248d1"
+          ],
+          "retrieved": [
+            {
+              "source_id": "fffa472b-f059-449e-8231-be88d8a5d93f",
+              "similarity": 0.747297376716497,
+              "preview": "Aura Cafe · Cold Brew Coffee · Beverages · 16-hour cold steep single-origin Arabica coffee over ice",
+              "in_gold": false
+            },
+            {
+              "source_id": "71d63a81-1cf8-4356-bfb3-47a3d0cd9021",
+              "similarity": 0.746240653209741,
+              "preview": "Artjuna · Cold Brew Coffee · Beverages · 16-hour cold steep single-origin Arabica coffee over ice",
+              "in_gold": false
+            },
+            {
+              "source_id": "448e3ee0-20cf-4e58-88fe-f7e29f53295a",
+              "similarity": 0.736264580553163,
+              "preview": "Artjuna · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": true
+            },
+            {
+              "source_id": "7758b577-ccc9-4db5-93ce-c585959fd15e",
+              "similarity": 0.726792498039857,
+              "preview": "Aura Cafe · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": true
+            },
+            {
+              "source_id": "7153cdb1-94aa-4f77-923d-ee784b8297bc",
+              "similarity": 0.726197340656283,
+              "preview": "Infanteria · Cold Brew Coffee · Beverages · 16-hour cold steep single-origin Arabica coffee over ice",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "m5",
+          "query": "Ukadiche Modak",
+          "hitRate": 0,
+          "precisionAtK": 0,
+          "hits": 0,
+          "emptyExpected": false,
+          "expected": [
+            "c331659a-2e89-4a5e-9a7a-1800ae1d51d2"
+          ],
+          "retrieved": [
+            {
+              "source_id": "020066b7-c3f3-47cf-9f60-e788f631bc6b",
+              "similarity": 0.641640858845854,
+              "preview": "Fat Fish · Steamed Dim Sum Basket · Asian · Assorted steamed chicken and vegetable dumplings with chili oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "36ac62ca-491c-4a44-a175-9c61017898f5",
+              "similarity": 0.638944208622051,
+              "preview": "Botanico · Appam with Vegetable Stew · South Indian · Soft coconut appam served with aromatic vegetable and coconut milk",
+              "in_gold": false
+            },
+            {
+              "source_id": "ccf6b146-49a9-4f85-b322-8b5a5ec90bd9",
+              "similarity": 0.638557357960176,
+              "preview": "Bomra's · Steamed Dim Sum Basket · Asian · Assorted steamed chicken and vegetable dumplings with chili oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "2c583544-bbf5-468e-b412-2025c83b5726",
+              "similarity": 0.638396885777426,
+              "preview": "Navtara Pure Veg · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "448e3ee0-20cf-4e58-88fe-f7e29f53295a",
+              "similarity": 0.626498110324617,
+              "preview": "Artjuna · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "m6",
+          "query": "Kothimbir Vadi",
+          "hitRate": 0,
+          "precisionAtK": 0,
+          "hits": 0,
+          "emptyExpected": false,
+          "expected": [
+            "adbf89b6-33f2-4dea-88ea-5c37f60aa559"
+          ],
+          "retrieved": [
+            {
+              "source_id": "2c583544-bbf5-468e-b412-2025c83b5726",
+              "similarity": 0.667698561868614,
+              "preview": "Navtara Pure Veg · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "36ac62ca-491c-4a44-a175-9c61017898f5",
+              "similarity": 0.621932488026309,
+              "preview": "Botanico · Appam with Vegetable Stew · South Indian · Soft coconut appam served with aromatic vegetable and coconut milk",
+              "in_gold": false
+            },
+            {
+              "source_id": "8756e2fd-90e4-477c-a1d1-64398ca9470e",
+              "similarity": 0.618907401929863,
+              "preview": "Bhatti Village · Pork Vindaloo · Indian · Traditional slow-cooked pork curry with vinegar and red toddy paste",
+              "in_gold": false
+            },
+            {
+              "source_id": "d59b2b6e-74eb-4294-a428-6b5e58b6589c",
+              "similarity": 0.616419875044188,
+              "preview": "Botanico · Mutton Dum Biryani · Indian · Long-grain basmati rice layered with marinated mutton cooked under dum",
+              "in_gold": false
+            },
+            {
+              "source_id": "993fc651-394d-46ec-a0a6-e551bab48a9f",
+              "similarity": 0.605037682197696,
+              "preview": "Caravela Café & Bistro · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "m7",
+          "query": "Margherita",
+          "hitRate": 1,
+          "precisionAtK": 0.6,
+          "hits": 3,
+          "emptyExpected": false,
+          "expected": [
+            "b771a676-7768-41c4-8fbc-3340c08663a3",
+            "90141361-0b76-4597-80a8-3fe94ebd34a8",
+            "8b65d276-b217-4100-8c29-d2ad0d647310",
+            "7cff96de-f94d-48c8-95ab-3bd5ceddccf0",
+            "6d03a8e5-93fe-4dcd-ac85-c95e89351693",
+            "ce974f06-7119-4e62-99fc-a346914700d9",
+            "64050da3-d4a4-417b-affb-fad3914e85f7"
+          ],
+          "retrieved": [
+            {
+              "source_id": "7cff96de-f94d-48c8-95ab-3bd5ceddccf0",
+              "similarity": 0.752601446581922,
+              "preview": "Sublime · Margherita Pizza · Mains · San Marzano tomato sauce, fresh mozzarella, and torn basil",
+              "in_gold": true
+            },
+            {
+              "source_id": "ce974f06-7119-4e62-99fc-a346914700d9",
+              "similarity": 0.732285973830038,
+              "preview": "The Black Sheep Bistro · Margherita Pizza · Mains · San Marzano tomato sauce, fresh mozzarella, and torn basil",
+              "in_gold": true
+            },
+            {
+              "source_id": "64050da3-d4a4-417b-affb-fad3914e85f7",
+              "similarity": 0.705030472585761,
+              "preview": "La Plage · Margherita Pizza · Mains · San Marzano tomato sauce, fresh mozzarella, and torn basil",
+              "in_gold": true
+            },
+            {
+              "source_id": "7b8411ae-9dbd-4bf7-b1ac-4a6510b02fc0",
+              "similarity": 0.696886158360943,
+              "preview": "Botanico · Vegan Falafel Wrap · Healthy · Whole wheat wrap filled with crisp falafel, pickled vegetables, and hummus",
+              "in_gold": false
+            },
+            {
+              "source_id": "c640316c-ff1a-47af-8ca8-04e0fcab4840",
+              "similarity": 0.691992452379923,
+              "preview": "Ritz Classic · Serradura · Desserts · Classic Portuguese sawdust pudding with whipped cream and crushed biscuit",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "m8",
+          "query": "Kingfish curry",
+          "hitRate": 0,
+          "precisionAtK": 0,
+          "hits": 0,
+          "emptyExpected": false,
+          "expected": [
+            "fa77d945-ff2b-4a80-8e0c-43f6306e5caa"
+          ],
+          "retrieved": [
+            {
+              "source_id": "f95b76a9-6791-49f6-8adb-953db99003a0",
+              "similarity": 0.788058336990611,
+              "preview": "Ritz Classic · Pork Vindaloo · Indian · Traditional slow-cooked pork curry with vinegar and red toddy paste",
+              "in_gold": false
+            },
+            {
+              "source_id": "3854a732-31ef-4ccf-8fbb-4a3aeb894406",
+              "similarity": 0.782612204551697,
+              "preview": "Susegado · Chettinad Chicken Curry · Indian · Fiery South Indian black pepper chicken curry with roasted spices",
+              "in_gold": false
+            },
+            {
+              "source_id": "77c32d4a-1c31-4019-98b1-1a8540d0e21f",
+              "similarity": 0.78157355181308,
+              "preview": "Fat Fish · Pork Vindaloo · Indian · Traditional slow-cooked pork curry with vinegar and red toddy paste",
+              "in_gold": false
+            },
+            {
+              "source_id": "5b3a1310-24ab-423a-bfec-29de8ac47856",
+              "similarity": 0.772321820259094,
+              "preview": "Thalassa · Thai Green Curry · Indian · Mixed vegetables and bamboo shoots in aromatic coconut green curry",
+              "in_gold": false
+            },
+            {
+              "source_id": "a1372094-4c20-47f1-9423-6a9c41e4df39",
+              "similarity": 0.770338920314446,
+              "preview": "Fat Fish · Goan Fish Curry Rice · Indian · Coastal kingfish curry served with steamed rice and sol kadhi",
+              "in_gold": false
+            }
+          ]
+        }
+      ],
+      "avgHitRate": 0.5,
+      "avgPrecision": 0.2
+    },
+    "extreme": {
+      "name": "extreme",
+      "rows": [
+        {
+          "id": "e1",
+          "query": "vegan sushi rolls under 50 rupees gluten free",
+          "hitRate": 0,
+          "precisionAtK": null,
+          "hits": 0,
+          "emptyExpected": true,
+          "returned": 5,
+          "expected": [],
+          "retrieved": [
+            {
+              "source_id": "92fcf61b-0c53-43c8-abfa-fee140ee8bd4",
+              "similarity": 0.707932748115388,
+              "preview": "Artjuna · Vegan Falafel Wrap · Healthy · Whole wheat wrap filled with crisp falafel, pickled vegetables, and hummus",
+              "in_gold": false
+            },
+            {
+              "source_id": "7b8411ae-9dbd-4bf7-b1ac-4a6510b02fc0",
+              "similarity": 0.702824489410588,
+              "preview": "Botanico · Vegan Falafel Wrap · Healthy · Whole wheat wrap filled with crisp falafel, pickled vegetables, and hummus",
+              "in_gold": false
+            },
+            {
+              "source_id": "020066b7-c3f3-47cf-9f60-e788f631bc6b",
+              "similarity": 0.702321439289619,
+              "preview": "Fat Fish · Steamed Dim Sum Basket · Asian · Assorted steamed chicken and vegetable dumplings with chili oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "4f44c8e6-d4ee-4aa0-9ad1-4b1ca793e513",
+              "similarity": 0.697466494163,
+              "preview": "Thalassa · Vegan Falafel Wrap · Healthy · Whole wheat wrap filled with crisp falafel, pickled vegetables, and hummus",
+              "in_gold": false
+            },
+            {
+              "source_id": "206b3ca1-fe73-435c-9f7e-4e7d6df42329",
+              "similarity": 0.676601806092066,
+              "preview": "Botanico · Quinoa Buddha Bowl · Healthy · Warm quinoa, roasted chickpeas, avocado, kale, and tahini lemon dressing",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "e2",
+          "query": "something nice maybe food?",
+          "hitRate": 0,
+          "precisionAtK": null,
+          "hits": 0,
+          "emptyExpected": true,
+          "returned": 5,
+          "expected": [],
+          "retrieved": [
+            {
+              "source_id": "4f249fe0-332b-4d38-a849-fe5a86b62f3c",
+              "similarity": 0.593762375411438,
+              "preview": "Sublime · Hummus & Falafel Platter · Healthy · Creamy chickpea hummus, warm pita bread, and crisp falafel balls",
+              "in_gold": false
+            },
+            {
+              "source_id": "020066b7-c3f3-47cf-9f60-e788f631bc6b",
+              "similarity": 0.586429406830147,
+              "preview": "Fat Fish · Steamed Dim Sum Basket · Asian · Assorted steamed chicken and vegetable dumplings with chili oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "1a97ace7-1b69-450f-a24c-5609d6f796c9",
+              "similarity": 0.585738504783005,
+              "preview": "Aura Cafe · Avocado Sourdough Toast · Healthy · Smashed avocado, poached egg, chili flakes, and microgreens on sourdough",
+              "in_gold": false
+            },
+            {
+              "source_id": "613c1234-6246-45b0-95f3-6a358b8d8328",
+              "similarity": 0.582848364963666,
+              "preview": "Botanico · Hummus & Falafel Platter · Healthy · Creamy chickpea hummus, warm pita bread, and crisp falafel balls",
+              "in_gold": false
+            },
+            {
+              "source_id": "04335063-295d-44e0-b021-1aa4dae19586",
+              "similarity": 0.578222664038219,
+              "preview": "Sakana · Hummus & Falafel Platter · Healthy · Creamy chickpea hummus, warm pita bread, and crisp falafel balls",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "e3",
+          "query": "extra spicy Chilli paneer dry under 180 veg only no onion quick delivery rating 5 stars",
+          "hitRate": 0,
+          "precisionAtK": 0,
+          "hits": 0,
+          "emptyExpected": false,
+          "expected": [
+            "7ad3dd6e-5979-4c02-bb82-0705769da628"
+          ],
+          "retrieved": [
+            {
+              "source_id": "3854a732-31ef-4ccf-8fbb-4a3aeb894406",
+              "similarity": 0.75203791236426,
+              "preview": "Susegado · Chettinad Chicken Curry · Indian · Fiery South Indian black pepper chicken curry with roasted spices",
+              "in_gold": false
+            },
+            {
+              "source_id": "6b187df3-6ded-40c2-bfaf-794ac7b01e09",
+              "similarity": 0.748124957531701,
+              "preview": "Navtara Pure Veg · Chettinad Chicken Curry · Indian · Fiery South Indian black pepper chicken curry with roasted spices",
+              "in_gold": false
+            },
+            {
+              "source_id": "995e7aae-b9eb-434d-8048-8f9c58610522",
+              "similarity": 0.745033324948949,
+              "preview": "Sublime · Paneer Tikka · Mains · Chargrilled cottage cheese cubes marinated in spiced yogurt and mustard oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "2c583544-bbf5-468e-b412-2025c83b5726",
+              "similarity": 0.71358590508352,
+              "preview": "Navtara Pure Veg · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "f95b76a9-6791-49f6-8adb-953db99003a0",
+              "similarity": 0.712612160315366,
+              "preview": "Ritz Classic · Pork Vindaloo · Indian · Traditional slow-cooked pork curry with vinegar and red toddy paste",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "e4",
+          "query": "truffle wagyu steak well done",
+          "hitRate": 0,
+          "precisionAtK": null,
+          "hits": 0,
+          "emptyExpected": true,
+          "returned": 5,
+          "expected": [],
+          "retrieved": [
+            {
+              "source_id": "8ce2c099-bbcc-4760-9b2f-19d7255d0433",
+              "similarity": 0.677667858183608,
+              "preview": "Sublime · Beef Tenderloin Steak · Mains · Grilled tenderloin served with red wine jus and mashed potatoes",
+              "in_gold": false
+            },
+            {
+              "source_id": "020066b7-c3f3-47cf-9f60-e788f631bc6b",
+              "similarity": 0.669428864785573,
+              "preview": "Fat Fish · Steamed Dim Sum Basket · Asian · Assorted steamed chicken and vegetable dumplings with chili oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "b405b4a1-5931-44e8-948c-add7f70eae48",
+              "similarity": 0.660412748468302,
+              "preview": "La Plage · Beef Tenderloin Steak · Mains · Grilled tenderloin served with red wine jus and mashed potatoes",
+              "in_gold": false
+            },
+            {
+              "source_id": "60b37b79-315b-4d46-860e-25a8ca9eec3a",
+              "similarity": 0.648717624101927,
+              "preview": "Spice Goa · Beef Tenderloin Steak · Mains · Grilled tenderloin served with red wine jus and mashed potatoes",
+              "in_gold": false
+            },
+            {
+              "source_id": "f709d06b-3575-4416-b68f-403fe685be79",
+              "similarity": 0.630275440571563,
+              "preview": "La Plage · Truffle Mushroom Pasta · Mains · Penne pasta tossed in creamy black truffle and wild mushroom sauce",
+              "in_gold": false
+            }
+          ]
+        }
+      ],
+      "avgHitRate": 0,
+      "avgPrecision": 0
+    },
+    "noisy": {
+      "name": "noisy",
+      "rows": [
+        {
+          "id": "n1",
+          "query": "masale dose asdf xxx",
+          "hitRate": 0,
+          "precisionAtK": 0,
+          "hits": 0,
+          "emptyExpected": false,
+          "expected": [
+            "7badbadb-a121-4008-8871-8a3aaebed76a",
+            "315209be-24a6-4305-a40b-f059d08bda7c",
+            "5d33068c-0a3d-47fd-b500-e2cb008ac7f0",
+            "acf48b45-26af-41de-b1bf-c14d96cb0f36",
+            "47d24451-0049-42e0-87b3-63b67f2cdf6e"
+          ],
+          "retrieved": [
+            {
+              "source_id": "7758b577-ccc9-4db5-93ce-c585959fd15e",
+              "similarity": 0.573081263671137,
+              "preview": "Aura Cafe · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "fffa472b-f059-449e-8231-be88d8a5d93f",
+              "similarity": 0.559549715545815,
+              "preview": "Aura Cafe · Cold Brew Coffee · Beverages · 16-hour cold steep single-origin Arabica coffee over ice",
+              "in_gold": false
+            },
+            {
+              "source_id": "f9b49b91-86b1-4cc9-81a8-e3bf3ece80c2",
+              "similarity": 0.548782575420723,
+              "preview": "Aura Cafe · Vegan Falafel Wrap · Healthy · Whole wheat wrap filled with crisp falafel, pickled vegetables, and hummus",
+              "in_gold": false
+            },
+            {
+              "source_id": "448e3ee0-20cf-4e58-88fe-f7e29f53295a",
+              "similarity": 0.546707661922195,
+              "preview": "Artjuna · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "020066b7-c3f3-47cf-9f60-e788f631bc6b",
+              "similarity": 0.545367555210724,
+              "preview": "Fat Fish · Steamed Dim Sum Basket · Asian · Assorted steamed chicken and vegetable dumplings with chili oil",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "n2",
+          "query": "chicken biryany asdf xxx",
+          "hitRate": 0,
+          "precisionAtK": 0,
+          "hits": 0,
+          "emptyExpected": false,
+          "expected": [
+            "d9661942-a16b-48b5-895b-50561a644191"
+          ],
+          "retrieved": [
+            {
+              "source_id": "d59b2b6e-74eb-4294-a428-6b5e58b6589c",
+              "similarity": 0.677320662018239,
+              "preview": "Botanico · Mutton Dum Biryani · Indian · Long-grain basmati rice layered with marinated mutton cooked under dum",
+              "in_gold": false
+            },
+            {
+              "source_id": "020066b7-c3f3-47cf-9f60-e788f631bc6b",
+              "similarity": 0.677318950811618,
+              "preview": "Fat Fish · Steamed Dim Sum Basket · Asian · Assorted steamed chicken and vegetable dumplings with chili oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "02e2162e-7927-4945-bdd1-1f37c309d6f1",
+              "similarity": 0.668037931328711,
+              "preview": "Burger Factory · Mutton Dum Biryani · Indian · Long-grain basmati rice layered with marinated mutton cooked under dum",
+              "in_gold": false
+            },
+            {
+              "source_id": "ccf6b146-49a9-4f85-b322-8b5a5ec90bd9",
+              "similarity": 0.652064902649775,
+              "preview": "Bomra's · Steamed Dim Sum Basket · Asian · Assorted steamed chicken and vegetable dumplings with chili oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "b421a2e8-7714-4ce6-a28c-527ef7e92515",
+              "similarity": 0.647345101200367,
+              "preview": "Martin's Corner · Mutton Dum Biryani · Indian · Long-grain basmati rice layered with marinated mutton cooked under dum",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "n3",
+          "query": "chilli paneer dry asdf xxx",
+          "hitRate": 1,
+          "precisionAtK": 0.2,
+          "hits": 1,
+          "emptyExpected": false,
+          "expected": [
+            "7ad3dd6e-5979-4c02-bb82-0705769da628"
+          ],
+          "retrieved": [
+            {
+              "source_id": "995e7aae-b9eb-434d-8048-8f9c58610522",
+              "similarity": 0.736473648127799,
+              "preview": "Sublime · Paneer Tikka · Mains · Chargrilled cottage cheese cubes marinated in spiced yogurt and mustard oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "7ad3dd6e-5979-4c02-bb82-0705769da628",
+              "similarity": 0.734300421056317,
+              "preview": "Wok & Roll · Chilli paneer dry · Starters · Chilli paneer dry from the Starters menu — aromatic, kitchen-fresh, and made",
+              "in_gold": true
+            },
+            {
+              "source_id": "6b187df3-6ded-40c2-bfaf-794ac7b01e09",
+              "similarity": 0.698064291246493,
+              "preview": "Navtara Pure Veg · Chettinad Chicken Curry · Indian · Fiery South Indian black pepper chicken curry with roasted spices",
+              "in_gold": false
+            },
+            {
+              "source_id": "3854a732-31ef-4ccf-8fbb-4a3aeb894406",
+              "similarity": 0.694431291683048,
+              "preview": "Susegado · Chettinad Chicken Curry · Indian · Fiery South Indian black pepper chicken curry with roasted spices",
+              "in_gold": false
+            },
+            {
+              "source_id": "2c583544-bbf5-468e-b412-2025c83b5726",
+              "similarity": 0.689219966120904,
+              "preview": "Navtara Pure Veg · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "n4",
+          "query": "filter coffee asdf xxx",
+          "hitRate": 1,
+          "precisionAtK": 0.4,
+          "hits": 2,
+          "emptyExpected": false,
+          "expected": [
+            "2c583544-bbf5-468e-b412-2025c83b5726",
+            "3ee2e6c6-2270-4df5-b483-115fd4ee0b0b",
+            "c8a7d8f5-e9a7-494c-b022-f0bb065dfa8b",
+            "448e3ee0-20cf-4e58-88fe-f7e29f53295a",
+            "934ecf13-8995-4005-9f4d-881edab5bd45",
+            "993fc651-394d-46ec-a0a6-e551bab48a9f",
+            "7758b577-ccc9-4db5-93ce-c585959fd15e",
+            "b2ce5c3d-25b3-400b-9c66-4bf4bf9bcaa8",
+            "56974422-77b6-42fc-80e9-4d9e547248d1"
+          ],
+          "retrieved": [
+            {
+              "source_id": "fffa472b-f059-449e-8231-be88d8a5d93f",
+              "similarity": 0.707186040300278,
+              "preview": "Aura Cafe · Cold Brew Coffee · Beverages · 16-hour cold steep single-origin Arabica coffee over ice",
+              "in_gold": false
+            },
+            {
+              "source_id": "7758b577-ccc9-4db5-93ce-c585959fd15e",
+              "similarity": 0.702380122172905,
+              "preview": "Aura Cafe · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": true
+            },
+            {
+              "source_id": "71d63a81-1cf8-4356-bfb3-47a3d0cd9021",
+              "similarity": 0.700533387335172,
+              "preview": "Artjuna · Cold Brew Coffee · Beverages · 16-hour cold steep single-origin Arabica coffee over ice",
+              "in_gold": false
+            },
+            {
+              "source_id": "448e3ee0-20cf-4e58-88fe-f7e29f53295a",
+              "similarity": 0.689715184007441,
+              "preview": "Artjuna · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": true
+            },
+            {
+              "source_id": "7153cdb1-94aa-4f77-923d-ee784b8297bc",
+              "similarity": 0.682311537679172,
+              "preview": "Infanteria · Cold Brew Coffee · Beverages · 16-hour cold steep single-origin Arabica coffee over ice",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "n5",
+          "query": "ukadiche modak asdf xxx",
+          "hitRate": 0,
+          "precisionAtK": 0,
+          "hits": 0,
+          "emptyExpected": false,
+          "expected": [
+            "c331659a-2e89-4a5e-9a7a-1800ae1d51d2"
+          ],
+          "retrieved": [
+            {
+              "source_id": "7758b577-ccc9-4db5-93ce-c585959fd15e",
+              "similarity": 0.547212871743095,
+              "preview": "Aura Cafe · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "020066b7-c3f3-47cf-9f60-e788f631bc6b",
+              "similarity": 0.539270923398407,
+              "preview": "Fat Fish · Steamed Dim Sum Basket · Asian · Assorted steamed chicken and vegetable dumplings with chili oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "1a97ace7-1b69-450f-a24c-5609d6f796c9",
+              "similarity": 0.536432225575388,
+              "preview": "Aura Cafe · Avocado Sourdough Toast · Healthy · Smashed avocado, poached egg, chili flakes, and microgreens on sourdough",
+              "in_gold": false
+            },
+            {
+              "source_id": "448e3ee0-20cf-4e58-88fe-f7e29f53295a",
+              "similarity": 0.535236365342148,
+              "preview": "Artjuna · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "f9b49b91-86b1-4cc9-81a8-e3bf3ece80c2",
+              "similarity": 0.532232721974643,
+              "preview": "Aura Cafe · Vegan Falafel Wrap · Healthy · Whole wheat wrap filled with crisp falafel, pickled vegetables, and hummus",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "n6",
+          "query": "kothimbyr vadi asdf xxx",
+          "hitRate": 0,
+          "precisionAtK": 0,
+          "hits": 0,
+          "emptyExpected": false,
+          "expected": [
+            "adbf89b6-33f2-4dea-88ea-5c37f60aa559"
+          ],
+          "retrieved": [
+            {
+              "source_id": "2c583544-bbf5-468e-b412-2025c83b5726",
+              "similarity": 0.595951844950826,
+              "preview": "Navtara Pure Veg · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "448e3ee0-20cf-4e58-88fe-f7e29f53295a",
+              "similarity": 0.572504554091321,
+              "preview": "Artjuna · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "993fc651-394d-46ec-a0a6-e551bab48a9f",
+              "similarity": 0.567000424742611,
+              "preview": "Caravela Café & Bistro · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "c8a7d8f5-e9a7-494c-b022-f0bb065dfa8b",
+              "similarity": 0.565809140858359,
+              "preview": "Burger Factory · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "7758b577-ccc9-4db5-93ce-c585959fd15e",
+              "similarity": 0.563871168090539,
+              "preview": "Aura Cafe · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "n7",
+          "query": "margheryta asdf xxx",
+          "hitRate": 0,
+          "precisionAtK": 0,
+          "hits": 0,
+          "emptyExpected": false,
+          "expected": [
+            "b771a676-7768-41c4-8fbc-3340c08663a3",
+            "90141361-0b76-4597-80a8-3fe94ebd34a8",
+            "8b65d276-b217-4100-8c29-d2ad0d647310",
+            "7cff96de-f94d-48c8-95ab-3bd5ceddccf0",
+            "6d03a8e5-93fe-4dcd-ac85-c95e89351693",
+            "ce974f06-7119-4e62-99fc-a346914700d9",
+            "64050da3-d4a4-417b-affb-fad3914e85f7"
+          ],
+          "retrieved": [
+            {
+              "source_id": "7758b577-ccc9-4db5-93ce-c585959fd15e",
+              "similarity": 0.528248818412429,
+              "preview": "Aura Cafe · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "ecb9c8d6-b119-4d5d-b5d3-26c097499916",
+              "similarity": 0.520648503110267,
+              "preview": "Burger Factory · Mango Passion Smoothie · Healthy · Fresh Alphonso mango puree blended with passion fruit and almond mil",
+              "in_gold": false
+            },
+            {
+              "source_id": "2af70e5a-ab2d-45cc-840b-5b8ebba8729c",
+              "similarity": 0.519468066755797,
+              "preview": "Aura Cafe · Mango Passion Smoothie · Healthy · Fresh Alphonso mango puree blended with passion fruit and almond milk",
+              "in_gold": false
+            },
+            {
+              "source_id": "f9b49b91-86b1-4cc9-81a8-e3bf3ece80c2",
+              "similarity": 0.51869424620443,
+              "preview": "Aura Cafe · Vegan Falafel Wrap · Healthy · Whole wheat wrap filled with crisp falafel, pickled vegetables, and hummus",
+              "in_gold": false
+            },
+            {
+              "source_id": "4f44c8e6-d4ee-4aa0-9ad1-4b1ca793e513",
+              "similarity": 0.512293479727021,
+              "preview": "Thalassa · Vegan Falafel Wrap · Healthy · Whole wheat wrap filled with crisp falafel, pickled vegetables, and hummus",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "n8",
+          "query": "kingfish curry asdf xxx",
+          "hitRate": 0,
+          "precisionAtK": 0,
+          "hits": 0,
+          "emptyExpected": false,
+          "expected": [
+            "fa77d945-ff2b-4a80-8e0c-43f6306e5caa"
+          ],
+          "retrieved": [
+            {
+              "source_id": "a1372094-4c20-47f1-9423-6a9c41e4df39",
+              "similarity": 0.759530975846602,
+              "preview": "Fat Fish · Goan Fish Curry Rice · Indian · Coastal kingfish curry served with steamed rice and sol kadhi",
+              "in_gold": false
+            },
+            {
+              "source_id": "020066b7-c3f3-47cf-9f60-e788f631bc6b",
+              "similarity": 0.721908407097565,
+              "preview": "Fat Fish · Steamed Dim Sum Basket · Asian · Assorted steamed chicken and vegetable dumplings with chili oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "0ce8ee21-ec4f-44a4-bd74-29dfdb933652",
+              "similarity": 0.717784566747224,
+              "preview": "Ritz Classic · Goan Fish Curry Rice · Indian · Coastal kingfish curry served with steamed rice and sol kadhi",
+              "in_gold": false
+            },
+            {
+              "source_id": "2a45e8f0-d8c3-4b9c-b76e-9d9397102e6a",
+              "similarity": 0.712621479879333,
+              "preview": "Mum's Kitchen · Goan Fish Curry Rice · Indian · Coastal kingfish curry served with steamed rice and sol kadhi",
+              "in_gold": false
+            },
+            {
+              "source_id": "5b3a1310-24ab-423a-bfec-29de8ac47856",
+              "similarity": 0.708209616435149,
+              "preview": "Thalassa · Thai Green Curry · Indian · Mixed vegetables and bamboo shoots in aromatic coconut green curry",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "n9",
+          "query": "vegan suhsi rollz undr 50 rs glutenfreeeee",
+          "hitRate": 0,
+          "precisionAtK": null,
+          "hits": 0,
+          "emptyExpected": true,
+          "returned": 5,
+          "expected": [],
+          "retrieved": [
+            {
+              "source_id": "7b8411ae-9dbd-4bf7-b1ac-4a6510b02fc0",
+              "similarity": 0.622421562671944,
+              "preview": "Botanico · Vegan Falafel Wrap · Healthy · Whole wheat wrap filled with crisp falafel, pickled vegetables, and hummus",
+              "in_gold": false
+            },
+            {
+              "source_id": "4f44c8e6-d4ee-4aa0-9ad1-4b1ca793e513",
+              "similarity": 0.62171778808367,
+              "preview": "Thalassa · Vegan Falafel Wrap · Healthy · Whole wheat wrap filled with crisp falafel, pickled vegetables, and hummus",
+              "in_gold": false
+            },
+            {
+              "source_id": "92fcf61b-0c53-43c8-abfa-fee140ee8bd4",
+              "similarity": 0.620453968102429,
+              "preview": "Artjuna · Vegan Falafel Wrap · Healthy · Whole wheat wrap filled with crisp falafel, pickled vegetables, and hummus",
+              "in_gold": false
+            },
+            {
+              "source_id": "206b3ca1-fe73-435c-9f7e-4e7d6df42329",
+              "similarity": 0.59470876171468,
+              "preview": "Botanico · Quinoa Buddha Bowl · Healthy · Warm quinoa, roasted chickpeas, avocado, kale, and tahini lemon dressing",
+              "in_gold": false
+            },
+            {
+              "source_id": "84646408-e4c3-451f-bfb4-86c737640bc1",
+              "similarity": 0.593885263500705,
+              "preview": "Navtara Pure Veg · Vegan Falafel Wrap · Healthy · Whole wheat wrap filled with crisp falafel, pickled vegetables, and hu",
+              "in_gold": false
+            }
+          ]
+        },
+        {
+          "id": "n10",
+          "query": "extra spicy chylli peneer dry under 180 veg only no onion quick delivery rating 5 stars asdf xxx",
+          "hitRate": 0,
+          "precisionAtK": 0,
+          "hits": 0,
+          "emptyExpected": false,
+          "expected": [
+            "7ad3dd6e-5979-4c02-bb82-0705769da628"
+          ],
+          "retrieved": [
+            {
+              "source_id": "3854a732-31ef-4ccf-8fbb-4a3aeb894406",
+              "similarity": 0.715637752229777,
+              "preview": "Susegado · Chettinad Chicken Curry · Indian · Fiery South Indian black pepper chicken curry with roasted spices",
+              "in_gold": false
+            },
+            {
+              "source_id": "6b187df3-6ded-40c2-bfaf-794ac7b01e09",
+              "similarity": 0.711778802381714,
+              "preview": "Navtara Pure Veg · Chettinad Chicken Curry · Indian · Fiery South Indian black pepper chicken curry with roasted spices",
+              "in_gold": false
+            },
+            {
+              "source_id": "2c583544-bbf5-468e-b412-2025c83b5726",
+              "similarity": 0.7053902431161,
+              "preview": "Navtara Pure Veg · Filter Coffee · Beverages · Authentic South Indian chicory brewed hot milk coffee",
+              "in_gold": false
+            },
+            {
+              "source_id": "020066b7-c3f3-47cf-9f60-e788f631bc6b",
+              "similarity": 0.681380789362269,
+              "preview": "Fat Fish · Steamed Dim Sum Basket · Asian · Assorted steamed chicken and vegetable dumplings with chili oil",
+              "in_gold": false
+            },
+            {
+              "source_id": "4f249fe0-332b-4d38-a849-fe5a86b62f3c",
+              "similarity": 0.679462332757631,
+              "preview": "Sublime · Hummus & Falafel Platter · Healthy · Creamy chickpea hummus, warm pita bread, and crisp falafel balls",
+              "in_gold": false
+            }
+          ]
+        }
+      ],
+      "avgHitRate": 0.2,
+      "avgPrecision": 0.06666666666666668
+    }
+  },
+  "limitations": [
+    "Out-of-catalog (empty expected) always scores hitRate=0 even if we later refuse.",
+    "UUID gold set; at 20K scale will move to canonical_key (Phase 5).",
+    "m1 gold includes Mysore Masala Dosa (name contains masala dosa)."
+  ]
+}

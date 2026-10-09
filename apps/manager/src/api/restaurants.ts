@@ -32,7 +32,7 @@ export async function updateOwnedRestaurant(id: string, patch: RestaurantPatch):
     .update(patch)
     .eq('id', id)
     .select(
-      'id, owner_id, name, description, cuisine, address, phone, image_url, is_open, branch_name, created_at, updated_at',
+      'id, owner_id, name, description, cuisine, address, phone, image_url, is_open, branch_name, lat, lng, offer_percent, prep_minutes, capacity_threshold, created_at, updated_at',
     )
     .single();
   if (error || !data) throwApiError(error ?? {}, 'Could not update restaurant.');

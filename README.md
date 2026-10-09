@@ -1,17 +1,39 @@
 # QuickBite
 
-Food ordering & delivery for customers, riders, and restaurants — a Swiggy/Zomato-style monorepo with one mobile app, one role-based web dashboard, and a shared Supabase backend.
+Food ordering and delivery for **customers**, **riders**, and **restaurants** — a Swiggy/Zomato-style product in one monorepo: Expo mobile app, role-based web dashboard, marketing landing, and a shared Supabase backend.
 
-**Live**
+Built as an SJ Innovation intern assignment with **Lovable + Supabase + GitHub + Vercel**, then extended with Expo, edge functions, and an AI ordering assistant (**RIO**).
+
+---
+
+## Problem
+
+Local food delivery needs three people to hand work to each other safely: a customer places an order, a kitchen prepares it, a rider delivers it. Most toy demos fake that handoff or share one flat UI. Real ops also need distance-honest fees, role isolation, and a support path when something goes wrong.
+
+## Solution
+
+QuickBite is one Postgres database with **RLS + RPCs** as the authority. Each role sees only its sidebar and rows. Order status moves through a fixed machine (`placed → preparing → ready → out_for_delivery → delivered`). Money, delivery range (8 km), and kitchen capacity are enforced in SQL and the apps — not only in copy.
+
+## What is not common
+
+- **Role handoff chain** across mobile + dashboard, not a single “demo user”
+- **Security-definer RPCs** for order writes (no client `UPDATE orders`)
+- **RIO** — JWT-scoped customer AI that can search, cart, checkout, track, and open tickets
+- **Truth layer** — kitchen offers, km fees, near-me default, audited admin force/refund
+- **Owner → manager invite** pipeline plus admin applications for riders/owners
+
+---
+
+## Live
 
 | Surface | Link |
 |---------|------|
-| Restaurant dashboard | [quickbite-nine-phi.vercel.app](https://quickbite-nine-phi.vercel.app/) |
-| Marketing landing | `apps/landing` (deploy separately; see below) |
+| Restaurant / admin dashboard | [quickbite-nine-phi.vercel.app](https://quickbite-nine-phi.vercel.app/) |
+| Marketing landing | `apps/landing` (deploy as its own Vercel project) |
 | GitHub | [sanketrotangar-sji/quickbite-food-delivery-app](https://github.com/sanketrotangar-sji/quickbite-food-delivery-app) |
-| Lovable preview | [lovable.dev/preview/…](https://lovable.dev/preview/6ARtcZ0ZZ4pp7dyqkNsE5hYC1hWWdWBv) |
+| Lovable (manager UI) | Connect to this monorepo under `apps/manager` only |
 
-**Docs:** [Architecture](./docs/architecture.md) · [Setup & run](./docs/setup.md) · [System flow](./docs/system-flow.md) · [Requirements](./docs/requirements.md) · [ML classifier](./docs/ml/README.md)
+**Docs:** [REQUIREMENTS](./docs/REQUIREMENTS.md) (product SoT) · [PROGRESS](./docs/PROGRESS.md) (status) · [PLAN](./docs/PLAN.md) (pre-submission backlog)
 
 ---
 
@@ -37,18 +59,19 @@ Food ordering & delivery for customers, riders, and restaurants — a Swiggy/Zom
 
 ---
 
-## Features
+## Roles overview
 
-- **Customer app** — browse restaurants, cart, checkout, order tracking
-- **Marketing landing** — public front door (`apps/landing`) with app download + dashboard login CTAs
-- **Rider app** — duty toggle, accept deliveries, navigation handoff (same Expo client)
-- **Restaurant dashboard** — owners and managers share one Vite app; screens differ by role
-- **Admin** — platform oversight from `/admin` (seeded role)
-- **Auth** — email/password and Google via Supabase Auth
-- **Security** — Postgres RLS + RPCs so each role only sees its own data
-- **Realtime** — order status and kitchen updates over Supabase Realtime
-- **Edge functions** — order notifications, directions, push token registration, RIO assistant
-- **Intelligence** — RAG-grounded RIO, support tickets, auto rider assign on `ready`, kitchen-load ETA alerts
+| Role | App | How they get it | Primary nav |
+|------|-----|-----------------|-------------|
+| **Customer** | `apps/client` | Default on signup | Home, Explore, Orders, RIO, Profile |
+| **Rider** | `apps/client` | Apply → admin approves | Home, Orders, Earnings, Profile |
+| **Restaurant manager** | `apps/manager` | Owner email invite | Dashboard, Orders, Menu, Performance |
+| **Restaurant owner** | `apps/manager` | Apply → admin approves | Same as manager + **Business** |
+| **Admin** | `apps/manager` `/admin` | SQL seed only | Dashboard, Tickets, Orders, Riders, Applications, Restaurants, Users, Offers, AI |
+
+One account = one `profiles.role` (no multi-role). Need both customer and rider? Use two accounts.
+
+Full tables, RLS, and workflow: [`docs/REQUIREMENTS.md`](./docs/REQUIREMENTS.md).
 
 ---
 
@@ -57,22 +80,18 @@ Food ordering & delivery for customers, riders, and restaurants — a Swiggy/Zom
 | Layer | Technology |
 |-------|------------|
 | Mobile | Expo Router (React Native) — `apps/client` |
-| Marketing site | Vite + React — `apps/landing` |
-| Web dashboard | Vite + React — `apps/manager` |
+| Marketing | Vite + React — `apps/landing` |
+| Web dashboard | Vite + React (Lovable-friendly) — `apps/manager` |
 | Backend | Supabase (Auth, Postgres, RLS, Realtime, Edge Functions) |
-| AI / RAG | Groq or Ollama chat (`llm_config`) · Ollama `nomic-embed-text` · pgvector |
-| Deploy | Vercel (landing + dashboard) · Expo Go / EAS (mobile) · Supabase (API & DB) |
-
----
-
-## Architecture
+| AI / RAG | Groq or Ollama chat (`llm_config`) · Ollama `qwen3-embedding:0.6b` (1024-d) · pgvector |
+| Source | GitHub monorepo |
+| Deploy | Vercel (landing + dashboard) · EAS (Android APK/AAB) · Supabase (API & DB) |
 
 ```text
 ┌─────────────────┐
 │  apps/landing   │  public marketing entry
-│  Get App · Login│
 └────────┬────────┘
-         │ Dashboard Login → /login
+         │ Dashboard Login
          ▼
 ┌──────────────────────────────┐  ┌─────────────────────┐
 │  apps/manager                │  │  apps/client        │
@@ -84,16 +103,6 @@ Food ordering & delivery for customers, riders, and restaurants — a Swiggy/Zom
                    Supabase Auth · Postgres · RLS
 ```
 
-| Role | App | How they get it |
-|------|-----|-----------------|
-| Customer | `apps/client` | Default on signup |
-| Rider | `apps/client` | Apply in Settings → admin approves |
-| Restaurant owner | `apps/manager` | Apply in Settings → admin approves |
-| Restaurant manager | `apps/manager` | Owner email invite |
-| Admin | `apps/manager` `/admin` | SQL seed only |
-
-Full detail: [`docs/architecture.md`](./docs/architecture.md) · order handoffs: [`docs/system-flow.md`](./docs/system-flow.md)
-
 ---
 
 ## Repository structure
@@ -101,19 +110,19 @@ Full detail: [`docs/architecture.md`](./docs/architecture.md) · order handoffs:
 ```text
 QuickBite/
 ├── apps/
-│   ├── landing/          # Public marketing site (ecosystem front door)
-│   ├── manager/          # Web dashboard (admin + restaurant, by role)
+│   ├── landing/          # Marketing site
+│   ├── manager/          # Admin + restaurant dashboard
 │   └── client/           # Customer + rider Expo app
 ├── supabase/
-│   ├── migrations/       # Schema, RLS, RPCs, grants
-│   ├── functions/        # Edge Functions (notify-new-order, directions, …)
-│   └── config.toml
-├── packages/
-│   └── shared/           # Shared types / constants
+│   ├── migrations/       # Schema, RLS, RPCs (source of truth)
+│   ├── functions/        # notify-new-order, directions, rio
+│   └── seed.sql          # Local demo seed
+├── packages/shared/
 ├── assets/               # README screenshots
 ├── docs/
-│   └── ml/               # Offline category classifier metrics
-├── scripts/              # Seed, embeddings backfill, intelligence verify, ML
+│   ├── REQUIREMENTS.md   # Product / schema SoT
+│   └── PROGRESS.md       # Done / next / decisions
+├── scripts/
 ├── .env.example
 └── README.md
 ```
@@ -122,10 +131,10 @@ QuickBite/
 
 ## Prerequisites
 
-- **Node.js** ≥ 20
-- **Docker** (for local Supabase)
-- **Supabase CLI**
-- Expo Go or an emulator (mobile)
+- Node.js ≥ 20
+- Docker (optional local Supabase)
+- Supabase CLI
+- Expo Go or EAS build (mobile); Android package `com.sjinnovation.quickbite`
 
 ---
 
@@ -134,118 +143,102 @@ QuickBite/
 ### 1. Backend
 
 ```bash
-supabase start          # needs Docker
+supabase start          # local Docker
 supabase status         # copy API URL + anon key
 ```
 
-Or use the linked cloud project:
+Or cloud (day-to-day SoT for this project):
 
 ```bash
 supabase link --project-ref <YOUR_PROJECT_REF>
 supabase db push
 ```
 
+New migrations = **schema / RPC / RLS / indexes only** — no demo `INSERT` data (use `supabase/seed.sql` for local demos).
+
 ### 2. Environment
 
 ```bash
 cp .env.example apps/manager/.env
 cp apps/client/.env.example apps/client/.env
+# landing (optional): apps/landing/.env.example
 ```
 
 | App | Variables |
 |-----|-----------|
 | Manager | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` |
 | Client | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` |
+| Landing | `VITE_DASHBOARD_URL`, optional store URLs |
 
-Server-only secrets (`SUPABASE_SERVICE_ROLE_KEY`, `WEBHOOK_SECRET`, …) belong in Supabase Edge Function secrets — never in client env. See [`.env.example`](./.env.example).
+**Server-only** (Supabase Edge secrets / root `.env` for scripts — never `EXPO_PUBLIC_*` / `VITE_*`):
+
+| Secret | Purpose |
+|--------|---------|
+| `SUPABASE_SERVICE_ROLE_KEY` | Scripts / admin tooling |
+| `WEBHOOK_SECRET` | `notify-new-order` webhook |
+| `OPENROUTESERVICE_API_KEY` | `directions` (OSRM fallback if missing) |
+| `GROQ_API_KEY` | RIO chat (when Groq active) |
+| `OLLAMA_BASE_URL` | RIO chat + embeddings host |
+| `EXPO_ACCESS_TOKEN` | Optional Expo push |
+
+```bash
+supabase secrets set WEBHOOK_SECRET=$(openssl rand -hex 32)
+supabase secrets set GROQ_API_KEY=<key>
+supabase secrets set OLLAMA_BASE_URL=<reachable-host>
+supabase functions deploy notify-new-order
+supabase functions deploy directions
+supabase functions deploy rio
+```
 
 ### 3. Frontends
 
-From the repo root (npm workspaces):
-
 ```bash
 npm install
-npm run landing            # marketing site → http://localhost:5174
-npm run dashboard          # web dashboard → http://localhost:5173
-npm run client             # Expo → scan QR / press `a` or `i`
+npm run landing      # http://localhost:5174
+npm run dashboard    # http://localhost:5173
+npm run client       # Expo
 ```
 
-**Landing CTAs**
+### 4. Auth (email + Google)
 
-| Button | Destination |
-|--------|-------------|
-| Get the App / Download / store badges | `#download` — App Store / Play badges show **Coming soon** until `VITE_APP_STORE_URL` / `VITE_PLAY_STORE_URL` are set |
-| Dashboard Login / Go to Dashboard | Production `https://quickbite-nine-phi.vercel.app/login` (override with `VITE_DASHBOARD_URL`) — after login, AuthGate routes each role to its dashboard |
+Enable **Email** and **Google** providers in Supabase → Authentication. Add redirect URLs for the Vercel origin and `quickbite://` (Expo). Signup always creates `profiles.role = customer` via trigger.
 
-Deploy `apps/landing` as its own Vercel project (root directory `apps/landing`, static Vite output). See [`apps/landing/.env.example`](./apps/landing/.env.example).
+### 5. Lovable (manager only)
 
-Or per app:
+1. Lovable project → connect **this** GitHub monorepo → keep output under `apps/manager`
+2. Connect the **same** Supabase project
+3. **Never** let Lovable edit `/supabase` — migrations stay in GitHub
+4. Browser env: only `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`
+5. `apps/client` is Expo — **not** Lovable
 
-```bash
-cd apps/landing && npm run dev
-cd apps/manager && npm run dev
-cd apps/client  && npx expo start
-```
+### 6. Deploy
 
-Full GitHub / Lovable / Expo / Vercel wiring: **[docs/setup.md](./docs/setup.md)**.
+| Surface | How |
+|---------|-----|
+| Dashboard | Vercel project → root / `apps/manager` (existing: quickbite-nine-phi) |
+| Landing | Separate Vercel project, root `apps/landing` |
+| Edge functions | `npm run functions:deploy` or `supabase functions deploy …` |
+| Android APK | `cd apps/client && npx eas-cli build -p android --profile preview` |
+| Android store | EAS profile `production` → AAB |
 
-### Grader walkthrough (tests + RAG)
-
-```bash
-npm install
-cp .env.example .env                    # add SUPABASE_SERVICE_ROLE_KEY for integration
-cp .env.example apps/manager/.env       # VITE_SUPABASE_* from dashboard
-cp apps/client/.env.example apps/client/.env
-
-npm test                                # offline unit + edge; integration if .env set; Playwright skips without browsers
-npm run embeddings:backfill -- --source all   # menu + ratings + order history → ≥5k vectors on seed
-npm run rag:eval                        # needs Ollama + embeddings — see docs/rag/README.md
-npm run dct:artifacts                   # refresh docs/dct/ test-run + checklist pointers
-```
-
-**Assessment 2 RAG story:** domain seed is ≥5,000 rows; the vector index covers menu items, reviews, **and order history** (`orders`, `order_items`, `order_status_history`). Metrics live in [`docs/rag/evaluation-report.md`](./docs/rag/evaluation-report.md) and classifier evidence in [`docs/ml/`](./docs/ml/). Submission packet: [`docs/dct/SUBMISSION.md`](./docs/dct/SUBMISSION.md).
-
-RAG numbers live only in the generated report (do not copy stale metrics into this file).
+EAS builds do **not** read local `.env`. Set `EXPO_PUBLIC_SUPABASE_*` (and `GOOGLE_SERVICES_JSON` file env for FCM) in EAS for `preview` / `production`.
 
 ---
 
-## Scripts (root)
+## Useful scripts
 
 | Script | Purpose |
 |--------|---------|
-| `npm run supabase:start` | Local Supabase stack |
-| `npm run supabase:stop` | Stop local stack |
 | `npm run db:push` | Push migrations to linked cloud DB |
-| `npm run functions:serve` | Serve edge functions locally |
-| `npm run functions:deploy` | Deploy notify-new-order, directions, rio |
-| `npm run embeddings:backfill` | Embed menu/ratings/**order history** into `embeddings` (`--source all` for ≥5k on seed; needs Ollama) |
-| `npm run intelligence:verify` | Smoke-test RAG, tickets, auto-assign, kitchen-load |
-| `npm run ml:classify-menu` | Offline sklearn category classifier → `docs/ml/` |
-| `npm run test` | Unit (Vitest) + edge (Deno) + integration + Playwright (login + kitchen happy-path when `PLAYWRIGHT=1`) |
-| `npm run dct:artifacts` | Capture test logs + evidence index → `docs/dct/` |
-| `npm run rag:eval` | RAG retrieval report → [`docs/rag/evaluation-report.md`](./docs/rag/evaluation-report.md) |
-| `npm run dct:artifacts` | Capture unit/edge/integration logs → [`docs/dct/`](./docs/dct/) for DCT submit |
-| `npm run types:client` | Regenerate Expo `apps/client/src/types/database.ts` from cloud schema |
-| `npm run types:manager` | Regenerate manager `apps/manager/src/integrations/supabase/types.ts` |
-| `npm run types:gen` | Regenerate **both** type files (prefer this after `db push`) |
-| `npm run landing` | Start marketing site (`apps/landing`) |
-| `npm run dashboard` | Start web dashboard (`apps/manager`) |
-| `npm run client` | Start Expo client (`apps/client`) |
-
----
-
-## Environment & secrets
-
-| Kind | Where |
-|------|--------|
-| Public anon URL / key | App `.env` files (safe in client) |
-| Service role, webhook, maps, Expo push tokens | Supabase secrets / server only |
-| Never commit | `.env` (only `.env.example`) |
+| `npm run functions:deploy` | Deploy edge functions |
+| `npm run types:gen` | Regenerate client + manager DB types |
+| `npm run embeddings:backfill` | Embed menu/ratings/order history (`--source all`) |
+| `npm run intelligence:verify` | Smoke RAG / tickets / auto-assign |
+| `npm test` | Unit + edge + integration (+ Playwright when enabled) |
+| `npm run check:secrets` | Fail if service role leaked into client env patterns |
 
 ---
 
 ## Project status
 
-Intern assignment — **SJ Innovation**. Built with Lovable + Supabase + Expo + Vercel.
-
-See [`docs/requirements.md`](./docs/requirements.md) for the original brief.
+See [`docs/PROGRESS.md`](./docs/PROGRESS.md). Product rules and schema: [`docs/REQUIREMENTS.md`](./docs/REQUIREMENTS.md). Agent rules: [`.cursor/rules/project.mdc`](./.cursor/rules/project.mdc).

@@ -88,3 +88,59 @@ Deno.test("resolveProviderEndpoint groq missing key throws", () => {
   Deno.env.delete("GROQ_API_KEY");
   assertThrows(() => resolveProviderEndpoint("groq", "m"), Error);
 });
+
+Deno.test("callLLM retries once on alternate provider after 429", async () => {
+  Deno.env.set("GROQ_API_KEY", "k");
+  Deno.env.set("OLLAMA_BASE_URL", "http://127.0.0.1:11434");
+  const originalFetch = globalThis.fetch;
+  const urls: string[] = [];
+  globalThis.fetch = (input: RequestInfo | URL) => {
+    const url = String(input);
+    urls.push(url);
+    if (url.includes("api.groq.com")) {
+      return Promise.resolve(
+        new Response(JSON.stringify({ error: { message: "rate limited" } }), {
+          status: 429,
+          headers: { "content-type": "application/json" },
+        }),
+      );
+    }
+    return Promise.resolve(
+      new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+  };
+
+  try {
+    const result = await callLLM({
+      db: {
+        from: () => ({
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({
+                data: {
+                  id: "1",
+                  provider: "groq",
+                  chat_model: "openai/gpt-oss-20b",
+                  is_active: true,
+                },
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      },
+      messages: [{ role: "user", content: "hi" }],
+    });
+    assertEquals(result.provider, "ollama");
+    assertEquals(urls.length, 2);
+    assertEquals(urls[0]!.includes("api.groq.com"), true);
+    assertEquals(urls[1]!.includes("127.0.0.1:11434"), true);
+  } finally {
+    globalThis.fetch = originalFetch;
+    Deno.env.delete("GROQ_API_KEY");
+    Deno.env.delete("OLLAMA_BASE_URL");
+  }
+});

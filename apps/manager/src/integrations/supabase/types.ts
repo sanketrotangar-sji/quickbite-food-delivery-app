@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          id: string
+          order_id: string | null
+          payload: Json
+          restaurant_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          payload?: Json
+          restaurant_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          payload?: Json
+          restaurant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_log_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_audit_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_audit_log_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_browse"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_audit_log_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           applicant_id: string
@@ -630,12 +689,16 @@ export type Database = {
           delivery_fee: number
           delivery_lat: number | null
           delivery_lng: number | null
+          discount_amount: number
           drop_km: number | null
           eta_minutes: number | null
           id: string
           notes: string | null
+          offer_percent: number | null
           pickup_km: number | null
           placed_at: string
+          refund_note: string | null
+          refunded_at: string | null
           restaurant_id: string
           rider_earning: number | null
           rider_id: string | null
@@ -653,12 +716,16 @@ export type Database = {
           delivery_fee?: number
           delivery_lat?: number | null
           delivery_lng?: number | null
+          discount_amount?: number
           drop_km?: number | null
           eta_minutes?: number | null
           id?: string
           notes?: string | null
+          offer_percent?: number | null
           pickup_km?: number | null
           placed_at?: string
+          refund_note?: string | null
+          refunded_at?: string | null
           restaurant_id: string
           rider_earning?: number | null
           rider_id?: string | null
@@ -676,12 +743,16 @@ export type Database = {
           delivery_fee?: number
           delivery_lat?: number | null
           delivery_lng?: number | null
+          discount_amount?: number
           drop_km?: number | null
           eta_minutes?: number | null
           id?: string
           notes?: string | null
+          offer_percent?: number | null
           pickup_km?: number | null
           placed_at?: string
+          refund_note?: string | null
+          refunded_at?: string | null
           restaurant_id?: string
           rider_earning?: number | null
           rider_id?: string | null
@@ -939,6 +1010,7 @@ export type Database = {
         Row: {
           address: string
           branch_name: string | null
+          capacity_threshold: number
           created_at: string
           cuisine: string | null
           description: string | null
@@ -957,6 +1029,7 @@ export type Database = {
         Insert: {
           address: string
           branch_name?: string | null
+          capacity_threshold?: number
           created_at?: string
           cuisine?: string | null
           description?: string | null
@@ -975,6 +1048,7 @@ export type Database = {
         Update: {
           address?: string
           branch_name?: string | null
+          capacity_threshold?: number
           created_at?: string
           cuisine?: string | null
           description?: string | null
@@ -1034,6 +1108,76 @@ export type Database = {
             foreignKeyName: "rider_locations_rider_id_fkey"
             columns: ["rider_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rio_messages: {
+        Row: {
+          cards: Json | null
+          conflict: Json | null
+          content: string
+          created_at: string
+          id: string
+          role: string
+          thread_id: string
+        }
+        Insert: {
+          cards?: Json | null
+          conflict?: Json | null
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          thread_id: string
+        }
+        Update: {
+          cards?: Json | null
+          conflict?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rio_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "rio_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rio_threads: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rio_threads_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1196,6 +1340,29 @@ export type Database = {
           },
         ]
       }
+      restaurant_rating_summary: {
+        Row: {
+          avg_food: number | null
+          rating_count: number | null
+          restaurant_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_browse"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ratings_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_manager_invite: { Args: { p_invite_id?: string }; Returns: number }
@@ -1212,6 +1379,82 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "llm_config"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_force_order_status: {
+        Args: {
+          p_note: string
+          p_order_id: string
+          p_status: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: {
+          bonus_amount: number
+          customer_id: string
+          delivered_at: string | null
+          delivery_address: string
+          delivery_address_id: string | null
+          delivery_fee: number
+          delivery_lat: number | null
+          delivery_lng: number | null
+          discount_amount: number
+          drop_km: number | null
+          eta_minutes: number | null
+          id: string
+          notes: string | null
+          offer_percent: number | null
+          pickup_km: number | null
+          placed_at: string
+          refund_note: string | null
+          refunded_at: string | null
+          restaurant_id: string
+          rider_earning: number | null
+          rider_id: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          tip_amount: number
+          total_amount: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_mark_order_refunded: {
+        Args: { p_note: string; p_order_id: string }
+        Returns: {
+          bonus_amount: number
+          customer_id: string
+          delivered_at: string | null
+          delivery_address: string
+          delivery_address_id: string | null
+          delivery_fee: number
+          delivery_lat: number | null
+          delivery_lng: number | null
+          discount_amount: number
+          drop_km: number | null
+          eta_minutes: number | null
+          id: string
+          notes: string | null
+          offer_percent: number | null
+          pickup_km: number | null
+          placed_at: string
+          refund_note: string | null
+          refunded_at: string | null
+          restaurant_id: string
+          rider_earning: number | null
+          rider_id: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          tip_amount: number
+          total_amount: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1237,6 +1480,64 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_set_ticket_status: {
+        Args: {
+          p_status: Database["public"]["Enums"]["ticket_status"]
+          p_ticket_id: string
+        }
+        Returns: {
+          created_at: string
+          customer_id: string
+          description: string
+          id: string
+          issue_type: string
+          order_id: string
+          status: Database["public"]["Enums"]["ticket_status"]
+          urgency: Database["public"]["Enums"]["ticket_urgency"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "support_tickets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_restaurant_ops: {
+        Args: {
+          p_address?: string
+          p_capacity_threshold?: number
+          p_lat?: number
+          p_lng?: number
+          p_offer_percent?: number
+          p_prep_minutes?: number
+          p_restaurant_id: string
+        }
+        Returns: {
+          address: string
+          branch_name: string | null
+          capacity_threshold: number
+          created_at: string
+          cuisine: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_open: boolean
+          lat: number | null
+          lng: number | null
+          name: string
+          offer_percent: number | null
+          owner_id: string
+          phone: string | null
+          prep_minutes: number | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "restaurants"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       claim_delivery: {
         Args: { p_order_id: string }
         Returns: {
@@ -1248,12 +1549,16 @@ export type Database = {
           delivery_fee: number
           delivery_lat: number | null
           delivery_lng: number | null
+          discount_amount: number
           drop_km: number | null
           eta_minutes: number | null
           id: string
           notes: string | null
+          offer_percent: number | null
           pickup_km: number | null
           placed_at: string
+          refund_note: string | null
+          refunded_at: string | null
           restaurant_id: string
           rider_earning: number | null
           rider_id: string | null
@@ -1274,6 +1579,7 @@ export type Database = {
         Returns: {
           address: string
           branch_name: string | null
+          capacity_threshold: number
           created_at: string
           cuisine: string | null
           description: string | null
@@ -1347,6 +1653,7 @@ export type Database = {
         Returns: {
           address: string
           branch_name: string | null
+          capacity_threshold: number
           created_at: string
           cuisine: string | null
           description: string | null
@@ -1437,12 +1744,16 @@ export type Database = {
           delivery_fee: number
           delivery_lat: number | null
           delivery_lng: number | null
+          discount_amount: number
           drop_km: number | null
           eta_minutes: number | null
           id: string
           notes: string | null
+          offer_percent: number | null
           pickup_km: number | null
           placed_at: string
+          refund_note: string | null
+          refunded_at: string | null
           restaurant_id: string
           rider_earning: number | null
           rider_id: string | null
@@ -1473,12 +1784,16 @@ export type Database = {
           delivery_fee: number
           delivery_lat: number | null
           delivery_lng: number | null
+          discount_amount: number
           drop_km: number | null
           eta_minutes: number | null
           id: string
           notes: string | null
+          offer_percent: number | null
           pickup_km: number | null
           placed_at: string
+          refund_note: string | null
+          refunded_at: string | null
           restaurant_id: string
           rider_earning: number | null
           rider_id: string | null

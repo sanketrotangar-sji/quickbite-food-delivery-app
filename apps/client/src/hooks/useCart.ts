@@ -38,8 +38,12 @@ export function useCart() {
   const items = query.data ?? [];
   const itemCount = items.reduce((sum, line) => sum + line.quantity, 0);
   const subtotal = items.reduce((sum, line) => sum + line.quantity * Number(line.menu_items?.price ?? 0), 0);
+  const offerPercent = Math.max(0, Math.min(100, Number(items[0]?.restaurants?.offer_percent ?? 0)));
+  const discountAmount =
+    offerPercent > 0 ? Math.round(subtotal * (offerPercent / 100) * 100) / 100 : 0;
+  const discountedSubtotal = Math.max(0, Math.round((subtotal - discountAmount) * 100) / 100);
   const deliveryFee = itemCount > 0 ? STANDARD_DELIVERY_FEE : 0;
-  const total = subtotal + deliveryFee;
+  const total = discountedSubtotal + deliveryFee;
   const restaurantName = items[0]?.restaurants?.name ?? null;
   const restaurantId = items[0]?.restaurant_id ?? null;
 
@@ -134,6 +138,9 @@ export function useCart() {
     items,
     itemCount,
     subtotal,
+    offerPercent,
+    discountAmount,
+    discountedSubtotal,
     deliveryFee,
     total,
     restaurantName,
@@ -171,6 +178,7 @@ function pendingLine(
       id: restaurantId,
       name: preview.restaurantName,
       is_open: preview.isOpen,
+      offer_percent: null,
     },
   };
 }

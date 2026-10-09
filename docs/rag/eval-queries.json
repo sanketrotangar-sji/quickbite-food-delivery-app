@@ -6,8 +6,10 @@
       "query": "Masala Dosa",
       "expected_menu_item_ids": [
         "7badbadb-a121-4008-8871-8a3aaebed76a",
-        "b1c891f7-db3d-446a-8d34-a6028b539b76",
-        "085300d1-443c-41c5-9f2a-3dec0815ecbb"
+        "315209be-24a6-4305-a40b-f059d08bda7c",
+        "5d33068c-0a3d-47fd-b500-e2cb008ac7f0",
+        "acf48b45-26af-41de-b1bf-c14d96cb0f36",
+        "47d24451-0049-42e0-87b3-63b67f2cdf6e"
       ]
     },
     {
@@ -21,9 +23,7 @@
       "id": "m3",
       "query": "Chilli paneer dry",
       "expected_menu_item_ids": [
-        "7ad3dd6e-5979-4c02-bb82-0705769da628",
-        "adbf89b6-33f2-4dea-88ea-5c37f60aa559",
-        "cd8cdcce-3c63-4e48-bba3-592cc1b30804"
+        "7ad3dd6e-5979-4c02-bb82-0705769da628"
       ]
     },
     {
@@ -31,26 +31,28 @@
       "query": "Filter Coffee",
       "expected_menu_item_ids": [
         "2c583544-bbf5-468e-b412-2025c83b5726",
-        "94090c7d-abdb-45be-82f5-0c1947bf63a7",
-        "cbeacbe3-30f6-4512-bab8-436b046ca0c6"
+        "3ee2e6c6-2270-4df5-b483-115fd4ee0b0b",
+        "c8a7d8f5-e9a7-494c-b022-f0bb065dfa8b",
+        "448e3ee0-20cf-4e58-88fe-f7e29f53295a",
+        "934ecf13-8995-4005-9f4d-881edab5bd45",
+        "993fc651-394d-46ec-a0a6-e551bab48a9f",
+        "7758b577-ccc9-4db5-93ce-c585959fd15e",
+        "b2ce5c3d-25b3-400b-9c66-4bf4bf9bcaa8",
+        "56974422-77b6-42fc-80e9-4d9e547248d1"
       ]
     },
     {
       "id": "m5",
       "query": "Ukadiche Modak",
       "expected_menu_item_ids": [
-        "c331659a-2e89-4a5e-9a7a-1800ae1d51d2",
-        "ecc72763-53a8-48d2-af39-45f66c2f4aac",
-        "592f0079-5766-4696-8505-7515561c4f23"
+        "c331659a-2e89-4a5e-9a7a-1800ae1d51d2"
       ]
     },
     {
       "id": "m6",
       "query": "Kothimbir Vadi",
       "expected_menu_item_ids": [
-        "adbf89b6-33f2-4dea-88ea-5c37f60aa559",
-        "cd8cdcce-3c63-4e48-bba3-592cc1b30804",
-        "6a08ab6b-1508-4421-be49-c8d287f1467a"
+        "adbf89b6-33f2-4dea-88ea-5c37f60aa559"
       ]
     },
     {
@@ -58,16 +60,19 @@
       "query": "Margherita",
       "expected_menu_item_ids": [
         "b771a676-7768-41c4-8fbc-3340c08663a3",
-        "d6662e28-8bb9-4f96-8565-fcb1f2e2a973"
+        "90141361-0b76-4597-80a8-3fe94ebd34a8",
+        "8b65d276-b217-4100-8c29-d2ad0d647310",
+        "7cff96de-f94d-48c8-95ab-3bd5ceddccf0",
+        "6d03a8e5-93fe-4dcd-ac85-c95e89351693",
+        "ce974f06-7119-4e62-99fc-a346914700d9",
+        "64050da3-d4a4-417b-affb-fad3914e85f7"
       ]
     },
     {
       "id": "m8",
       "query": "Kingfish curry",
       "expected_menu_item_ids": [
-        "fa77d945-ff2b-4a80-8e0c-43f6306e5caa",
-        "ae6af968-2bc2-415d-9c24-9dddb000539b",
-        "d8ce96a3-5306-4fc3-8a51-cdea4b7dd7f1"
+        "fa77d945-ff2b-4a80-8e0c-43f6306e5caa"
       ]
     }
   ],
@@ -86,8 +91,7 @@
       "id": "e3",
       "query": "extra spicy Chilli paneer dry under 180 veg only no onion quick delivery rating 5 stars",
       "expected_menu_item_ids": [
-        "7ad3dd6e-5979-4c02-bb82-0705769da628",
-        "adbf89b6-33f2-4dea-88ea-5c37f60aa559"
+        "7ad3dd6e-5979-4c02-bb82-0705769da628"
       ]
     },
     {
@@ -148,6 +152,10 @@
       "query": "extra spicy chylli peneer dry under 180 veg only no onion quick delivery rating 5 stars asdf xxx"
     }
   ],
-  "generated_at": "2026-09-30T20:04:39.604Z",
-  "note": "exact dish-name matching queries from live menu_items"
+  "generated_at": "2026-10-09T06:48:49.303Z",
+  "note": "Phase 0b: expected_menu_item_ids rebound from live cloud menu_items by normalized dish name (A2 UUID labels archived in docs/rag-a3/eval-queries.a2-labels.bak.json)",
+  "rebind": {
+    "phase": "0b",
+    "strategy": "normalized name matchers per gold dish; e3 = veg chilli paneer dry only"
+  }
 }

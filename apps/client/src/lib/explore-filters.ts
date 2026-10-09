@@ -4,14 +4,17 @@ import { filterHomeDishes, filterHomePlaces, POPULAR_CATEGORY_ID, VEG_CATEGORY_I
 import { placePresentation } from '@/lib/home-presentation';
 
 export const OFFER_MIN_DISCOUNT = 25;
+/** Explore “Near me” radius when address + kitchen coords exist. */
+export const NEAR_ME_MAX_KM = 8;
 
-export type QuickFilter = 'all' | 'veg' | 'fast' | 'offers' | 'top' | 'budget';
+export type QuickFilter = 'all' | 'near' | 'veg' | 'fast' | 'offers' | 'top' | 'budget';
 
 export type ExploreFilters = {
   diet: DietFilter;
   minRating: number;
   maxMinutes: number;
   maxPrice: number;
+  maxDistanceKm: number;
   cuisineId: string;
   offersOnly: boolean;
 };
@@ -21,6 +24,7 @@ export const DEFAULT_EXPLORE_FILTERS: ExploreFilters = {
   minRating: 0,
   maxMinutes: 0,
   maxPrice: 0,
+  maxDistanceKm: NEAR_ME_MAX_KM,
   cuisineId: POPULAR_CATEGORY_ID,
   offersOnly: false,
 };
@@ -31,6 +35,8 @@ export function exploreFilterCount(filters: ExploreFilters) {
   if (filters.minRating > 0) count += 1;
   if (filters.maxMinutes > 0) count += 1;
   if (filters.maxPrice > 0) count += 1;
+  // Near me (8 km) is default — do not count it on the filter badge.
+  if (filters.maxDistanceKm > 0 && filters.maxDistanceKm !== NEAR_ME_MAX_KM) count += 1;
   if (filters.offersOnly) count += 1;
   if (filters.cuisineId !== POPULAR_CATEGORY_ID && filters.cuisineId !== VEG_CATEGORY_ID) count += 1;
   return count;
@@ -43,8 +49,10 @@ export function applyQuickFilter(current: ExploreFilters, id: QuickFilter): Expl
     minRating: 0,
     maxMinutes: 0,
     maxPrice: 0,
+    maxDistanceKm: 0,
     offersOnly: false,
   };
+  if (id === 'near') next.maxDistanceKm = NEAR_ME_MAX_KM;
   if (id === 'veg') next.diet = 'veg';
   if (id === 'fast') next.maxMinutes = 30;
   if (id === 'offers') next.offersOnly = true;
@@ -59,10 +67,12 @@ export function quickFilterFrom(filters: ExploreFilters): QuickFilter | null {
     filters.minRating > 0,
     filters.maxMinutes > 0,
     filters.maxPrice > 0,
+    filters.maxDistanceKm > 0,
     filters.offersOnly,
   ].filter(Boolean).length;
   if (active === 0) return 'all';
   if (active !== 1) return null;
+  if (filters.maxDistanceKm === NEAR_ME_MAX_KM) return 'near';
   if (filters.diet === 'veg') return 'veg';
   if (filters.maxMinutes === 30) return 'fast';
   if (filters.offersOnly) return 'offers';
@@ -93,6 +103,9 @@ function placeMatchesExtras(place: HomePlace, dishes: HomeDish[], filters: Explo
   if (filters.offersOnly && placePresentation(place).discount < OFFER_MIN_DISCOUNT) return false;
   if (filters.minRating > 0 && (place.rating == null || place.rating < filters.minRating)) return false;
   if (filters.maxMinutes > 0 && placePresentation(place).minutesLow > filters.maxMinutes) return false;
+  if (filters.maxDistanceKm > 0) {
+    if (place.distanceKm == null || place.distanceKm > filters.maxDistanceKm) return false;
+  }
   if (filters.maxPrice > 0) {
     const affordable = dishes.some((dish) => {
       if (dish.restaurantId !== place.id || dish.price > filters.maxPrice) return false;
@@ -115,7 +128,8 @@ export function filterExploreDishes(dishes: HomeDish[], places: HomePlace[], que
   const allowed = new Set(
     filterExplorePlaces(places, dishes, query, { ...filters, maxPrice: 0 }).map((place) => place.id),
   );
-  const constrained = filters.minRating > 0 || filters.maxMinutes > 0 || filters.offersOnly;
+  const constrained =
+    filters.minRating > 0 || filters.maxMinutes > 0 || filters.maxDistanceKm > 0 || filters.offersOnly;
   return filterHomeDishes(dishes, categoryIdFor(filters), query, dietFor(filters)).filter((dish) => {
     if (filters.maxPrice > 0 && dish.price > filters.maxPrice) return false;
     if (constrained && !allowed.has(dish.restaurantId)) return false;

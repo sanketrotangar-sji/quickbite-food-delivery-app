@@ -7,11 +7,48 @@ import {
   type HomeCatalog,
 } from '@/api/home';
 import { listCustomerOrders } from '@/api/orders';
+import { useAddresses } from '@/hooks/useAddresses';
 import { POPULAR_CATEGORY_ID, type HomePlace } from '@/lib/home-catalog';
+import { distanceKm } from '@/lib/geo';
 import { ordersQueryKey } from '@/hooks/useOrders';
+
+export function withDistance(
+  places: HomePlace[],
+  origin: { latitude: number; longitude: number } | null,
+): HomePlace[] {
+  if (!origin) {
+    return places.map((place) => ({ ...place, distanceKm: null }));
+  }
+  return places.map((place) => {
+    if (place.lat == null || place.lng == null) return { ...place, distanceKm: null };
+    return {
+      ...place,
+      distanceKm: distanceKm(origin, { latitude: place.lat, longitude: place.lng }),
+    };
+  });
+}
+
+export function sortPlacesByDistance(places: HomePlace[]): HomePlace[] {
+  return [...places].sort((a, b) => {
+    const open = Number(b.isOpen) - Number(a.isOpen);
+    if (open !== 0) return open;
+    const da = a.distanceKm;
+    const db = b.distanceKm;
+    if (da == null && db == null) return a.name.localeCompare(b.name);
+    if (da == null) return 1;
+    if (db == null) return -1;
+    return da - db || a.name.localeCompare(b.name);
+  });
+}
 
 export function useHomeCatalog() {
   const queryClient = useQueryClient();
+  const { selected } = useAddresses();
+  const origin =
+    selected?.lat != null && selected?.lng != null
+      ? { latitude: Number(selected.lat), longitude: Number(selected.lng) }
+      : null;
+
   const shell = useQuery({
     queryKey: ['home-shell'],
     queryFn: fetchHomeShell,
@@ -30,7 +67,6 @@ export function useHomeCatalog() {
     refetchOnMount: false,
   });
 
-  // Prefetch orders after shell settles so first Orders tab tap is warm.
   useEffect(() => {
     if (!shell.isSuccess) return;
     const idle = setTimeout(() => {
@@ -45,18 +81,23 @@ export function useHomeCatalog() {
 
   const data = useMemo<HomeCatalog | undefined>(() => {
     if (!shell.data) return undefined;
-    const places: HomePlace[] = shell.data.places.map((place) => {
-      const patch = dishes.data?.placesPatch.get(place.id);
-      if (!patch) return place;
-      return {
-        ...place,
-        dishName: patch.dishName,
-        veg: patch.veg,
-        hasNonVeg: patch.hasNonVeg,
-        categoryIds: patch.categoryIds,
-        imageUrl: place.imageUrl || patch.imageUrl,
-      };
-    });
+    const places: HomePlace[] = sortPlacesByDistance(
+      withDistance(
+        shell.data.places.map((place) => {
+          const patch = dishes.data?.placesPatch.get(place.id);
+          if (!patch) return place;
+          return {
+            ...place,
+            dishName: patch.dishName,
+            veg: patch.veg,
+            hasNonVeg: patch.hasNonVeg,
+            categoryIds: patch.categoryIds,
+            imageUrl: place.imageUrl || patch.imageUrl,
+          };
+        }),
+        origin,
+      ),
+    );
     return {
       places,
       highlights: shell.data.highlights,
@@ -65,7 +106,7 @@ export function useHomeCatalog() {
         { id: POPULAR_CATEGORY_ID, label: 'Popular', imageUrl: places[0]?.imageUrl ?? '' },
       ],
     };
-  }, [shell.data, dishes.data]);
+  }, [shell.data, dishes.data, origin?.latitude, origin?.longitude]);
 
   return {
     data,
@@ -78,5 +119,6 @@ export function useHomeCatalog() {
       await dishes.refetch();
     },
     dishesLoading: dishes.isLoading && !dishes.data,
+    hasOrigin: Boolean(origin),
   };
 }

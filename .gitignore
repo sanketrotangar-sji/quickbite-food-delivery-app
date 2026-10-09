@@ -56,4 +56,7 @@ supabase/seed-data/generated/auth-users.csv
 supabase/seed-data/generated/seed-bundle.json
 supabase/seed-data/generated/manifest.json
 
+# Synthetic datagen CSVs / report (regenerate via scripts/datagen)
+scripts/datagen/out/
+
 apps/manager/test-results/

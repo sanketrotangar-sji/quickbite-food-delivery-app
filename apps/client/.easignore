@@ -11,6 +11,10 @@ web-build/
 .env.*
 !.env.example
 
+# FCM client config is gitignored but must be present for local/cloud builders
+# when GOOGLE_SERVICES_JSON file env is unavailable in the archive path.
+!google-services.json
+
 # Docs / unused
 REMAINING.md
 LICENSE
