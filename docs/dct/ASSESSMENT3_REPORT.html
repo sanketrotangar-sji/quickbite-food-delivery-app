@@ -62,31 +62,81 @@
        <hr/>
 
        <h2>Architecture (agents, integrations, data flow)</h2>
-       <pre>                     ┌─────────────────────────────────────┐
-                     │     Customer / Manager / Rider UI   │
-                     │   (Expo client · Vercel dashboard)  │
-                     └───────────────┬─────────────────────┘
-                                     │ JWT
-                     ┌───────────────▼─────────────────────┐
-                     │     Supervisor / Router (Edge)      │
-                     │ intent → specialist · shared memory │
-                     │ guardrails: validate · PII · refuse │
-                     └───┬─────────────┬─────────────┬─────┘
-                     ┌─────────▼───┐  ┌──────▼──────┐  ┌───▼──────────┐
-                     │ RIO (order) │  │  Dispatch   │  │   Support    │
-                     │ cart/check  │  │ assign/ETA  │  │ ticket/refund│
-                     │ hybrid RAG  │  │ Maps / ORS  │  │ escalate    │
-                     └──────┬──────┘  └──────┬──────┘  └──────┬──────┘
-                            │                │                 │
-              ┌───────────▼────────────────▼─────────────────▼──────────┐
-              │              Supabase (Auth · Postgres · RLS · Realtime) │
-              │  orders · embeddings · campaigns · tickets · audit_log   │
-              └───────────┬────────────────┬─────────────────┬──────────┘
-                            │                │                 │
-                     ┌──────▼──────┐  ┌──────▼──────┐  ┌───────▼────────┐
-                     │ Twilio SMS  │  │ Stripe WH   │  │ Sentry / GHA   │
-                     │ (outbound)  │  │ (inbound ✓) │  │ CI + errors    │
-                     └─────────────┘  └─────────────┘  └────────────────┘</pre>
+                     <svg viewBox="0 0 760 510" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif" role="img" aria-label="QuickBite architecture diagram">
+                            <defs>
+                            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker>
+                            </defs>
+                            
+                            <!-- Row 1: clients -->
+                            <rect x="10" y="10" width="740" height="46" rx="8" fill="#fff3e0" stroke="#F15A24" stroke-width="1.5"/>
+                            <text x="380" y="38" text-anchor="middle" font-size="13" font-weight="700" fill="#222">Customer · Manager · Rider apps (Expo client · Vercel dashboard)</text>
+                            <line x1="380" y1="56" x2="380" y2="86" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+                            <text x="390" y="76" font-size="11" fill="#555">JWT</text>
+                            
+                            <!-- Row 2: supervisor -->
+                            <rect x="10" y="86" width="740" height="84" rx="8" fill="#fde8df" stroke="#F15A24" stroke-width="1.5"/>
+                            <text x="380" y="110" text-anchor="middle" font-size="13" font-weight="700" fill="#222">Supervisor / Router (Supabase Edge Function)</text>
+                            <text x="380" y="130" text-anchor="middle" font-size="11.5" fill="#333">Classify intent → delegate to specialist → merge replies · shared memory</text>
+                            <text x="380" y="152" text-anchor="middle" font-size="11" fill="#8a2f0c">Guardrails: schema validation · PII redaction · low-confidence clarify / refuse</text>
+                            
+                            <line x1="128" y1="170" x2="128" y2="200" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+                            <line x1="380" y1="170" x2="380" y2="200" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+                            <line x1="632" y1="170" x2="632" y2="200" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+                            
+                            <!-- Row 3: agents -->
+                            <rect x="10" y="200" width="236" height="84" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
+                            <text x="128" y="224" text-anchor="middle" font-size="13" font-weight="700" fill="#0d3c6e">RIO · Ordering</text>
+                            <text x="128" y="244" text-anchor="middle" font-size="11.5" fill="#333">browse · cart · checkout</text>
+                            <text x="128" y="262" text-anchor="middle" font-size="10.5" fill="#333">hybrid RAG (vector + FTS + re-rank)</text>
+                            
+                            <rect x="262" y="200" width="236" height="84" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
+                            <text x="380" y="224" text-anchor="middle" font-size="13" font-weight="700" fill="#0d3c6e">Dispatch</text>
+                            <text x="380" y="244" text-anchor="middle" font-size="11.5" fill="#333">rider assignment · ETA</text>
+                            <text x="380" y="262" text-anchor="middle" font-size="10.5" fill="#333">smart-assign + kitchen load</text>
+                            
+                            <rect x="514" y="200" width="236" height="84" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
+                            <text x="632" y="224" text-anchor="middle" font-size="13" font-weight="700" fill="#0d3c6e">Support</text>
+                            <text x="632" y="244" text-anchor="middle" font-size="11.5" fill="#333">complaints · refunds · tickets</text>
+                            <text x="632" y="262" text-anchor="middle" font-size="10.5" fill="#333">escalate to human</text>
+                            
+                            <line x1="128" y1="284" x2="128" y2="314" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+                            <line x1="380" y1="284" x2="380" y2="314" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+                            <line x1="632" y1="284" x2="632" y2="314" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+                            
+                            <!-- Row 4: Supabase -->
+                            <rect x="10" y="314" width="740" height="76" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+                            <text x="380" y="338" text-anchor="middle" font-size="13" font-weight="700" fill="#1b5e20">Supabase</text>
+                            <text x="380" y="358" text-anchor="middle" font-size="11.5" fill="#333">Auth · Postgres · RLS · Realtime · pgvector</text>
+                            <text x="380" y="376" text-anchor="middle" font-size="10.5" fill="#333">orders · embeddings · campaigns · tickets · rio_threads · admin_audit_log</text>
+                            
+                            <!-- arrows to externals (Stripe points UP = inbound) -->
+                            <line x1="78" y1="390" x2="78" y2="430" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+                            <line x1="226" y1="430" x2="226" y2="390" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+                            <line x1="374" y1="390" x2="374" y2="430" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+                            <line x1="522" y1="390" x2="522" y2="430" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+                            <line x1="670" y1="390" x2="670" y2="430" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+                            
+                            <!-- Row 5: external services -->
+                            <rect x="10" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
+                            <text x="78" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">Twilio SMS</text>
+                            <text x="78" y="472" text-anchor="middle" font-size="10" fill="#444">outbound · order status</text>
+                            
+                            <rect x="158" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
+                            <text x="226" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">Stripe (test)</text>
+                            <text x="226" y="472" text-anchor="middle" font-size="10" fill="#444">inbound · signed webhook</text>
+                            
+                            <rect x="306" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
+                            <text x="374" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">OpenRouteService</text>
+                            <text x="374" y="472" text-anchor="middle" font-size="10" fill="#444">outbound · routing + ETA</text>
+                            
+                            <rect x="454" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
+                            <text x="522" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">Ollama</text>
+                            <text x="522" y="472" text-anchor="middle" font-size="10" fill="#444">LLM chat + embeddings</text>
+                            
+                            <rect x="602" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
+                            <text x="670" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">Sentry + GH Actions</text>
+                            <text x="670" y="472" text-anchor="middle" font-size="10" fill="#444">errors · CI/CD</text>
+                            </svg>
        <p><strong>Shared memory:</strong> <code>rio_threads</code> / <code>rio_messages</code> + <code>profiles.rio_memory</code> + supervisor scratch.<br/>
        <strong>Guardrails:</strong> schema validation, PII redaction, low-confidence clarify/refuse, structured JSON outputs.</p>
 
