@@ -182,6 +182,7 @@ Update this file after every meaningful task. Status as of **2026-10-12**.
 
 ## Changelog (compressed)
 
+- **2026-10-12** — Manager: Vercel Ready — `vercel.json` `rm -rf node_modules && bun install` so cache cannot keep Start **1.168.32** beside patched **1.168.61**
 - **2026-10-12** — Manager: regenerate `apps/manager/bun.lock` + clear stale lock pins so Start resolves to **1.168.61** (CVE-2026-102989 Vercel deploy gate)
 - **2026-10-12** — Manager: bump `@tanstack/react-start` to **1.168.61** (CVE-2026-102989 XSS gate on Vercel)
 - **2026-10-12** — Fix RIO HTTP 503: removed duplicate `const specialist` (BOOT_ERROR); redeployed `rio`
