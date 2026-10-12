@@ -182,6 +182,7 @@ Update this file after every meaningful task. Status as of **2026-10-12**.
 
 ## Changelog (compressed)
 
+- **2026-10-12** — Manager: regenerate `apps/manager/bun.lock` to `@tanstack/react-start@1.168.61` (Vercel was still installing 1.168.32 from stale bun.lock)
 - **2026-10-12** — Manager: bump `@tanstack/react-start` 1.168.32 → **1.168.61** (CVE-2026-102989 XSS gate on Vercel)
 - **2026-10-12** — Fix RIO HTTP 503: removed duplicate `const specialist` (BOOT_ERROR); redeployed `rio`
 - **2026-10-12** — A3-T7 **done**: final `ASSESSMENT3_REPORT.{md,html}` + PLAN/PROGRESS sync  
