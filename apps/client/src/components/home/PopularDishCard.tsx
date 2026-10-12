@@ -99,6 +99,8 @@ export function PopularDishCard({
                 playAdded();
                 void onAdd();
               }}
+              hitSlop={12}
+              accessibilityRole="button"
               style={styles.add}
               accessibilityLabel={`Add ${dish.name}`}>
               <Animated.View style={[styles.addIcon, { opacity: added.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) }]}>
@@ -151,9 +153,9 @@ const styles = StyleSheet.create({
   priceRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 },
   price: { color: colors.primary, fontSize: 12 },
   add: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',

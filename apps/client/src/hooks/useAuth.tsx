@@ -2,8 +2,10 @@ import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
 
+import * as Linking from 'expo-linking';
+
 import { acceptManagerInvites } from '@/api/applications';
-import { signOut as apiSignOut } from '@/api/auth';
+import { createSessionFromUrl, signOut as apiSignOut } from '@/api/auth';
 import { getProfile } from '@/api/profiles';
 import { supabase } from '@/api/supabaseClient';
 import { restoreRiderTracking, stopRiderTracking } from '@/features/rider/rider-tracking';
@@ -26,8 +28,12 @@ async function loadProfile(userId: string) {
     // Invites are optional until the user opens Settings.
   }
   for (let attempt = 0; attempt < 6; attempt += 1) {
-    const profile = await getProfile(userId);
-    if (profile) return profile;
+    try {
+      const profile = await getProfile(userId);
+      if (profile) return profile;
+    } catch {
+      // Non-fatal retry for initial network flakes on cold boot.
+    }
     await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
   }
   return null;
@@ -36,23 +42,53 @@ async function loadProfile(userId: string) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [sessionResolved, setSessionResolved] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-    });
+    let mounted = true;
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!mounted) return;
+        setSession(data.session);
+        setSessionResolved(true);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setSessionResolved(true);
+      });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, next) => {
+      if (!mounted) return;
       setSession(next);
+      setSessionResolved(true);
     });
 
-    return () => subscription.unsubscribe();
+    const handleUrl = (event: { url: string }) => {
+      if (event.url && (event.url.includes('access_token') || event.url.includes('code='))) {
+        void createSessionFromUrl(event.url).catch(() => {});
+      }
+    };
+    const urlSub = Linking.addEventListener('url', handleUrl);
+    void Linking.getInitialURL().then((url) => {
+      if (url && (url.includes('access_token') || url.includes('code='))) {
+        void createSessionFromUrl(url).catch(() => {});
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+      urlSub.remove();
+    };
   }, []);
 
   useEffect(() => {
+    if (!sessionResolved) return;
+
     const userId = session?.user.id;
     if (!userId) {
       setProfile(null);
@@ -67,6 +103,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (cancelled) return;
         setProfile(next);
       })
+      .catch(() => {
+        if (cancelled) return;
+        setProfile(null);
+      })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
@@ -74,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [session?.user.id]);
+  }, [sessionResolved, session?.user.id]);
 
   // GPS restore only for online riders with an active assignment.
   useEffect(() => {

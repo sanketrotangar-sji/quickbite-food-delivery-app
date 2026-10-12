@@ -58,7 +58,7 @@ export function AdminHighlightsPage() {
       title: row.title,
       subtitle: row.subtitle ?? '',
       image_url: row.image_url,
-      kind: row.kind,
+      kind: row.kind === 'video' ? 'video' : 'offer',
       sort_order: String(row.sort_order),
       is_active: row.is_active,
       restaurant_id: row.restaurant_id ?? '',

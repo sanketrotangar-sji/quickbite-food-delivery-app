@@ -40,7 +40,7 @@ export async function signOut() {
   if (error) throw error;
 }
 
-async function createSessionFromUrl(url: string) {
+export async function createSessionFromUrl(url: string) {
   const { params, errorCode } = QueryParams.getQueryParams(url);
   if (errorCode) throw new Error(errorCode);
 

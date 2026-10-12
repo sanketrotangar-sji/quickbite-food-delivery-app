@@ -5,6 +5,9 @@ export function userFacingRioError(cause: unknown): string {
   const raw = cause instanceof Error ? cause.message : typeof cause === 'string' ? cause : '';
   if (!raw.trim()) return RIO_USER_ERROR;
   if (/sign in to talk to rio/i.test(raw)) return 'Sign in to talk to RIO.';
+  if (/RIO HTTP 5\d\d/i.test(raw)) {
+    return 'RIO is busy or briefly unavailable. Wait a few seconds and try again.';
+  }
   if (/POST\s+\/|openai|chat\/completions|Unknown request URL|https?:\/\/|FunctionsHttpError|Edge Function|stack|sql/i.test(raw)) {
     return RIO_USER_ERROR;
   }

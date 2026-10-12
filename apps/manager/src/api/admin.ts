@@ -455,6 +455,106 @@ export async function activateLlmConfig(id: string) {
   if (error) throw new Error(error.message);
 }
 
+export type CrmSegment = 'new' | 'frequent' | 'churned' | 'active' | 'all';
+
+export type CrmSegmentCount = {
+  segment: string;
+  member_count: number;
+};
+
+export type CrmSegmentMember = {
+  customer_id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  joined_at: string;
+  delivered_count: number;
+  delivered_60d: number;
+  last_delivered_at: string | null;
+  segment: string;
+};
+
+export type CrmCampaignStat = {
+  campaign_id: string;
+  title: string;
+  target_segment: string;
+  discount_percent: number;
+  status: string;
+  starts_at: string;
+  ends_at: string;
+  enrolled: number;
+  redeemed: number;
+  expired_unredeemed: number;
+};
+
+export async function loadCrmSegmentCounts(): Promise<CrmSegmentCount[]> {
+  const { data, error } = await supabase.rpc('crm_segment_counts');
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as Array<{ segment: string; member_count: number | string }>).map((row) => ({
+    segment: row.segment,
+    member_count: Number(row.member_count),
+  }));
+}
+
+export async function loadCrmSegmentMembers(segment: CrmSegment, limit = 80): Promise<CrmSegmentMember[]> {
+  const { data, error } = await supabase.rpc('crm_list_segment_members', {
+    p_segment: segment,
+    p_limit: limit,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as CrmSegmentMember[];
+}
+
+export async function loadCrmCampaignStats(): Promise<CrmCampaignStat[]> {
+  const { data, error } = await supabase.rpc('crm_campaign_stats', { p_campaign_id: null });
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+    campaign_id: String(row['campaign_id'] ?? ''),
+    title: String(row['title'] ?? ''),
+    target_segment: String(row['target_segment'] ?? ''),
+    discount_percent: Number(row['discount_percent'] ?? 0),
+    status: String(row['status'] ?? ''),
+    starts_at: String(row['starts_at'] ?? ''),
+    ends_at: String(row['ends_at'] ?? ''),
+    enrolled: Number(row['enrolled'] ?? 0),
+    redeemed: Number(row['redeemed'] ?? 0),
+    expired_unredeemed: Number(row['expired_unredeemed'] ?? 0),
+  }));
+}
+
+export async function createCrmCampaign(input: {
+  title: string;
+  description?: string | undefined;
+  target_segment: Exclude<CrmSegment, 'active'>;
+  discount_percent: number;
+  starts_at: string;
+  ends_at: string;
+  restaurant_id?: string | null | undefined;
+}) {
+  const { data, error } = await supabase.rpc('crm_create_campaign', {
+    p_title: input.title,
+    p_description: input.description ?? null,
+    p_target_segment: input.target_segment,
+    p_discount_percent: input.discount_percent,
+    p_starts_at: input.starts_at,
+    p_ends_at: input.ends_at,
+    p_restaurant_id: input.restaurant_id ?? null,
+  });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function launchCrmCampaign(campaignId: string) {
+  const { data, error } = await supabase.rpc('crm_launch_campaign', { p_campaign_id: campaignId });
+  if (error) throw new Error(error.message);
+  return data as { campaign_id: string; status: string; enrolled: number; notified: number };
+}
+
+export async function endCrmCampaign(campaignId: string) {
+  const { error } = await supabase.rpc('crm_end_campaign', { p_campaign_id: campaignId });
+  if (error) throw new Error(error.message);
+}
+
 function asRecord(value: Json): Record<string, unknown> {
   if (value && typeof value === 'object' && !Array.isArray(value)) return value;
   return {};

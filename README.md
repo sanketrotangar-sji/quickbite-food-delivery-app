@@ -115,7 +115,7 @@ QuickBite/
 │   └── client/           # Customer + rider Expo app
 ├── supabase/
 │   ├── migrations/       # Schema, RLS, RPCs (source of truth)
-│   ├── functions/        # notify-new-order, directions, rio
+│   ├── functions/        # notify-new-order, send-order-sms, create-payment-intent, stripe-webhook, directions, rio
 │   └── seed.sql          # Local demo seed
 ├── packages/shared/
 ├── assets/               # README screenshots
@@ -175,7 +175,10 @@ cp apps/client/.env.example apps/client/.env
 | Secret | Purpose |
 |--------|---------|
 | `SUPABASE_SERVICE_ROLE_KEY` | Scripts / admin tooling |
-| `WEBHOOK_SECRET` | `notify-new-order` webhook |
+| `WEBHOOK_SECRET` | `notify-new-order` + `send-order-sms` webhooks |
+| `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_FROM_NUMBER` | Outbound order-status SMS |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Stripe test Checkout + signed webhook |
+| `STRIPE_CHECKOUT_SUCCESS_URL` / `STRIPE_CHECKOUT_CANCEL_URL` | Optional Checkout redirects |
 | `OPENROUTESERVICE_API_KEY` | `directions` (OSRM fallback if missing) |
 | `GROQ_API_KEY` | RIO chat (when Groq active) |
 | `OLLAMA_BASE_URL` | RIO chat + embeddings host |
@@ -185,10 +188,18 @@ cp apps/client/.env.example apps/client/.env
 supabase secrets set WEBHOOK_SECRET=$(openssl rand -hex 32)
 supabase secrets set GROQ_API_KEY=<key>
 supabase secrets set OLLAMA_BASE_URL=<reachable-host>
+# After you have Twilio / Stripe test keys:
+# supabase secrets set TWILIO_ACCOUNT_SID=... TWILIO_AUTH_TOKEN=... TWILIO_FROM_NUMBER=...
+# supabase secrets set STRIPE_SECRET_KEY=sk_test_... STRIPE_WEBHOOK_SECRET=whsec_...
 supabase functions deploy notify-new-order
+supabase functions deploy send-order-sms
+supabase functions deploy create-payment-intent
+supabase functions deploy stripe-webhook
 supabase functions deploy directions
 supabase functions deploy rio
 ```
+
+**A3-T1 ops (once):** apply migration `20261011160000_t1_payments_and_sms.sql`; Database Webhook on `orders` INSERT/UPDATE → `send-order-sms` with header `x-webhook-secret`; Stripe Dashboard webhook → `…/functions/v1/stripe-webhook` for `payment_intent.succeeded`, `checkout.session.completed`, `charge.refunded`.
 
 ### 3. Frontends
 
@@ -236,6 +247,8 @@ EAS builds do **not** read local `.env`. Set `EXPO_PUBLIC_SUPABASE_*` (and `GOOG
 | `npm run intelligence:verify` | Smoke RAG / tickets / auto-assign |
 | `npm test` | Unit + edge + integration (+ Playwright when enabled) |
 | `npm run check:secrets` | Fail if service role leaked into client env patterns |
+| `npm run ml:cancel-risk` | Cancel-risk sklearn eval (F1≥0.80); writes `docs/ml/cancel-risk-*` |
+| GitHub Actions `ci.yml` | Push/PR: secrets + unit + edge; integration/e2e when repo secrets set |
 
 ---
 

@@ -11,6 +11,7 @@ import { ISSUE_OPTIONS } from '@/features/rider/rider-content';
 
 export function ReportIssueScreen() {
   const [selected, setSelected] = useState<string | null>(null);
+  // shortcut: rider issue reporting mocks UI state without backend persistence, upgrade when rider support_tickets schema/RPC is added
   const [sent, setSent] = useState(false);
 
   return (

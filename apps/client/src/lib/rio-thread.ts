@@ -55,13 +55,29 @@ export function withDerivedGreeting(messages: RioChatMessage[], name: string): R
 export function slimCards(cards: RioCard[]) {
   return cards.map((card) => {
     if (card.kind === 'restaurants') {
-      return { kind: card.kind, places: card.places.map((place) => ({ id: place.id, name: place.name })) };
+      return {
+        kind: card.kind,
+        places: card.places.map((place, index) => ({
+          rank: index + 1,
+          id: place.id,
+          name: place.name,
+          dishName: place.dishName,
+          featuredDishId: place.featuredDishId ?? null,
+          distanceKm: place.distanceKm ?? null,
+        })),
+      };
     }
     if (card.kind === 'menu') {
       return {
         kind: card.kind,
         restaurantId: card.restaurantId,
-        items: card.items.map((item) => ({ id: item.id, name: item.name, price: item.price })),
+        restaurantName: card.restaurantName,
+        items: card.items.map((item, index) => ({
+          rank: index + 1,
+          id: item.id,
+          name: item.name,
+          price: item.price,
+        })),
       };
     }
     if (card.kind === 'cart') {

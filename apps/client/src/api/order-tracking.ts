@@ -42,6 +42,7 @@ const ORDER_COLUMNS = `
   delivery_address, delivery_address_id, delivery_lat, delivery_lng, notes,
   placed_at, delivered_at, updated_at, rider_earning, tip_amount, bonus_amount,
   pickup_km, drop_km, eta_minutes,
+  payment_method, payment_status, paid_at, refunded_at,
   order_items (id, item_name, quantity, unit_price, menu_item_id, menu_items (image_url, is_veg))
 `;
 

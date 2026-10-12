@@ -14,6 +14,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { RestaurantProvider } from "@/hooks/use-restaurant";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { captureException, initSentry } from "../lib/sentry";
 
 function NotFoundComponent() {
   return (
@@ -42,6 +43,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    void captureException(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (
@@ -122,6 +124,10 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    initSentry();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

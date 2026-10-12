@@ -28,18 +28,18 @@ Chat LLM stays switchable via `llm_config` (Groq / Ollama). Embeddings stay on C
 
 ## Assessment 3 — tracks (recommended order)
 
-Defaults: **4 → 3 → 1 → 2 → 5 → 6 → 7**. Change order only by editing this table + PROGRESS.
+Defaults were **4 → 3 → 1 → 2 → 5 → 6 → 7**. Live order: **T6 before T5** (A3-010).
 
 
 | Order | Track                                   | Status   | Done when                                                                                                                                                                                    |
 | ----- | --------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1     | **T4 — RAG + eval harness**             | [~]      | Hybrid RPC + labelled eval done: test hit@5 **81.8%** (old 51.5%) — see `docs/rag-a3/results.md`. Remaining: finish ≥20k embed backfill, RIO switch to hybrid, re-rank/faithfulness extras. |
-| 2     | **T3 — Multi-agent + guardrails**       | [ ]      | Supervisor → RIO (order) + dispatch (assign/ETA) + support (complaints/refunds); shared memory; validation, PII redaction, low-confidence refuse, structured outputs.                        |
-| 3     | **T1 — Third-party (≥2)**               | [ ]      | ≥2 real free-tier services; **1 outbound** + **1 inbound webhook with signature verify**. Candidates: Stripe test + Twilio SMS; Maps/ETA (ORS already partial). Pick vendors before coding.  |
-| 4     | **T2 — Campaign / CRM**                 | [ ]      | Segments (new / frequent / churned) + campaign/outreach action + redemption tracking (HubSpot integration).                                                                                  |
-| 5     | **T5 — Cancel-risk model**              | [ ]      | Precision / recall / **F1 ≥ 0.80** (not accuracy-only). Bonus: LoRA or Ollama Modelfile the agent actually uses.                                                                             |
-| 6     | **T6 — CI/CD, observability, security** | [ ]      | GitHub Actions full suite on push/PR; Sentry (+ logs/metrics); Supabase advisor pass + RLS fixes; rate-limit + caching.                                                                      |
-| 7     | **T7 — Docs, demo, Dev CT**             | [ ]      | Architecture diagram + eval report (before/after) + short demo; submit on Dev Control Tower with **assessment-3** tag.                                                                       |
+| 1     | **T4 — RAG + eval harness**             | [x]      | Hybrid RPC + RIO on `match_embeddings_hybrid` + LLM/heuristic re-rank. Corpus **frozen** (no further backfill). Eval: old hit@5 **48.5%** → hybrid+rerank **81.8%** — see `docs/rag-a3/results.md`. |
+| 2     | **T3 — Multi-agent + guardrails**       | [x]      | Supervisor → order / dispatch / support (+ clarify); PII redact; tool-arg validate; low-confidence clarify; `estimate_eta`; route logged on `rio_events`. Shared memory via threads + `rio_memory`. |
+| 3     | **T1 — Third-party (≥2)**               | [x]      | Twilio outbound (Verify on trial) + Stripe signed webhook + Checkout. E2E smoke OK; Stripe UX polish later. |
+| 4     | **T2 — Campaign / CRM**                 | [x]      | Custom Supabase CRM (not HubSpot): segments view + campaigns + launch outreach + `place_order` redemption. Admin `/admin/crm`. |
+| 5     | **T6 — CI/CD, observability, security** | [x]      | GHA CI (secrets + unit + edge; optional integration/e2e); optional Sentry; RIO rate-limit; directions TTL cache; advisor checklist in REQUIREMENTS. |
+| 6     | **T5 — Cancel-risk model**              | [x]      | Offline `npm run ml:cancel-risk`: random_forest held-out **F1 0.845** (P 0.867 / R 0.825). Artifacts in `docs/ml/`. Synthetic corpus (cloud had only 6 closed orders). Bonus Modelfile deferred. |
+| 7     | **T7 — Docs, demo, Dev CT**             | [x]      | Final report `docs/dct/ASSESSMENT3_REPORT.{md,html}` (arch SVG + RAG before/after + cancel-risk P/R/F1); companion `PROJECT_ARCHITECTURE_REPORT.html`. Tag **`assessment-3`** on DCT. |
 
 
 **Bonus (any time after T4/T3):** locally serve or fine-tune a model RIO *calls* end-to-end (not only embeddings).
@@ -80,10 +80,12 @@ Defaults: **4 → 3 → 1 → 2 → 5 → 6 → 7**. Change order only by editin
 
 | ID     | Decision                                                                                                         |
 | ------ | ---------------------------------------------------------------------------------------------------------------- |
-| A3-001 | Track order default: **T4 → T3 → T1 → T2 → T5 → T6 → T7**                                                        |
+| A3-001 | Track order default was **T4 → T3 → T1 → T2 → T5 → T6 → T7**; overridden by A3-010 |
 | A3-002 | RAG corpus may grow past “menu + comment ratings only” to hit ≥20k — document source mix in PROGRESS when chosen |
-| A3-003 | T1 vendors: **TBD** (propose Stripe test webhook + Twilio outbound; Maps if needed for second outbound/ETA)      |
-| A3-004 | T2: prefer **custom** segments/campaigns in Supabase unless HubSpot is required for the score sheet              |
+| A3-003 | T1 vendors locked: **Twilio** outbound SMS + **Stripe** test inbound webhook (sig verify); ORS/Maps supporting outbound for ETA |
+| A3-004 | T2: **custom** Supabase CRM (segments + campaigns + redemption); HubSpot not used |
 | A3-005 | Do not delete restaurants/menu/orders/profiles for RAG scale-up; synthetic/enriched rows OK if labelled as such  |
+| A3-010 | Live order: **T6 before T5** (CI/observability before cancel-risk) |
+| A3-011 | T5 cancel-risk: offline sklearn only; synthetic corpus OK when real closed orders are sparse |
 
 

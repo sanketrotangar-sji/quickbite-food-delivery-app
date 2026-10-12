@@ -112,9 +112,10 @@ async function withKitchens(rows: OrderRow[]): Promise<RiderDelivery[]> {
       .in('id', ids);
     if (browse.error) throwApiError(browse.error, 'Could not load deliveries.');
     for (const row of browse.data ?? []) {
+      if (!row.id) continue;
       kitchens.set(row.id, {
-        name: row.name,
-        address: row.address,
+        name: row.name ?? 'Kitchen',
+        address: row.address ?? '',
         cuisine: row.description?.trim() || row.cuisine?.trim() || 'Kitchen',
         imageUrl: row.image_url,
         coordinate:

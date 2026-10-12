@@ -16,12 +16,14 @@ import { useEffect, useState } from 'react';
 import { Platform, View } from 'react-native';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
+import { AnimatedSplash } from '@/components/AnimatedSplash';
 import { colors } from '@/constants/theme';
 import { useRiderOrdersRealtime } from '@/features/rider/use-rider-live';
 import { AddressesProvider } from '@/hooks/useAddresses';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { useLiveKitchen } from '@/hooks/useLiveKitchen';
 import { SavedHeartsProvider } from '@/hooks/useSavedHearts';
+import { captureException } from '@/lib/sentry';
 import { NotificationProvider } from '@/notifications/NotificationProvider';
 
 export { ErrorBoundary } from 'expo-router';
@@ -58,6 +60,22 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
+  useEffect(() => {
+    type Handler = (error: Error, isFatal?: boolean) => void;
+    const utils = (
+      globalThis as { ErrorUtils?: { getGlobalHandler?: () => Handler; setGlobalHandler?: (h: Handler) => void } }
+    ).ErrorUtils;
+    if (!utils?.getGlobalHandler || !utils.setGlobalHandler) return;
+    const previous = utils.getGlobalHandler();
+    utils.setGlobalHandler((error, isFatal) => {
+      void captureException(error, { source: 'ErrorUtils', isFatal: Boolean(isFatal) });
+      previous?.(error, isFatal);
+    });
+    return () => {
+      utils.setGlobalHandler?.(previous);
+    };
+  }, []);
+
   if (!fontsLoaded && !fontError) return null;
 
   return (
@@ -83,34 +101,47 @@ export default function RootLayout() {
 
 function RootNav() {
   const { session, loading } = useAuth();
+  const [splashFinished, setSplashFinished] = useState(false);
   useLiveKitchen();
   useRiderOrdersRealtime();
-  if (loading) return null;
 
   const isAuthed = !!session;
 
+  // Gate the navigator until splash finishes so login/home never peek under the brand animation.
+  const showApp = splashFinished && !loading;
+
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.background },
-      }}>
-      <Stack.Protected guard={!isAuthed}>
-        <Stack.Screen name="(auth)" />
-      </Stack.Protected>
-      {/* Any signed-in role can browse, cart, order, and rate. Those actions are not role-gated. */}
-      <Stack.Protected guard={isAuthed}>
-        <Stack.Screen name="(customer)" />
-      </Stack.Protected>
-      {/* Mounted for every session so a non-rider gets the blocked screen instead of a blank route. */}
-      <Stack.Protected guard={isAuthed}>
-        <Stack.Screen name="(rider)" />
-      </Stack.Protected>
-      <Stack.Protected guard={isAuthed}>
-        <Stack.Screen name="(blocked)" />
-      </Stack.Protected>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="+not-found" />
-    </Stack>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {showApp ? (
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }}>
+          <Stack.Protected guard={!isAuthed}>
+            <Stack.Screen name="(auth)" />
+          </Stack.Protected>
+          {/* Any signed-in role can browse, cart, order, and rate. Those actions are not role-gated. */}
+          <Stack.Protected guard={isAuthed}>
+            <Stack.Screen name="(customer)" />
+          </Stack.Protected>
+          {/* Mounted for every session so a non-rider gets the blocked screen instead of a blank route. */}
+          <Stack.Protected guard={isAuthed}>
+            <Stack.Screen name="(rider)" />
+          </Stack.Protected>
+          <Stack.Protected guard={isAuthed}>
+            <Stack.Screen name="(blocked)" />
+          </Stack.Protected>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      ) : null}
+      {!splashFinished ? (
+        <AnimatedSplash
+          isReady={!loading}
+          onAnimationComplete={() => setSplashFinished(true)}
+        />
+      ) : null}
+    </View>
   );
 }

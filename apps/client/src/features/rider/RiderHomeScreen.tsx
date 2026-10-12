@@ -103,7 +103,7 @@ export function RiderHomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.scroll, { paddingTop: insets.top + screenTopGap }]}>
         <RiderHeader online={online} onChange={(next) => void setDuty(next)} />
-        {needsLocation || tracking.error ? (
+        {needsLocation || tracking.permissionRequired ? (
           <LocationPermissionGate
             onRetry={() => {
               setNeedsLocation(false);

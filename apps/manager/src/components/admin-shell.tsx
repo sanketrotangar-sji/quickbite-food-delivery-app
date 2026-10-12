@@ -10,6 +10,7 @@ import {
   Menu,
   Package,
   Sparkles,
+  Target,
   Users,
   X,
 } from 'lucide-react';
@@ -40,6 +41,7 @@ const nav = [
   { to: '/admin/restaurants', label: 'Restaurants', icon: Building2, exact: false },
   { to: '/admin/users', label: 'Users', icon: Users, exact: false },
   { to: '/admin/highlights', label: 'Offers', icon: Sparkles, exact: false },
+  { to: '/admin/crm', label: 'CRM', icon: Target, exact: false },
   { to: '/admin/ai', label: 'AI', icon: Bot, exact: false },
 ] as const;
 

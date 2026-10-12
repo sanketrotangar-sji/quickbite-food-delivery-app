@@ -37,12 +37,11 @@ export function OrdersScreen() {
     const lines = order.order_items.filter((line) => line.menu_item_id);
     for (const line of lines) {
       const count = Math.max(1, line.quantity);
-      for (let index = 0; index < count; index += 1) {
-        await cart.addItem.mutateAsync({
-          menuItemId: line.menu_item_id as string,
-          restaurantId: order.restaurant_id,
-        });
-      }
+      await cart.addItem.mutateAsync({
+        menuItemId: line.menu_item_id as string,
+        restaurantId: order.restaurant_id,
+        quantity: count,
+      });
     }
   }
 

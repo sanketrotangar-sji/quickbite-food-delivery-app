@@ -1,0 +1,51 @@
+{
+  "task": "order_cancellation_risk",
+  "model": "random_forest",
+  "threshold": 0.38000000000000006,
+  "precision": 0.867,
+  "recall": 0.8245,
+  "f1": 0.8452,
+  "accuracy": 0.8771,
+  "meets_f1_0_80": true,
+  "n_samples": 3006,
+  "n_train": 2404,
+  "n_test": 602,
+  "label_counts": {
+    "0": 1785,
+    "1": 1221
+  },
+  "labels": [
+    "delivered",
+    "cancelled"
+  ],
+  "confusion_matrix": [
+    [
+      326,
+      31
+    ],
+    [
+      43,
+      202
+    ]
+  ],
+  "features": [
+    "total_amount",
+    "delivery_fee",
+    "discount_amount",
+    "tip_amount",
+    "drop_km",
+    "pickup_km",
+    "hour",
+    "dow",
+    "is_cash",
+    "restaurant_cancel_rate",
+    "customer_cancel_rate",
+    "customer_prior_orders"
+  ],
+  "source_mix": {
+    "synthetic": 3000,
+    "real": 6,
+    "real_cancelled": 5,
+    "real_delivered": 1
+  }
+}

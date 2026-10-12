@@ -6,6 +6,7 @@ export default function OrderIdLayout() {
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
       <Stack.Screen name="index" />
+      <Stack.Screen name="success" options={{ animation: 'fade' }} />
       <Stack.Screen name="map" options={{ animation: 'fade', presentation: 'card' }} />
     </Stack>
   );

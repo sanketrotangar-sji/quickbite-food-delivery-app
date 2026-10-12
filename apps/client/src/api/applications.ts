@@ -43,8 +43,9 @@ export async function listPendingInvites() {
   const kitchens = new Map<string, { name: string; branch_name: string | null }>();
   if (ids.length > 0) {
     const browse = await supabase.from('restaurant_browse').select('id, name, branch_name').in('id', ids);
-    if (browse.error) throwApiError(browse.error, 'Could not load invites.');
-    for (const row of browse.data ?? []) kitchens.set(row.id, { name: row.name, branch_name: row.branch_name });
+    for (const row of browse.data ?? []) {
+      if (row.id) kitchens.set(row.id, { name: row.name ?? 'Kitchen', branch_name: row.branch_name });
+    }
   }
   return rows.map((row) => ({
     ...row,

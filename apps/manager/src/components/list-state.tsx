@@ -18,7 +18,7 @@ export function ListEmpty({ title, body }: { title: string; body: string }) {
   );
 }
 
-export function ListError({ message, onRetry }: { message: string; onRetry?: () => void }) {
+export function ListError({ message, onRetry }: { message: string; onRetry?: (() => void) | undefined }) {
   return (
     <div className="mt-8 rounded-xl border border-destructive/30 bg-destructive/5 px-6 py-8 text-center">
       <p className="text-base font-semibold text-foreground">Something went wrong</p>
@@ -45,7 +45,7 @@ export function ListShell({
   loading?: boolean;
   error?: string | null;
   empty?: { title: string; body: string } | null;
-  onRetry?: () => void;
+  onRetry?: (() => void) | undefined;
   children: ReactNode;
 }) {
   if (loading) return <ListLoading />;

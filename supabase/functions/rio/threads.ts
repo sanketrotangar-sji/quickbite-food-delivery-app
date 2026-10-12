@@ -4,7 +4,41 @@ type Db = any;
 
 export type ThreadMessage = { role: "user" | "assistant"; content: string };
 
-const HISTORY_LIMIT = 8;
+const HISTORY_LIMIT = 10;
+
+function cardDigest(cards: unknown): string {
+  if (!Array.isArray(cards) || cards.length === 0) return "";
+  const bits: string[] = [];
+  for (const card of cards) {
+    if (!card || typeof card !== "object") continue;
+    const kind = (card as { kind?: string }).kind;
+    if (kind === "restaurants") {
+      const places = (card as { places?: { name?: string; dishName?: string; featuredDishId?: string }[] }).places ?? [];
+      places.slice(0, 5).forEach((p, i) => {
+        bits.push(
+          `#${i + 1} ${p.name ?? "Kitchen"}` +
+            (p.dishName ? ` · ${p.dishName}` : "") +
+            (p.featuredDishId ? ` [${p.featuredDishId}]` : ""),
+        );
+      });
+    }
+    if (kind === "menu") {
+      const items = (card as { items?: { name?: string; id?: string }[]; restaurantName?: string }).items ?? [];
+      const kitchen = (card as { restaurantName?: string }).restaurantName ?? "Kitchen";
+      bits.push(`${kitchen} menu:`);
+      items.slice(0, 5).forEach((item, i) => {
+        bits.push(`#${i + 1} ${item.name ?? "Dish"}${item.id ? ` [${item.id}]` : ""}`);
+      });
+    }
+    if (kind === "cart") {
+      const total = (card as { total?: number }).total;
+      const name = (card as { restaurantName?: string }).restaurantName ?? "cart";
+      bits.push(`cart @ ${name}${total != null ? ` · ₹${total}` : ""}`);
+    }
+  }
+  if (!bits.length) return "";
+  return `\n[Cards shown: ${bits.join("; ")}]`;
+}
 
 export async function loadThreadHistory(
   db: Db,
@@ -22,18 +56,22 @@ export async function loadThreadHistory(
 
   const { data: rows, error } = await db
     .from("rio_messages")
-    .select("role, content")
+    .select("role, content, cards")
     .eq("thread_id", threadId)
     .order("created_at", { ascending: false })
     .limit(HISTORY_LIMIT);
   if (error) return [];
 
-  return ((rows ?? []) as { role: string; content: string }[])
+  return ((rows ?? []) as { role: string; content: string; cards?: unknown }[])
     .reverse()
-    .map((row) => ({
-      role: (row.role === "you" ? "user" : "assistant") as "user" | "assistant",
-      content: String(row.content ?? "").trim().slice(0, 800),
-    }))
+    .map((row) => {
+      const base = String(row.content ?? "").trim();
+      const digest = row.role === "rio" || row.role === "assistant" ? cardDigest(row.cards) : "";
+      return {
+        role: (row.role === "you" ? "user" : "assistant") as "user" | "assistant",
+        content: (base + digest).slice(0, 1200),
+      };
+    })
     .filter((row) => row.content.length > 0);
 }
 

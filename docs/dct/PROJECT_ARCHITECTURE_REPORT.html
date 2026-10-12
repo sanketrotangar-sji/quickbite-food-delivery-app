@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>QuickBite — Project Architecture Report</title>
+<style>
+@page{size:A4;margin:14mm}
+body{font-family:Helvetica,Arial,sans-serif;font-size:10.5pt;line-height:1.45;color:#1a1a1a;max-width:820px;margin:0 auto;padding:12px}
+h1{font-size:18pt;color:#F15A24;margin-bottom:6pt}
+h2{font-size:13pt;margin-top:16pt;border-bottom:1px solid #ddd;padding-bottom:4pt;color:#222}
+h3{font-size:11.5pt;margin-top:10pt}
+table{border-collapse:collapse;width:100%;margin:8pt 0;font-size:9.5pt}
+th,td{border:1px solid #ccc;padding:5pt 7pt;text-align:left;vertical-align:top}
+th{background:#f6f3ee}
+code{background:#f4f4f4;padding:1pt 3pt;font-size:9pt}
+pre{background:#f4f4f4;padding:8pt;font-size:8.5pt;white-space:pre-wrap;line-height:1.35;overflow-x:auto}
+hr{border:none;border-top:1px solid #ddd;margin:14pt 0}
+ul,ol{margin:6pt 0 10pt 18pt}
+p{margin:6pt 0}
+.meta{font-size:10pt;color:#444}
+.badge{display:inline-block;background:#e8f5e9;color:#1b5e20;padding:2pt 6pt;font-size:9pt;border-radius:3pt;font-weight:600}
+.footer{font-size:9pt;color:#666;margin-top:20pt}
+.note{background:#fff8e1;border-left:3px solid #F15A24;padding:6pt 10pt;margin:8pt 0;font-size:9.5pt}
+</style>
+</head>
+<body>
+
+<h1>QuickBite — Project Architecture Report</h1>
+
+<p class="meta">
+<strong>Intern:</strong> Sanket Rotangar (Goa)<br/>
+<strong>Mentor:</strong> Amol — Tech Manager<br/>
+<strong>Document:</strong> Overall system architecture (how the product is built, how flows work, what exists)<br/>
+<strong>Assessment:</strong> SJ Innovation — Dev Control Tower submission companion<br/>
+<strong>Date:</strong> Friday, 9 October 2026<br/>
+<strong>Tag:</strong> <code>assessment-3</code>
+</p>
+
+<table>
+<tr><th>Link</th><th>URL</th></tr>
+<tr><td>Live dashboard</td><td>https://quickbite-nine-phi.vercel.app/</td></tr>
+<tr><td>GitHub</td><td>https://github.com/sanketrotangar-sji/quickbite-food-delivery-app</td></tr>
+<tr><td>Supabase project</td><td><code>motqehtswgjbbvoazarh</code></td></tr>
+<tr><td>Product SoT</td><td><code>docs/REQUIREMENTS.md</code></td></tr>
+<tr><td>Status / ADRs</td><td><code>docs/PROGRESS.md</code></td></tr>
+</table>
+
+<hr/>
+
+<h2>1. What QuickBite is</h2>
+<p>
+QuickBite is a <strong>food ordering and delivery platform</strong> (Swiggy / Zomato style) built as one monorepo.
+A customer places an order, a restaurant kitchen prepares it, and a rider delivers it.
+The product is designed so that handoff is real — not a single demo user with one flat UI.
+</p>
+<ul>
+<li><strong>Mobile app</strong> for customers and riders (Expo)</li>
+<li><strong>Web dashboard</strong> for restaurant managers, owners, and platform admins (Vite)</li>
+<li><strong>Marketing landing</strong> (Vite)</li>
+<li><strong>One shared backend</strong> — Supabase Auth, Postgres, RLS, Realtime, Edge Functions</li>
+<li><strong>RIO</strong> — JWT-scoped AI ordering assistant for customers</li>
+</ul>
+<p class="note">
+<strong>Core rule:</strong> Postgres is the authority. Order status, fees, delivery range (8 km), and roles are enforced in SQL (RLS + security-definer RPCs). Clients and RIO tools call the same rules — they do not bypass them.
+</p>
+
+<hr/>
+
+<h2>2. How the project is built (monorepo)</h2>
+
+<pre>QuickBite/
+├── apps/
+│   ├── client/          # Expo Router — customer + rider
+│   ├── manager/         # Vite React — admin / owner / kitchen dashboard
+│   └── landing/         # Vite React — public marketing site
+├── packages/shared/     # Shared helpers + unit tests
+├── supabase/
+│   ├── migrations/      # Schema, RLS, RPCs, indexes (DDL source of truth)
+│   ├── functions/       # Edge: rio, directions, notify-new-order
+│   └── seed.sql         # Local demo data only
+├── scripts/             # Embeddings, datagen, RAG eval, seed push, hygiene
+├── docs/                # REQUIREMENTS, PROGRESS, PLAN, dct reports, RAG eval
+└── tests/               # Integration / smoke</pre>
+
+<table>
+<tr><th>Layer</th><th>Technology</th></tr>
+<tr><td>Mobile</td><td>Expo Router (React Native) — <code>apps/client</code></td></tr>
+<tr><td>Web dashboard</td><td>Vite + React — <code>apps/manager</code> (Lovable may edit this app only)</td></tr>
+<tr><td>Marketing</td><td>Vite + React — <code>apps/landing</code></td></tr>
+<tr><td>Backend</td><td>Supabase (Auth, Postgres, RLS, Realtime, Storage, Edge)</td></tr>
+<tr><td>AI chat</td><td>Groq or Ollama via <code>llm_config</code></td></tr>
+<tr><td>Embeddings / RAG</td><td>Ollama <code>qwen3-embedding:0.6b</code> (1024-d) + pgvector</td></tr>
+<tr><td>Deploy</td><td>Vercel (dashboard) · EAS (Android) · Supabase (API / DB / Edge)</td></tr>
+<tr><td>Package manager</td><td>npm workspaces (<code>apps/*</code>, <code>packages/*</code>)</td></tr>
+</table>
+
+<hr/>
+
+<h2>3. System architecture (high level)</h2>
+
+<svg viewBox="0 0 760 420" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif" role="img" aria-label="QuickBite overall architecture">
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker>
+</defs>
+
+<!-- Clients -->
+<rect x="10" y="10" width="236" height="70" rx="8" fill="#fff3e0" stroke="#F15A24" stroke-width="1.5"/>
+<text x="128" y="38" text-anchor="middle" font-size="12" font-weight="700" fill="#222">apps/landing</text>
+<text x="128" y="58" text-anchor="middle" font-size="10.5" fill="#444">Marketing site</text>
+
+<rect x="262" y="10" width="236" height="70" rx="8" fill="#fff3e0" stroke="#F15A24" stroke-width="1.5"/>
+<text x="380" y="38" text-anchor="middle" font-size="12" font-weight="700" fill="#222">apps/manager</text>
+<text x="380" y="58" text-anchor="middle" font-size="10.5" fill="#444">Admin · Owner · Kitchen</text>
+
+<rect x="514" y="10" width="236" height="70" rx="8" fill="#fff3e0" stroke="#F15A24" stroke-width="1.5"/>
+<text x="632" y="38" text-anchor="middle" font-size="12" font-weight="700" fill="#222">apps/client</text>
+<text x="632" y="58" text-anchor="middle" font-size="10.5" fill="#444">Customer · Rider (Expo)</text>
+
+<line x1="380" y1="80" x2="380" y2="110" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="632" y1="80" x2="500" y2="110" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="400" y="100" font-size="10" fill="#555">JWT + anon key</text>
+
+<!-- Supabase -->
+<rect x="10" y="110" width="740" height="100" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+<text x="380" y="138" text-anchor="middle" font-size="13" font-weight="700" fill="#1b5e20">Supabase (cloud day-to-day SoT)</text>
+<text x="380" y="160" text-anchor="middle" font-size="11.5" fill="#333">Auth · Postgres · RLS · Realtime · Storage · pgvector</text>
+<text x="380" y="182" text-anchor="middle" font-size="10.5" fill="#333">Security-definer RPCs for order writes · browse views · redacted rider pool</text>
+<text x="380" y="198" text-anchor="middle" font-size="10" fill="#555">Migrations in supabase/migrations/ — never invent schema from Lovable</text>
+
+<!-- Edge -->
+<line x1="128" y1="210" x2="128" y2="240" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="380" y1="210" x2="380" y2="240" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="632" y1="210" x2="632" y2="240" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<rect x="10" y="240" width="236" height="78" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
+<text x="128" y="266" text-anchor="middle" font-size="12" font-weight="700" fill="#0d3c6e">Edge: rio</text>
+<text x="128" y="286" text-anchor="middle" font-size="10.5" fill="#333">Customer AI · tools · stream</text>
+<text x="128" y="304" text-anchor="middle" font-size="10" fill="#444">User JWT → RLS applies</text>
+
+<rect x="262" y="240" width="236" height="78" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
+<text x="380" y="266" text-anchor="middle" font-size="12" font-weight="700" fill="#0d3c6e">Edge: directions</text>
+<text x="380" y="286" text-anchor="middle" font-size="10.5" fill="#333">Routing / map helper</text>
+<text x="380" y="304" text-anchor="middle" font-size="10" fill="#444">ORS · OSRM fallback</text>
+
+<rect x="514" y="240" width="236" height="78" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
+<text x="632" y="266" text-anchor="middle" font-size="12" font-weight="700" fill="#0d3c6e">Edge: notify-new-order</text>
+<text x="632" y="286" text-anchor="middle" font-size="10.5" fill="#333">Push webhook</text>
+<text x="632" y="304" text-anchor="middle" font-size="10" fill="#444">WEBHOOK_SECRET + dedupe</text>
+
+<!-- Externals -->
+<line x1="128" y1="318" x2="128" y2="348" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="380" y1="318" x2="380" y2="348" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="632" y1="318" x2="632" y2="348" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<rect x="10" y="348" width="236" height="58" rx="8" fill="#f6f3ee" stroke="#888"/>
+<text x="128" y="372" text-anchor="middle" font-size="11" font-weight="700" fill="#222">Groq / Ollama</text>
+<text x="128" y="390" text-anchor="middle" font-size="10" fill="#444">Chat LLM + embeddings</text>
+
+<rect x="262" y="348" width="236" height="58" rx="8" fill="#f6f3ee" stroke="#888"/>
+<text x="380" y="372" text-anchor="middle" font-size="11" font-weight="700" fill="#222">OpenRouteService</text>
+<text x="380" y="390" text-anchor="middle" font-size="10" fill="#444">Maps / ETA (optional key)</text>
+
+<rect x="514" y="348" width="236" height="58" rx="8" fill="#f6f3ee" stroke="#888"/>
+<text x="632" y="372" text-anchor="middle" font-size="11" font-weight="700" fill="#222">Expo Push</text>
+<text x="632" y="390" text-anchor="middle" font-size="10" fill="#444">Device tokens</text>
+</svg>
+
+<p>
+Apps talk to Supabase with the <strong>anon key + user JWT</strong>.
+The service role key stays on servers/scripts/Edge secrets only — never in <code>EXPO_PUBLIC_*</code> or <code>VITE_*</code>.
+</p>
+
+<hr/>
+
+<h2>4. Roles and surfaces</h2>
+<p>Every logged-in user has <strong>exactly one</strong> <code>profiles.role</code>. Need customer + rider? Two accounts.</p>
+
+<table>
+<tr><th>Role</th><th>App</th><th>How granted</th><th>Primary navigation</th></tr>
+<tr><td><code>customer</code></td><td>Expo client</td><td>Default on signup</td><td>Home, Explore, Orders, RIO, Profile (+ cart, checkout, addresses, tracking)</td></tr>
+<tr><td><code>rider</code></td><td>Expo client</td><td>Apply → admin approves</td><td>Home, Orders, Earnings, Profile (+ delivery detail, vehicle, documents)</td></tr>
+<tr><td><code>restaurant_manager</code></td><td>Web manager</td><td>Owner email invite</td><td>Dashboard, Orders, Menu, Performance</td></tr>
+<tr><td><code>restaurant_owner</code></td><td>Web manager</td><td>Apply → admin approves</td><td>Same as manager + <strong>Business</strong> (branches, invites)</td></tr>
+<tr><td><code>admin</code></td><td>Web manager <code>/admin</code></td><td>SQL / seed only</td><td>Dashboard, Tickets, Orders, Riders, Applications, Restaurants, Users, Offers, AI</td></tr>
+</table>
+
+<hr/>
+
+<h2>5. End-to-end order flow</h2>
+
+<pre>placed → preparing → ready → out_for_delivery → delivered
+         ↘ cancelled (from placed / preparing)</pre>
+
+<table>
+<tr><th>Step</th><th>Who</th><th>Mechanism</th></tr>
+<tr><td>1. Kitchen open + menu available</td><td>Manager / owner</td><td><code>menu_items</code>, <code>restaurants.is_open</code></td></tr>
+<tr><td>2. Browse / cart / checkout</td><td>Customer</td><td>Safe views + <code>cart_items</code> → RPC <code>place_order</code> → <code>placed</code></td></tr>
+<tr><td>3. Accept → prepare → ready</td><td>Kitchen</td><td>RPC <code>restaurant_set_order_status</code></td></tr>
+<tr><td>4. Assign rider</td><td>Claim or auto on <code>ready</code></td><td><code>claim_delivery</code> / trigger <code>auto_assign_rider</code></td></tr>
+<tr><td>5. Out for delivery → delivered</td><td>Assigned rider</td><td>RPC <code>rider_set_order_status</code></td></tr>
+<tr><td>6. Rate</td><td>Customer</td><td>Insert into <code>ratings</code> (one per delivered order)</td></tr>
+</table>
+
+<ul>
+<li><strong>Accept timeout:</strong> ignored <code>placed</code> orders older than config (default 30 min) auto-cancel via <code>run_order_accept_timeout</code> + <code>pg_cron</code>.</li>
+<li><strong>Delivery range:</strong> place / cart / RIO confirm blocked outside <strong>8 km</strong> of the kitchen.</li>
+<li><strong>Payments (product scope):</strong> cash-only for the assignment.</li>
+<li><strong>Clients never</strong> <code>UPDATE orders</code> directly — status changes only through RPCs.</li>
+</ul>
+
+<hr/>
+
+<h2>6. What exists in the system (elements)</h2>
+
+<h3>6.1 Core data (tables)</h3>
+<table>
+<tr><th>Area</th><th>Tables / objects</th><th>Purpose</th></tr>
+<tr><td>Identity</td><td><code>profiles</code>, <code>user_roles</code> (legacy mirror)</td><td>One identity + single role</td></tr>
+<tr><td>Catalog</td><td><code>restaurants</code>, <code>menu_items</code>, browse / rating <strong>views</strong></td><td>Kitchens, dishes, safe customer catalog</td></tr>
+<tr><td>Commerce</td><td><code>cart_items</code>, <code>orders</code>, <code>order_items</code>, <code>ratings</code>, <code>order_status_history</code></td><td>Basket → checkout → audit trail → review</td></tr>
+<tr><td>Delivery</td><td><code>rider_locations</code>, claim / pool RPCs</td><td>Live pin + unclaimed job list (redacted)</td></tr>
+<tr><td>Addresses</td><td><code>customer_addresses</code></td><td>Saved drop-off points</td></tr>
+<tr><td>Partners</td><td><code>applications</code>, <code>restaurant_members</code>, <code>manager_invites</code></td><td>Rider/owner applications; owner → manager invites</td></tr>
+<tr><td>Ops</td><td><code>support_tickets</code>, <code>notifications</code>, <code>push_device_tokens</code>, <code>automation_*</code>, <code>admin_audit_log</code></td><td>Support, push, cron knobs, audited admin actions</td></tr>
+<tr><td>Intelligence</td><td><code>embeddings</code>, <code>llm_config</code>, <code>rio_threads</code> / <code>rio_messages</code> / <code>rio_events</code>, <code>profiles.rio_memory</code></td><td>RAG corpus, chat provider, RIO history + durable prefs</td></tr>
+</table>
+
+<h3>6.2 Important RPCs</h3>
+<table>
+<tr><th>RPC</th><th>Purpose</th></tr>
+<tr><td><code>place_order</code></td><td>Cart → order + items; discounts; delivery fee; 8 km guard; clear cart</td></tr>
+<tr><td><code>restaurant_set_order_status</code></td><td>Kitchen legal transitions</td></tr>
+<tr><td><code>claim_delivery</code> / <code>list_rider_delivery_pool</code></td><td>Rider claims; redacted available jobs</td></tr>
+<tr><td><code>rider_set_order_status</code> / <code>rider_set_duty</code></td><td>Deliver flow; online duty + GPS helpers</td></tr>
+<tr><td><code>submit_application</code> / <code>admin_review_application</code></td><td>Partner onboarding</td></tr>
+<tr><td><code>owner_create_branch</code> / <code>owner_invite_manager</code> / <code>accept_manager_invite</code></td><td>Owner ops</td></tr>
+<tr><td><code>admin_force_order_status</code> / <code>admin_mark_order_refunded</code> / …</td><td>Audited admin overrides</td></tr>
+<tr><td><code>match_embeddings</code> / <code>match_embeddings_hybrid</code></td><td>Vector / hybrid RAG retrieval</td></tr>
+<tr><td><code>rio_snapshot</code> / <code>rio_update_memory</code></td><td>Live RIO context + durable prefs</td></tr>
+<tr><td><code>run_order_accept_timeout</code> / <code>run_kitchen_load_alerts</code></td><td>Cron automations</td></tr>
+</table>
+
+<h3>6.3 Edge functions</h3>
+<table>
+<tr><th>Function</th><th>Auth</th><th>Role</th></tr>
+<tr><td><code>rio</code></td><td>User JWT required</td><td>Customer assistant — tools, thread history, NDJSON stream</td></tr>
+<tr><td><code>directions</code></td><td>User JWT required</td><td>Map / route helper</td></tr>
+<tr><td><code>notify-new-order</code></td><td><code>WEBHOOK_SECRET</code></td><td>Push on accept / delivered (deduped)</td></tr>
+</table>
+
+<h3>6.4 RIO tools (customer AI)</h3>
+<p>Discovery path: vague ask → <code>browse_themes</code> → theme → <code>find_offers</code> → kitchen → <code>get_menu</code> → cart → checkout.</p>
+<ul>
+<li><strong>Discovery:</strong> <code>browse_themes</code>, <code>find_offers</code>, <code>verify_dish</code> (plus thin <code>find_food</code> alias)</li>
+<li><strong>Menu / cart:</strong> <code>get_menu</code>, cart (<code>view</code> / <code>add</code> / <code>set_qty</code>)</li>
+<li><strong>Checkout:</strong> two-step confirm with <code>cartHash</code> (CART_CHANGED guard) → <code>place_order</code></li>
+<li><strong>After order:</strong> <code>order_status</code>, <code>report_issue</code>, <code>reorder_last</code>, <code>save_prefs</code></li>
+</ul>
+<p>
+<strong>Product physics inside RIO:</strong> one kitchen per cart, 8 km delivery, prefer open kitchens, never invent prices/statuses, degrade calmly on tool/LLM failure.
+Shared memory: last ~8 turns in <code>rio_messages</code> + durable <code>profiles.rio_memory</code>.
+</p>
+
+<hr/>
+
+<h2>7. Security model</h2>
+<ol>
+<li>RLS on every business table</li>
+<li>Named policies open specific doors</li>
+<li><strong>Order mutations only through RPCs</strong> (no client INSERT/UPDATE/DELETE on <code>orders</code> / <code>order_items</code>)</li>
+<li>Customers browse via safe views; riders see unclaimed jobs via redacted RPC</li>
+<li>Role / email changes blocked on client (<code>profiles_guard_update</code>)</li>
+<li>RIO uses the <strong>user JWT</strong> so tool calls obey the same RLS as the app</li>
+</ol>
+
+<table>
+<tr><th>Fear</th><th>Mitigation</th></tr>
+<tr><td>Customer A reads B’s orders</td><td><code>customer_id = auth.uid()</code></td></tr>
+<tr><td>User sets <code>role = admin</code></td><td>Trigger + column privileges</td></tr>
+<tr><td>Manager steals <code>owner_id</code></td><td>Guard trigger</td></tr>
+<tr><td>Rider sees full address before claim</td><td><code>list_rider_delivery_pool</code> redaction</td></tr>
+<tr><td>RAG leaks other users’ addresses</td><td>Scoped match RPCs + curated corpus</td></tr>
+<tr><td>Service role in public env</td><td>Forbidden; <code>npm run check:secrets</code></td></tr>
+</table>
+
+<hr/>
+
+<h2>8. Auth</h2>
+<ul>
+<li><strong>Email &amp; password</strong> signup / login (customer + dashboard)</li>
+<li><strong>Google</strong> OAuth via Supabase Auth</li>
+<li>Signup always creates <code>profiles.role = customer</code> via <code>handle_new_user</code></li>
+<li>Manager <code>AuthGate</code>: admin → <code>/admin</code>, owner/manager → kitchen shell, others → <code>/blocked</code></li>
+<li>Expo routes customer vs rider tabs from <code>profiles.role</code></li>
+<li>Redirects: Vercel dashboard origin + Expo scheme <code>quickbite://</code></li>
+</ul>
+
+<hr/>
+
+<h2>9. Intelligence / RAG (current)</h2>
+<table>
+<tr><th>Item</th><th>Detail</th></tr>
+<tr><td>Chat LLM</td><td>Switchable via <code>llm_config</code> (Groq / Ollama)</td></tr>
+<tr><td>Embeddings</td><td>Ollama <code>qwen3-embedding:0.6b</code>, 1024 dimensions</td></tr>
+<tr><td>Corpus</td><td>Curated menu (+ comment ratings); synthetic scale-up loaded (250 restaurants × 82 items)</td></tr>
+<tr><td>Hybrid RPC</td><td><code>match_embeddings_hybrid</code> — vector + FTS + trigram; live menu filters</td></tr>
+<tr><td>Eval (test)</td><td>Old hit@5 <strong>51.5%</strong> → hybrid(+filters) <strong>81.8%</strong> (<code>docs/rag-a3/results.md</code>)</td></tr>
+<tr><td>A2 baseline locked</td><td><strong>37.5%</strong> hit-rate (Assessment 2 honest baseline)</td></tr>
+</table>
+
+<hr/>
+
+<h2>10. Deploy and operations</h2>
+<table>
+<tr><th>Surface</th><th>How</th></tr>
+<tr><td>Dashboard</td><td>Vercel → <code>apps/manager</code> (live: quickbite-nine-phi)</td></tr>
+<tr><td>Landing</td><td>Optional separate Vercel project → <code>apps/landing</code></td></tr>
+<tr><td>Edge functions</td><td><code>supabase functions deploy</code> / <code>npm run functions:deploy</code></td></tr>
+<tr><td>Android</td><td>EAS preview / production — package <code>com.sjinnovation.quickbite</code></td></tr>
+<tr><td>DB</td><td>Cloud Supabase day-to-day; <code>supabase db push</code> for migrations</td></tr>
+<tr><td>Types</td><td><code>npm run types:gen</code> regenerates client + manager DB types</td></tr>
+<tr><td>Tests</td><td><code>npm test</code> — secrets hygiene + unit + edge + integration (+ Playwright when enabled)</td></tr>
+</table>
+
+<hr/>
+
+<h2>11. Key architectural decisions</h2>
+<table>
+<tr><th>ID</th><th>Decision</th></tr>
+<tr><td>ADR-001</td><td>Monorepo: client + manager + landing + shared</td></tr>
+<tr><td>ADR-002</td><td>Supabase = Auth + Postgres + RLS + Realtime + Edge</td></tr>
+<tr><td>ADR-003</td><td>Cloud Supabase is day-to-day DB source of truth</td></tr>
+<tr><td>ADR-004</td><td>Single <code>profiles.role</code> forever — two accounts if two jobs</td></tr>
+<tr><td>ADR-006</td><td>Order writes only via RPCs</td></tr>
+<tr><td>ADR-007</td><td>Customers browse via <code>restaurant_browse</code>, not full restaurant rows</td></tr>
+<tr><td>ADR-008</td><td>Rider unclaimed pool via redacted <code>list_rider_delivery_pool</code></td></tr>
+<tr><td>ADR-009</td><td>RIO on Edge with user JWT (RLS applies to tools)</td></tr>
+<tr><td>ADR-010</td><td>Chat provider switchable; embeddings fixed to Ollama 1024-d</td></tr>
+<tr><td>ADR-014</td><td>No service-role helper in the browser</td></tr>
+</table>
+
+<hr/>
+
+<h2>12. Related submission documents</h2>
+<table>
+<tr><th>File</th><th>Use</th></tr>
+<tr><td><code>docs/dct/ASSESSMENT3_REPORT.html</code></td><td>Assessment 3 track scores / brief</td></tr>
+<tr><td><code>docs/dct/PROJECT_ARCHITECTURE_REPORT.html</code></td><td>This file — overall build, flows, elements</td></tr>
+<tr><td><code>docs/rag-a3/results.md</code></td><td>RAG before/after metrics</td></tr>
+<tr><td><code>docs/REQUIREMENTS.md</code></td><td>Full product / schema contract</td></tr>
+<tr><td><code>docs/PROGRESS.md</code></td><td>Done / next / decisions log</td></tr>
+</table>
+
+<p class="footer">
+<strong>Summary:</strong> QuickBite is a role-isolated food-delivery monorepo where Supabase Postgres (RLS + RPCs) owns the truth, Expo and Vite apps bind to roles, and RIO is an Edge AI that plays by the same rules as the UI.<br/><br/>
+<em>SJ Innovation — Internal. Prepared by Sanket Rotangar for mentor / Dev Control Tower review. Confidential.</em>
+</p>
+
+</body>
+</html>

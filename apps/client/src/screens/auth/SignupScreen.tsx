@@ -38,7 +38,9 @@ export function SignupScreen() {
         phone,
       });
       if (!data.session) {
-        Alert.alert('Check your email', 'Confirm your address, then come back and sign in.');
+        Alert.alert('Check your email', 'Confirm your address, then come back and sign in.', [
+          { text: 'Go to Sign In', onPress: () => router.replace('/(auth)/login') },
+        ]);
       }
     } catch (error) {
       Alert.alert('Could not sign up', error instanceof Error ? error.message : 'Try again.');

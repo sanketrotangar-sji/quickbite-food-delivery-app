@@ -11,6 +11,9 @@ type Props = {
   recyclingKey?: string;
 } & Omit<ImageProps, 'source' | 'style' | 'contentFit'>;
 
+const FALLBACK_FOOD =
+  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80';
+
 export function RemoteImage({
   uri,
   slot = 'thumb',
@@ -19,8 +22,7 @@ export function RemoteImage({
   recyclingKey,
   ...rest
 }: Props) {
-  const resolved = getDisplayImageUrl(uri, slot);
-  if (!resolved) return null;
+  const resolved = getDisplayImageUrl(uri, slot) || FALLBACK_FOOD;
   return (
     <Image
       source={{ uri: resolved }}

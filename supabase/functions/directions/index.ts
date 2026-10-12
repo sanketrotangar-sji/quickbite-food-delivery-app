@@ -1,4 +1,5 @@
 import { corsHeaders } from "../_shared/cors.ts";
+import { cacheGet, cacheSet } from "../_shared/ttlCache.ts";
 
 type Coordinate = { latitude: number; longitude: number };
 
@@ -109,20 +110,37 @@ Deno.serve(async (request) => {
 
   const from = body.from;
   const to = body.to;
+  // ~11m grid — short TTL reuse for map polylines / ETA retries.
+  const cacheKey =
+    `dir:${from.latitude.toFixed(4)},${from.longitude.toFixed(4)}>` +
+    `${to.latitude.toFixed(4)},${to.longitude.toFixed(4)}`;
+  const cached = cacheGet<unknown>(cacheKey);
+  if (cached) return json(cached);
+
   const apiKey = Deno.env.get("OPENROUTESERVICE_API_KEY");
+  const TTL_MS = 90_000;
 
   if (apiKey) {
     const ors = await fetchOrs(from, to, apiKey);
-    if (ors.ok) return json(ors.body);
+    if (ors.ok) {
+      cacheSet(cacheKey, ors.body, TTL_MS);
+      return json(ors.body);
+    }
     if (ors.status === 429) {
       const fallback = await fetchOsrm(from, to);
-      if (fallback) return json(fallback);
+      if (fallback) {
+        cacheSet(cacheKey, fallback, TTL_MS);
+        return json(fallback);
+      }
       return json({ error: "routing_rate_limited" }, 429);
     }
   }
 
   const osrm = await fetchOsrm(from, to);
-  if (osrm) return json(osrm);
+  if (osrm) {
+    cacheSet(cacheKey, osrm, TTL_MS);
+    return json(osrm);
+  }
 
   return json(
     { error: apiKey ? "routing_failed" : "routing_not_configured" },

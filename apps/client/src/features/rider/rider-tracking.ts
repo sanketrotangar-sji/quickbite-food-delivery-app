@@ -20,13 +20,14 @@ export type RiderCoordinate = {
 type TrackingSnapshot = {
   coordinate: RiderCoordinate | null;
   error: string | null;
+  permissionRequired: boolean;
   tracking: boolean;
 };
 
 let activeOrderId: string | null = null;
 let foregroundWatcher: Location.LocationSubscription | null = null;
 let startPromise: Promise<void> | null = null;
-let snapshot: TrackingSnapshot = { coordinate: null, error: null, tracking: false };
+let snapshot: TrackingSnapshot = { coordinate: null, error: null, permissionRequired: false, tracking: false };
 const listeners = new Set<() => void>();
 
 function emit(next: Partial<TrackingSnapshot>) {
@@ -63,7 +64,7 @@ async function startForegroundWatcher() {
   try {
     const permission = await Location.getForegroundPermissionsAsync();
     if (!permission.granted) {
-      emit({ error: 'Location permission is required for active deliveries.' });
+      emit({ error: 'Location permission is required for active deliveries.', permissionRequired: true });
       return;
     }
     foregroundWatcher?.remove();
@@ -76,7 +77,7 @@ async function startForegroundWatcher() {
       (location) => {
         if (!activeOrderId) return;
         void sendLocation(activeOrderId, location).catch((error: unknown) => {
-          emit({ error: error instanceof Error ? error.message : 'Location update failed.' });
+          emit({ error: error instanceof Error ? error.message : 'Location update failed.', permissionRequired: false });
         });
       },
     );
@@ -84,6 +85,7 @@ async function startForegroundWatcher() {
     foregroundWatcher = null;
     emit({
       error: error instanceof Error ? error.message : 'Location updates are unavailable.',
+      permissionRequired: false,
     });
   }
 }
@@ -92,13 +94,14 @@ async function startNativeTracking(orderId: string) {
   if (Platform.OS === 'web' || isExpoGo()) {
     emit({
       error: 'Live rider tracking needs an EAS development or preview build. Expo Go cannot run background GPS.',
+      permissionRequired: false,
     });
     return;
   }
 
   const foreground = await Location.requestForegroundPermissionsAsync();
   if (!foreground.granted) {
-    emit({ error: 'Location permission is required for active deliveries.' });
+    emit({ error: 'Location permission is required for active deliveries.', permissionRequired: true });
     return;
   }
 
@@ -129,7 +132,7 @@ export async function startRiderTracking(orderId: string) {
   if (activeOrderId === orderId && snapshot.tracking) return;
   activeOrderId = orderId;
   await AsyncStorage.setItem(ACTIVE_ORDER_KEY, orderId);
-  emit({ tracking: true, error: null });
+  emit({ tracking: true, error: null, permissionRequired: false });
   if (!startPromise) {
     startPromise = startNativeTracking(orderId).finally(() => {
       startPromise = null;
@@ -183,7 +186,7 @@ export async function stopRiderTracking(orderId?: string) {
     await Location.stopLocationUpdatesAsync(LOCATION_TASK);
   }
   await AsyncStorage.removeItem(ACTIVE_ORDER_KEY);
-  emit({ tracking: false, coordinate: null, error: null });
+  emit({ tracking: false, coordinate: null, error: null, permissionRequired: false });
 }
 
 function onAppStateChange(state: AppStateStatus) {

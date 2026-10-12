@@ -53,12 +53,18 @@ export function useCart() {
   };
 
   const addItem = useMutation({
-    mutationFn: (input: { menuItemId: string; restaurantId: string; preview?: CartItemPreview }) => {
+    mutationFn: (input: {
+      menuItemId: string;
+      restaurantId: string;
+      quantity?: number;
+      preview?: CartItemPreview;
+    }) => {
       if (!customerId) throw new Error('Not signed in.');
       return addCartItem({
         customerId,
         menuItemId: input.menuItemId,
         restaurantId: input.restaurantId,
+        quantity: input.quantity ?? 1,
       });
     },
     onMutate: async (input) => {
@@ -66,13 +72,20 @@ export function useCart() {
       const previous = queryClient.getQueryData<CartLine[]>(cartQueryKey) ?? [];
       const mixed = previous.some((line) => line.restaurant_id !== input.restaurantId);
       if (mixed || !customerId) return { previous, skipped: true };
+      const count = Math.max(1, input.quantity ?? 1);
       const existing = previous.find((line) => line.menu_item_id === input.menuItemId);
       const next = existing
         ? previous.map((line) =>
-            line.menu_item_id === input.menuItemId ? { ...line, quantity: line.quantity + 1 } : line,
+            line.menu_item_id === input.menuItemId ? { ...line, quantity: line.quantity + count } : line,
           )
         : input.preview
-          ? [...previous, pendingLine(customerId, input.menuItemId, input.restaurantId, input.preview)]
+          ? [
+              ...previous,
+              {
+                ...pendingLine(customerId, input.menuItemId, input.restaurantId, input.preview),
+                quantity: count,
+              },
+            ]
           : previous;
       queryClient.setQueryData(cartQueryKey, next);
       return { previous, skipped: false };
@@ -99,7 +112,8 @@ export function useCart() {
   });
 
   const updateQuantity = useMutation({
-    mutationFn: ({ id, quantity }: { id: string; quantity: number }) => setCartQuantity(id, quantity),
+    mutationFn: ({ id, quantity }: { id: string; quantity: number }) =>
+      setCartQuantity(id, quantity, customerId ?? undefined),
     onMutate: async ({ id, quantity }) => {
       await queryClient.cancelQueries({ queryKey: cartQueryKey });
       const previous = queryClient.getQueryData<CartLine[]>(cartQueryKey) ?? [];

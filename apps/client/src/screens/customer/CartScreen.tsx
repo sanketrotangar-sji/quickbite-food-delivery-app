@@ -6,7 +6,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AddressSheet } from '@/components/address/AddressSheet';
 import { AppText } from '@/components/AppText';
-import { PaymentSheet } from '@/components/PaymentSheet';
+import { PaymentSheet, type PaymentMethodId } from '@/components/PaymentSheet';
 import { EmptyState } from '@/components/EmptyState';
 import { FlowHeader } from '@/components/FlowHeader';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
@@ -21,12 +21,14 @@ import { colors, formatInr, radii } from '@/constants/theme';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useCart } from '@/hooks/useCart';
 import { displayNickname } from '@/lib/addresses';
+import { getPaymentPreference, setPaymentPreference } from '@/lib/payment-preference';
 
 export function CartScreen() {
   const cart = useCart();
   const { selected, hydrated } = useAddresses();
   const [addressOpen, setAddressOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodId>(() => getPaymentPreference());
   const closed = cart.items.some((line) => line.restaurants?.is_open === false);
   const addressReady = Boolean(selected?.lat != null && selected?.lng != null);
 
@@ -161,7 +163,6 @@ export function CartScreen() {
             <PriceRow label={`Kitchen offer (${cart.offerPercent}% off)`} value={`- ${formatInr(cart.discountAmount)}`} />
           ) : null}
           <PriceRow label="Delivery fee" value={formatInr(cart.deliveryFee)} />
-          <PriceRow label="Total" value={formatInr(cart.total)} emphasize />
           <View style={styles.divider} />
           <PriceRow label="Grand total" value={formatInr(cart.total)} strong />
           <AppText muted style={styles.note}>
@@ -194,11 +195,15 @@ export function CartScreen() {
         <Pressable
           onPress={() => setPaymentOpen(true)}
           style={({ pressed }) => [styles.card, styles.offer, pressed && styles.pressed]}>
-          <Ionicons name="cash-outline" size={18} color={colors.primary} />
+          <Ionicons
+            name={paymentMethod === 'card' ? 'card-outline' : 'cash-outline'}
+            size={18}
+            color={colors.primary}
+          />
           <View style={styles.lineCopy}>
             <AppText weight="semibold">Payment method</AppText>
             <AppText muted style={styles.price}>
-              Cash on delivery
+              {paymentMethod === 'card' ? 'Card (Stripe test) after place' : 'Cash on delivery'}
             </AppText>
           </View>
           <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
@@ -225,7 +230,15 @@ export function CartScreen() {
         onPress={onProceed}
       />
       <AddressSheet visible={addressOpen} onClose={() => setAddressOpen(false)} />
-      <PaymentSheet visible={paymentOpen} onClose={() => setPaymentOpen(false)} />
+      <PaymentSheet
+        visible={paymentOpen}
+        onClose={() => setPaymentOpen(false)}
+        selectedId={paymentMethod}
+        onSelect={(id) => {
+          setPaymentMethod(id);
+          setPaymentPreference(id);
+        }}
+      />
     </Screen>
   );
 }

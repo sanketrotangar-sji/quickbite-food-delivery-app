@@ -18,6 +18,7 @@ import { useCart } from '@/hooks/useCart';
 import { useDeliveryRangeGuard } from '@/hooks/useDeliveryRangeGuard';
 import { usePlaceOrder } from '@/hooks/useOrders';
 import { displayNickname, formatDeliveryAddress } from '@/lib/addresses';
+import { getPaymentPreference } from '@/lib/payment-preference';
 
 export function CheckoutScreen() {
   const { height } = useWindowDimensions();
@@ -29,6 +30,7 @@ export function CheckoutScreen() {
   const [notes, setNotes] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [placeError, setPlaceError] = useState('');
+  const paymentMethod = getPaymentPreference();
   const closed = cart.items.some((line) => line.restaurants?.is_open === false);
   const canPlace = Boolean(selected?.lat != null && selected?.lng != null) && !closed && cart.itemCount > 0;
   const mapHeight = Math.round(height * 0.42);
@@ -45,14 +47,22 @@ export function CheckoutScreen() {
     }
     setPlaceError('');
     try {
-      await place.mutateAsync({
+      const orderId = await place.mutateAsync({
         address: formatDeliveryAddress(selected),
         addressId: selected.id,
         lat: selected.lat,
         lng: selected.lng,
         notes,
       });
-      router.replace('/(customer)/(tabs)/reorder');
+      const id = typeof orderId === 'string' ? orderId : String(orderId);
+      if (id) {
+        router.replace({
+          pathname: '/(customer)/orders/[id]/success',
+          params: { id, total: String(cart.total) },
+        });
+      } else {
+        router.replace('/(customer)/(tabs)/reorder');
+      }
     } catch (error) {
       setPlaceError(error instanceof Error ? error.message : 'Try again.');
     }
@@ -179,7 +189,7 @@ export function CheckoutScreen() {
       </ScrollView>
       <StickyAction
         leading={formatInr(cart.total)}
-        label="Pay via cash"
+        label={paymentMethod === 'card' ? 'Place order · pay by card (test)' : 'Place order · cash'}
         loading={place.isPending}
         disabled={!canPlace}
         onPress={() => void onPlace()}

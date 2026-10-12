@@ -1,0 +1,29 @@
+{
+  "task": "order cancellation risk (cancelled vs delivered)",
+  "features": [
+    "total_amount",
+    "delivery_fee",
+    "discount_amount",
+    "tip_amount",
+    "drop_km",
+    "pickup_km",
+    "hour",
+    "dow",
+    "is_cash",
+    "restaurant_cancel_rate",
+    "customer_cancel_rate",
+    "customer_prior_orders"
+  ],
+  "label_positive": "cancelled",
+  "source_mix": {
+    "synthetic": 3000,
+    "real": 6,
+    "real_cancelled": 5,
+    "real_delivered": 1
+  },
+  "notes": [
+    "Features are place-time only (no post-claim / delivered_at leakage).",
+    "Synthetic rows used when real closed-order volume is insufficient for a held-out F1 report.",
+    "Restaurant/customer cancel rates for real rows use strictly past history."
+  ]
+}

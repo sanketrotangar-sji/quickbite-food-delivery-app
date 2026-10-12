@@ -61,7 +61,9 @@ export async function addCartItem(input: {
   customerId: string;
   menuItemId: string;
   restaurantId: string;
+  quantity?: number;
 }) {
+  const count = Math.max(1, input.quantity ?? 1);
   const { data: existing, error: existingError } = await supabase
     .from('cart_items')
     .select('id, quantity')
@@ -73,7 +75,7 @@ export async function addCartItem(input: {
   if (existing) {
     const { error } = await supabase
       .from('cart_items')
-      .update({ quantity: existing.quantity + 1 })
+      .update({ quantity: existing.quantity + count })
       .eq('id', existing.id);
     if (error) throwApiError(error, 'Could not update cart.');
     return;
@@ -83,7 +85,7 @@ export async function addCartItem(input: {
     customer_id: input.customerId,
     menu_item_id: input.menuItemId,
     restaurant_id: input.restaurantId,
-    quantity: 1,
+    quantity: count,
   });
 
   if (error && isOtherRestaurantError(error)) {
@@ -92,7 +94,27 @@ export async function addCartItem(input: {
   if (error) throwApiError(error, 'Could not add to cart.');
 }
 
-export async function setCartQuantity(cartItemId: string, quantity: number) {
+export async function setCartQuantity(cartItemId: string, quantity: number, customerId?: string) {
+  if (cartItemId.startsWith('pending-')) {
+    const menuItemId = cartItemId.replace(/^pending-/, '');
+    // Resolve synthetic id to real db record
+    let query = supabase.from('cart_items').select('id');
+    if (customerId) query = query.eq('customer_id', customerId);
+    const { data } = await query.eq('menu_item_id', menuItemId).maybeSingle();
+    if (data?.id) {
+      return setCartQuantity(data.id, quantity, customerId);
+    }
+    // If insert is still completing in flight, give it a brief moment
+    await new Promise((r) => setTimeout(r, 250));
+    let retryQuery = supabase.from('cart_items').select('id');
+    if (customerId) retryQuery = retryQuery.eq('customer_id', customerId);
+    const { data: retry } = await retryQuery.eq('menu_item_id', menuItemId).maybeSingle();
+    if (retry?.id) {
+      return setCartQuantity(retry.id, quantity, customerId);
+    }
+    return;
+  }
+
   if (quantity < 1) {
     const { error } = await supabase.from('cart_items').delete().eq('id', cartItemId);
     if (error) throwApiError(error, 'Could not update cart.');

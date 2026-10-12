@@ -1,4 +1,5 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { secretsMatch } from "../_shared/webhookAuth.ts";
 
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
 const EXPO_RECEIPTS_URL = "https://exp.host/--/api/v2/push/getReceipts";
@@ -43,21 +44,6 @@ function json(body: unknown, status = 200) {
   });
 }
 
-async function secretsMatch(provided: string | null, expected: string) {
-  if (!provided) return false;
-  const encoder = new TextEncoder();
-  const [left, right] = await Promise.all([
-    crypto.subtle.digest("SHA-256", encoder.encode(provided)),
-    crypto.subtle.digest("SHA-256", encoder.encode(expected)),
-  ]);
-  const a = new Uint8Array(left);
-  const b = new Uint8Array(right);
-  let mismatch = a.length ^ b.length;
-  for (let index = 0; index < Math.max(a.length, b.length); index += 1) {
-    mismatch |= (a[index] ?? 0) ^ (b[index] ?? 0);
-  }
-  return mismatch === 0;
-}
 
 function chunks<T>(items: T[], size: number) {
   const result: T[][] = [];

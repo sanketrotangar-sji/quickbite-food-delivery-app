@@ -6,6 +6,7 @@
  *   old              → match_embeddings (vector only)
  *   hybrid           → match_embeddings_hybrid
  *   hybrid+filters   → hybrid + is_veg/category when present on the query
+ *   hybrid+rerank    → hybrid over-fetch + heuristic re-rank (same blend as Edge)
  *
  * Labels = canonical_key. Hit = any top-k menu_item's canonical_key matches
  * (or slugified name when canonical_key is null).
@@ -14,7 +15,7 @@
  * metrics in the report are on the **test** split.
  *
  * Usage:
- *   node scripts/eval-rag.mjs [--mode=old|hybrid|hybrid+filters] [--all-modes]
+ *   node scripts/eval-rag.mjs [--mode=old|hybrid|hybrid+filters|hybrid+rerank] [--all-modes]
  *   npm run rag:eval -- --all-modes
  */
 
@@ -34,7 +35,46 @@ const QUERIES_PATH = join(ROOT, 'docs/rag-a3/eval-queries.json');
 const RESULTS_MD = join(ROOT, 'docs/rag-a3/results.md');
 const RESULTS_JSON = join(ROOT, 'docs/rag-a3/results.json');
 const EMBEDDING_MODEL = 'qwen3-embedding:0.6b';
-const MODES = ['old', 'hybrid', 'hybrid+filters'];
+const MODES = ['old', 'hybrid', 'hybrid+filters', 'hybrid+rerank'];
+const RERANK_FETCH = 20;
+
+/** Keep in sync with supabase/functions/_shared/embeddings.ts heuristicRerank. */
+function tokenize(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+    .split(/\s+/)
+    .filter((t) => t.length > 1);
+}
+
+function heuristicRerank(query, rows, topK) {
+  if (!rows.length) return [];
+  if (rows.length <= 1) return rows.slice(0, topK);
+
+  const qTokens = new Set(tokenize(query));
+  const scores = rows.map((r) => Number(r.score) || 0);
+  const minS = Math.min(...scores);
+  const maxS = Math.max(...scores);
+  const span = maxS - minS;
+
+  return rows
+    .map((r) => {
+      const norm = span > 1e-9 ? (Number(r.score) - minS) / span : 1;
+      const previewTokens = tokenize(r.preview || '');
+      let overlap = 0;
+      if (qTokens.size && previewTokens.length) {
+        let hit = 0;
+        for (const t of previewTokens) {
+          if (qTokens.has(t)) hit += 1;
+        }
+        overlap = hit / qTokens.size;
+      }
+      return { row: r, blend: 0.55 * norm + 0.45 * Math.min(1, overlap) };
+    })
+    .sort((a, b) => b.blend - a.blend || b.row.score - a.row.score)
+    .slice(0, topK)
+    .map((x) => x.row);
+}
 
 function loadEnvFile(path) {
   if (!existsSync(path)) return;
@@ -256,10 +296,11 @@ async function retrieve(mode, queryRow, vector) {
     }));
   }
 
+  const wantRerank = mode === 'hybrid+rerank';
   const args = {
     query_text: queryRow.query,
     query_embedding: `[${vector.join(',')}]`,
-    match_count: K,
+    match_count: wantRerank ? RERANK_FETCH : K,
   };
   if (mode === 'hybrid+filters') {
     if (typeof queryRow.is_veg === 'boolean') args.filter_is_veg = queryRow.is_veg;
@@ -268,11 +309,14 @@ async function retrieve(mode, queryRow, vector) {
 
   const { data, error } = await sb.rpc('match_embeddings_hybrid', args);
   if (error) throw new Error(`match_embeddings_hybrid: ${error.message}`);
-  return (data ?? []).map((r) => ({
+  const mapped = (data ?? []).map((r) => ({
     source_id: String(r.source_id),
     vector_similarity: Number(r.vector_similarity ?? 0),
     score: Number(r.score ?? r.vector_similarity ?? 0),
+    preview: String(r.content ?? ''),
   }));
+  if (!wantRerank) return mapped.slice(0, K);
+  return heuristicRerank(queryRow.query, mapped, K);
 }
 
 function scoreRow(queryRow, retrieved, menuById, oocThreshold) {
@@ -497,7 +541,11 @@ function metricCell(m) {
 function writeReport(resultsByMode) {
   mkdirSync(dirname(RESULTS_MD), { recursive: true });
   const modes = MODES.filter((m) => resultsByMode[m]);
-  const primaryAfter = resultsByMode['hybrid+filters'] || resultsByMode.hybrid || null;
+  const primaryAfter =
+    resultsByMode['hybrid+rerank'] ||
+    resultsByMode['hybrid+filters'] ||
+    resultsByMode.hybrid ||
+    null;
   const before = resultsByMode.old;
 
   const md = [];
@@ -548,7 +596,9 @@ function writeReport(resultsByMode) {
   if (failSource) {
     md.push('## 10 worst failing queries (test)');
     md.push('');
-    md.push(`Mode: **${failSource.mode}** (preferred after = hybrid+filters → hybrid → old).`);
+    md.push(
+      `Mode: **${failSource.mode}** (preferred after = hybrid+rerank → hybrid+filters → hybrid → old).`,
+    );
     md.push('');
     const worst = worstFails(failSource, 10);
     if (!worst.length) {
@@ -564,7 +614,10 @@ function writeReport(resultsByMode) {
   md.push('## Method notes');
   md.push('');
   md.push('- Hit = any top-k result’s `canonical_key` ∈ expected (else slugified `menu_items.name`).');
-  md.push('- `old` = `match_embeddings`; `hybrid` / `hybrid+filters` = `match_embeddings_hybrid`.');
+  md.push(
+    '- `old` = `match_embeddings`; `hybrid` / `hybrid+filters` / `hybrid+rerank` = `match_embeddings_hybrid` (rerank over-fetches then heuristic blend; RIO also tries LLM re-rank with this fallback).',
+  );
+  md.push('- Corpus frozen at current menu embeddings (no further synthetic backfill for T4).');
   md.push('- OOC correct = empty result **or** top `vector_similarity` < threshold tuned on **dev** (Youden: OOC TPR − in-catalog FPR).');
   md.push(`- Summary line: before=${before ? metricCell(before.test.overall) : 'n/a'}; after=${primaryAfter ? metricCell(primaryAfter.test.overall) : 'n/a'}.`);
   md.push('');

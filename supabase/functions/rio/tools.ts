@@ -1,12 +1,15 @@
 import { cartHash, cartTotals, DELIVERY_MAX_KM, money, STANDARD_DELIVERY_FEE } from "../_shared/cartMath.ts";
 import { ticketUrgency } from "../_shared/rules.ts";
 import { cachedTool } from "./_toolCache.ts";
+import { isUuid } from "./guardrails.ts";
 
 export type RioRestaurant = {
   id: string;
   name: string;
   cuisine: string;
   dishName: string;
+  /** Featured menu item from find_offers — needed so "order that" can cart-add. */
+  featuredDishId?: string | null;
   imageUrl: string;
   address: string;
   isOpen: boolean;
@@ -81,13 +84,10 @@ type Db = any;
 
 export { STANDARD_DELIVERY_FEE, DELIVERY_MAX_KM };
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CLOSED_QUERY = /\b(closed|shut|offline|not open)\b/i;
 const ACTIVE_ORDER_STATUSES = ["placed", "preparing", "ready", "out_for_delivery"];
 
-export function isUuid(value: unknown): value is string {
-  return typeof value === "string" && UUID.test(value);
-}
+export { isUuid };
 
 function errText(error: { message?: string; details?: string; hint?: string } | null) {
   return [error?.message, error?.details, error?.hint].filter(Boolean).join(" ");
@@ -209,12 +209,14 @@ function toRestaurant(
   dishName: string,
   veg: boolean,
   distanceKm: number | null = null,
+  featuredDishId: string | null = null,
 ): RioRestaurant {
   return {
     id: kitchen.id,
     name: kitchen.name,
     cuisine: kitchen.cuisine?.trim() || "Multi-cuisine",
     dishName,
+    featuredDishId,
     imageUrl: kitchen.image_url ?? "",
     address: kitchen.address,
     isOpen: kitchen.is_open,
@@ -688,7 +690,7 @@ export async function findOffers(
 
   const places: RioRestaurant[] = ready.slice(0, 8).map((o) => {
     const kitchen = kitchenById.get(o.restaurant_id)!;
-    return toRestaurant(kitchen, o.dish_name, o.is_veg, o.distance_km);
+    return toRestaurant(kitchen, o.dish_name, o.is_veg, o.distance_km, o.dish_id);
   });
 
   return {
@@ -699,7 +701,7 @@ export async function findOffers(
       empty: ready.length === 0,
       instruction:
         ready.length > 0
-          ? "Show these kitchens (cards attached). Customer picks ONE kitchen, then get_menu or cart add from that kitchen only. Mention open and ~km. Do not add dishes from two kitchens in one cart."
+          ? "Show these kitchen cards (each has featuredDishId). If the customer says order that / the first / proceed / that one, call cart add with that featuredDishId immediately, then checkout or place_order. Do not ask them to re-describe the dish. One kitchen per cart."
           : "No open in-range available matches. Use unavailable_or_closed to explain honestly, or browse_themes / different query.",
     },
     cards: places.length ? [{ kind: "restaurants", places }] : [],
@@ -1258,6 +1260,10 @@ export async function requestCheckout(
   };
 }
 
+/**
+ * Place the current cart. When expectedCartHash is null (verbal "place/proceed"),
+ * use the live cart hash — customer already confirmed in chat.
+ */
 export async function placeCustomerOrder(
   db: Db,
   deliveryAddress: string | null,
@@ -1281,7 +1287,10 @@ export async function placeCustomerOrder(
     return { data: { error: "CART_EMPTY", message: "The cart is empty." }, cards: [], conflict: null };
   }
   const liveHash = await hashForCart(cart);
-  if (!expectedCartHash || !liveHash || expectedCartHash !== liveHash) {
+  const hashOk = expectedCartHash == null
+    ? Boolean(liveHash)
+    : Boolean(liveHash && expectedCartHash === liveHash);
+  if (!hashOk) {
     return {
       data: {
         error: "CART_CHANGED",
@@ -1420,6 +1429,219 @@ export async function checkDeliveryStatus(db: Db, args: { order_id?: unknown }):
       summary: order,
     },
     cards: outcome.cards,
+    conflict: null,
+  };
+}
+
+async function routeDurationSeconds(
+  from: { latitude: number; longitude: number },
+  to: { latitude: number; longitude: number },
+): Promise<{ seconds: number; meters: number; provider: string } | null> {
+  const apiKey = Deno.env.get("OPENROUTESERVICE_API_KEY")?.trim();
+  if (apiKey) {
+    try {
+      const response = await fetch(
+        "https://api.openrouteservice.org/v2/directions/driving-car/geojson",
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/geo+json",
+            Authorization: apiKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            coordinates: [
+              [from.longitude, from.latitude],
+              [to.longitude, to.latitude],
+            ],
+          }),
+        },
+      );
+      if (response.ok) {
+        const body = await response.json() as {
+          features?: { properties?: { summary?: { duration?: number; distance?: number } } }[];
+        };
+        const summary = body.features?.[0]?.properties?.summary;
+        if (summary?.duration != null) {
+          return {
+            seconds: Number(summary.duration),
+            meters: Number(summary.distance ?? 0),
+            provider: "openrouteservice",
+          };
+        }
+      }
+    } catch {
+      // fall through to OSRM
+    }
+  }
+
+  try {
+    const url =
+      `https://router.project-osrm.org/route/v1/driving/` +
+      `${from.longitude},${from.latitude};${to.longitude},${to.latitude}` +
+      `?overview=false`;
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const payload = await response.json() as {
+      routes?: { duration?: number; distance?: number }[];
+    };
+    const route = payload.routes?.[0];
+    if (route?.duration == null) return null;
+    return {
+      seconds: Number(route.duration),
+      meters: Number(route.distance ?? 0),
+      provider: "osrm",
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Dispatch helper: kitchen → drop-off ETA for the customer's own order.
+ * Uses ORS when configured, else OSRM, else haversine + prep_minutes fallback.
+ */
+export async function estimateEta(
+  db: Db,
+  userId: string,
+  args: { order_id?: unknown },
+): Promise<ToolOutcome> {
+  let orderId: string | null = isUuid(args.order_id) ? String(args.order_id) : null;
+  if (!orderId) {
+    const { data: active, error: activeError } = await db
+      .from("orders")
+      .select("id")
+      .eq("customer_id", userId)
+      .in("status", ACTIVE_ORDER_STATUSES)
+      .order("placed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (activeError) throw new Error(errText(activeError) || "Could not load orders.");
+    orderId = active?.id ? String(active.id) : null;
+  }
+  if (!orderId) {
+    return {
+      data: {
+        error: "NO_ORDER",
+        message: "No active order to estimate. Place an order first or pass order_id.",
+        instruction: "Ask which order, or suggest ordering food.",
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  const { data: order, error: orderError } = await db
+    .from("orders")
+    .select(
+      "id, status, customer_id, restaurant_id, rider_id, delivery_lat, delivery_lng, delivery_address",
+    )
+    .eq("id", orderId)
+    .maybeSingle();
+  if (orderError) throw new Error(errText(orderError) || "Could not load order.");
+  if (!order || order.customer_id !== userId) {
+    return { data: { error: "That order is not visible for this customer." }, cards: [], conflict: null };
+  }
+
+  const kitchens = await loadKitchens(db, [String(order.restaurant_id)]);
+  const kitchen = kitchens[0] ?? null;
+  const dropLat = order.delivery_lat != null ? Number(order.delivery_lat) : null;
+  const dropLng = order.delivery_lng != null ? Number(order.delivery_lng) : null;
+  const kitLat = kitchen?.lat != null ? Number(kitchen.lat) : null;
+  const kitLng = kitchen?.lng != null ? Number(kitchen.lng) : null;
+  const prep = kitchen?.prep_minutes != null ? Number(kitchen.prep_minutes) : 20;
+  const assigned = Boolean(order.rider_id);
+  const status = String(order.status);
+
+  if (
+    dropLat == null ||
+    dropLng == null ||
+    kitLat == null ||
+    kitLng == null ||
+    !Number.isFinite(dropLat) ||
+    !Number.isFinite(dropLng) ||
+    !Number.isFinite(kitLat) ||
+    !Number.isFinite(kitLng)
+  ) {
+    return {
+      data: {
+        order_id: orderId,
+        status,
+        rider_assigned: assigned,
+        eta_minutes: null,
+        prep_minutes_hint: prep,
+        provider: "none",
+        fallback: true,
+        message:
+          "Missing map pins for this order. Share status only; kitchen prep is usually about " +
+          `${prep} minutes once cooking starts.`,
+        instruction:
+          "Explain status without inventing an ETA. Suggest checking again when the rider is out for delivery.",
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  const routed = await routeDurationSeconds(
+    { latitude: kitLat, longitude: kitLng },
+    { latitude: dropLat, longitude: dropLng },
+  );
+
+  if (!routed) {
+    const km = haversineKm(kitLat, kitLng, dropLat, dropLng);
+    const driveMin = Math.max(5, Math.round((km / 25) * 60));
+    const eta =
+      status === "out_for_delivery"
+        ? driveMin
+        : status === "ready"
+        ? driveMin + 5
+        : driveMin + prep;
+    return {
+      data: {
+        order_id: orderId,
+        status,
+        rider_assigned: assigned,
+        distance_km: Math.round(km * 10) / 10,
+        eta_minutes: eta,
+        prep_minutes_hint: prep,
+        provider: "haversine_fallback",
+        fallback: true,
+        ors_configured: Boolean(Deno.env.get("OPENROUTESERVICE_API_KEY")?.trim()),
+        message:
+          `Rough ETA ~${eta} min (straight-line fallback` +
+          `${Deno.env.get("OPENROUTESERVICE_API_KEY")?.trim() ? "" : "; ORS key not set"}).`,
+        instruction: "Share ETA as approximate. Mention status and whether a rider is assigned.",
+      },
+      cards: [],
+      conflict: null,
+    };
+  }
+
+  const driveMin = Math.max(1, Math.round(routed.seconds / 60));
+  const km = Math.round((routed.meters / 1000) * 10) / 10;
+  const eta =
+    status === "out_for_delivery"
+      ? driveMin
+      : status === "ready"
+      ? driveMin + 5
+      : driveMin + (status === "preparing" || status === "placed" ? prep : 0);
+
+  return {
+    data: {
+      order_id: orderId,
+      status,
+      rider_assigned: assigned,
+      distance_km: km,
+      eta_minutes: eta,
+      drive_minutes: driveMin,
+      prep_minutes_hint: prep,
+      provider: routed.provider,
+      fallback: routed.provider !== "openrouteservice",
+      message: `About ${eta} minutes (${routed.provider}; ${km} km road). Status: ${status}.`,
+      instruction: "Share ETA and status. Do not invent live GPS.",
+    },
+    cards: [],
     conflict: null,
   };
 }
@@ -1598,6 +1820,58 @@ export async function reorderLast(
   };
 }
 
+async function hydrateMenuMeta(
+  db: Db,
+  chunks: Array<{
+    source_table: string;
+    source_id: string;
+    similarity: number;
+    vector_similarity?: number;
+    preview: string;
+    meta: Record<string, unknown>;
+  }>,
+): Promise<
+  Array<{
+    source_table: string;
+    source_id: string;
+    similarity: number;
+    vector_similarity?: number;
+    preview: string;
+    meta: Record<string, unknown>;
+  }>
+> {
+  const menuIds = chunks
+    .filter((c) => c.source_table === "menu_items" && isUuid(c.source_id))
+    .map((c) => c.source_id);
+  if (!menuIds.length) return chunks;
+
+  const { data, error } = await db
+    .from("menu_items")
+    .select("id, restaurant_id, name, price, category, is_veg, is_available")
+    .in("id", menuIds);
+  if (error || !data?.length) return chunks;
+
+  const byId = new Map(
+    (data as Array<Record<string, unknown>>).map((row) => [String(row.id), row]),
+  );
+  return chunks.map((c) => {
+    const row = byId.get(c.source_id);
+    if (!row) return c;
+    return {
+      ...c,
+      meta: {
+        ...c.meta,
+        restaurant_id: row.restaurant_id,
+        name: row.name,
+        price: row.price,
+        category: row.category,
+        is_veg: row.is_veg,
+        is_available: row.is_available,
+      },
+    };
+  });
+}
+
 async function retrieveContextUncached(
   db: Db,
   args: { query?: unknown; top_k?: unknown },
@@ -1610,12 +1884,10 @@ async function retrieveContextUncached(
 
   try {
     const { retrieveContext } = await import("../_shared/embeddings.ts");
-    // Public catalog + reviews only. Past-order questions use track_order / check_delivery_status (RLS).
-    const chunks = await retrieveContext(db, query, Math.min(topK * 2, 20), [
-      "menu_items",
-      "ratings",
-    ]);
-    const filtered = chunks.filter((c) => {
+    // Hybrid menu RAG (vector + FTS + trigram) + re-rank. Order history stays on track tools.
+    const chunks = await retrieveContext(db, query, topK, { rerank: true });
+    const hydrated = await hydrateMenuMeta(db, chunks);
+    const filtered = hydrated.filter((c) => {
       if (c.source_table !== "menu_items") return true;
       if (c.meta && typeof c.meta === "object" && "is_available" in c.meta) {
         return c.meta.is_available !== false;
@@ -1647,6 +1919,10 @@ async function retrieveContextUncached(
           source_table: c.source_table,
           source_id: c.source_id,
           similarity: Number(c.similarity.toFixed(4)),
+          vector_similarity:
+            typeof c.vector_similarity === "number"
+              ? Number(c.vector_similarity.toFixed(4))
+              : undefined,
           preview: c.preview,
           meta: c.meta,
         })),

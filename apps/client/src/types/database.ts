@@ -17,7 +17,7 @@ export type Database = {
       admin_audit_log: {
         Row: {
           action: string
-          actor_id: string
+          actor_id: string | null
           created_at: string
           id: string
           order_id: string | null
@@ -26,7 +26,7 @@ export type Database = {
         }
         Insert: {
           action: string
-          actor_id: string
+          actor_id?: string | null
           created_at?: string
           id?: string
           order_id?: string | null
@@ -35,7 +35,7 @@ export type Database = {
         }
         Update: {
           action?: string
-          actor_id?: string
+          actor_id?: string | null
           created_at?: string
           id?: string
           order_id?: string | null
@@ -695,6 +695,9 @@ export type Database = {
           id: string
           notes: string | null
           offer_percent: number | null
+          paid_at: string | null
+          payment_method: string
+          payment_status: string
           pickup_km: number | null
           placed_at: string
           refund_note: string | null
@@ -703,6 +706,8 @@ export type Database = {
           rider_earning: number | null
           rider_id: string | null
           status: Database["public"]["Enums"]["order_status"]
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
           tip_amount: number
           total_amount: number
           updated_at: string
@@ -722,6 +727,9 @@ export type Database = {
           id?: string
           notes?: string | null
           offer_percent?: number | null
+          paid_at?: string | null
+          payment_method?: string
+          payment_status?: string
           pickup_km?: number | null
           placed_at?: string
           refund_note?: string | null
@@ -730,6 +738,8 @@ export type Database = {
           rider_earning?: number | null
           rider_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
           tip_amount?: number
           total_amount: number
           updated_at?: string
@@ -749,6 +759,9 @@ export type Database = {
           id?: string
           notes?: string | null
           offer_percent?: number | null
+          paid_at?: string | null
+          payment_method?: string
+          payment_status?: string
           pickup_km?: number | null
           placed_at?: string
           refund_note?: string | null
@@ -757,6 +770,8 @@ export type Database = {
           rider_earning?: number | null
           rider_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
           tip_amount?: number
           total_amount?: number
           updated_at?: string

@@ -5,14 +5,36 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/AppText';
 import { colors, radii } from '@/constants/theme';
 
-const METHODS = [
-  { id: 'cash', title: 'Cash', hint: 'Pay the rider when the order arrives', icon: 'cash-outline' as const, enabled: true },
-  { id: 'upi', title: 'UPI', hint: 'Not open yet', icon: 'phone-portrait-outline' as const, enabled: false },
-  { id: 'card', title: 'Card', hint: 'Not open yet', icon: 'card-outline' as const, enabled: false },
-  { id: 'wallet', title: 'Wallets', hint: 'Not open yet', icon: 'wallet-outline' as const, enabled: false },
+export type PaymentMethodId = 'cash' | 'card';
+
+const METHODS: Array<{
+  id: PaymentMethodId;
+  title: string;
+  hint: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  enabled: boolean;
+}> = [
+  { id: 'cash', title: 'Cash', hint: 'Pay the rider when the order arrives', icon: 'cash-outline', enabled: true },
+  {
+    id: 'card',
+    title: 'Card (test)',
+    hint: 'Stripe test checkout opens after you place the order',
+    icon: 'card-outline',
+    enabled: true,
+  },
 ];
 
-export function PaymentSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+export function PaymentSheet({
+  visible,
+  onClose,
+  selectedId = 'cash',
+  onSelect,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  selectedId?: PaymentMethodId;
+  onSelect?: (id: PaymentMethodId) => void;
+}) {
   const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -26,13 +48,23 @@ export function PaymentSheet({ visible, onClose }: { visible: boolean; onClose: 
             Payment method
           </AppText>
           <AppText muted style={styles.caption}>
-            Cash is available for this order.
+            Cash is default. Card (test) uses Stripe test mode after checkout — no real charge.
           </AppText>
           <View style={styles.list}>
             {METHODS.map((method) => {
-              const active = method.id === 'cash';
+              const active = method.id === selectedId;
               return (
-                <View key={method.id} style={[styles.pay, !method.enabled && styles.payOff, active && styles.payOn]}>
+                <Pressable
+                  key={method.id}
+                  disabled={!method.enabled}
+                  onPress={() => {
+                    onSelect?.(method.id);
+                    onClose();
+                  }}
+                  style={[styles.pay, !method.enabled && styles.payOff, active && styles.payOn]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active, disabled: !method.enabled }}
+                  accessibilityLabel={`Select ${method.title}`}>
                   <Ionicons name={method.icon} size={20} color={method.enabled ? colors.primary : colors.textMuted} />
                   <View style={styles.copy}>
                     <AppText weight="semibold" style={!method.enabled ? styles.muted : undefined}>
@@ -43,7 +75,7 @@ export function PaymentSheet({ visible, onClose }: { visible: boolean; onClose: 
                     </AppText>
                   </View>
                   <View style={[styles.radio, active && styles.radioOn]}>{active ? <View style={styles.radioDot} /> : null}</View>
-                </View>
+                </Pressable>
               );
             })}
           </View>

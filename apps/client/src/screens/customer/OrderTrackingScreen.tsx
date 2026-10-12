@@ -1,11 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Linking, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { DeliveryCoordinate } from '@/api/deliveries';
 import type { TrackedOrder } from '@/api/order-tracking';
+import { openTestCardCheckout, parsePaymentReturnUrl } from '@/api/payments';
 import { AppText } from '@/components/AppText';
 import { EmptyState } from '@/components/EmptyState';
 import { HomeHero } from '@/components/home/HomeHero';
@@ -36,11 +38,87 @@ const STEP_ICONS: Record<OrderStatus, keyof typeof Ionicons.glyphMap> = {
 };
 
 export function OrderTrackingScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, pay, paid } = useLocalSearchParams<{ id: string; pay?: string; paid?: string }>();
   const insets = useSafeAreaInsets();
   const tracked = useTrackedOrder(id);
   const notices = useMyNotifications();
   const order = tracked.data;
+  const autoPayStarted = useRef(false);
+  const [payBanner, setPayBanner] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+
+  // Deep-link / query return from Stripe (?paid=1|0).
+  useEffect(() => {
+    if (paid === '1') {
+      setPayBanner({ kind: 'ok', text: 'Payment submitted. Refreshing status…' });
+      void tracked.refetch();
+      const t = setInterval(() => void tracked.refetch(), 2500);
+      const stop = setTimeout(() => clearInterval(t), 20_000);
+      return () => {
+        clearInterval(t);
+        clearTimeout(stop);
+      };
+    }
+    if (paid === '0') {
+      setPayBanner({
+        kind: 'err',
+        text: 'Card payment was cancelled. Tap Retry below when you are ready.',
+      });
+    }
+    return undefined;
+  }, [paid, tracked]);
+
+  // Cold-start / background return via Linking (Expo Go / standalone).
+  useEffect(() => {
+    const handle = (url: string) => {
+      const parsed = parsePaymentReturnUrl(url);
+      if (!parsed.orderId || parsed.orderId !== id) return;
+      if (parsed.paid === '1') {
+        setPayBanner({ kind: 'ok', text: 'Payment submitted. Refreshing status…' });
+        void tracked.refetch();
+      } else if (parsed.paid === '0') {
+        setPayBanner({
+          kind: 'err',
+          text: 'Card payment was cancelled. Tap Retry below when you are ready.',
+        });
+      }
+    };
+    const sub = Linking.addEventListener('url', ({ url }) => handle(url));
+    void Linking.getInitialURL().then((url) => {
+      if (url) handle(url);
+    });
+    return () => sub.remove();
+  }, [id, tracked]);
+
+  useEffect(() => {
+    if (autoPayStarted.current || pay !== '1' || !order) return;
+    if (order.payment_status !== 'unpaid' || order.status === 'cancelled') return;
+    autoPayStarted.current = true;
+    void openTestCardCheckout(order.id)
+      .then((result) => {
+        if (result.status === 'success' || result.status === 'paid') {
+          setPayBanner({ kind: 'ok', text: 'Payment submitted. Refreshing status…' });
+          void tracked.refetch();
+          return;
+        }
+        if (result.status === 'cancelled' || result.status === 'dismissed') {
+          setPayBanner({
+            kind: 'err',
+            text: result.message || 'Payment was not completed. You can retry below.',
+          });
+          return;
+        }
+        setPayBanner({
+          kind: 'err',
+          text: result.message || 'Payment failed. Please try again.',
+        });
+      })
+      .catch((error) => {
+        setPayBanner({
+          kind: 'err',
+          text: error instanceof Error ? error.message : 'Could not start checkout.',
+        });
+      });
+  }, [pay, order, tracked]);
   const automationBanner = (notices.data ?? []).find(
     (n) =>
       !n.readAt &&
@@ -143,6 +221,26 @@ export function OrderTrackingScreen() {
             history={order.history}
           />
 
+          {payBanner ? (
+            <View
+              style={[
+                styles.payBanner,
+                payBanner.kind === 'ok' ? styles.payBannerOk : styles.payBannerErr,
+              ]}>
+              <AppText style={styles.payBannerText}>{payBanner.text}</AppText>
+            </View>
+          ) : null}
+
+          <PaymentStatusCard
+            order={order}
+            bannerError={payBanner?.kind === 'err' ? payBanner.text : null}
+            onPaid={() => {
+              setPayBanner({ kind: 'ok', text: 'Payment submitted. Refreshing status…' });
+              void tracked.refetch();
+            }}
+            onError={(message) => setPayBanner({ kind: 'err', text: message })}
+          />
+
           <RiderSection order={order} riderCoord={rider} customerCoord={customer} />
 
           <OrderItemsCard order={order} />
@@ -233,6 +331,78 @@ function OrderProgressCard({
           })}
         </View>
       )}
+    </View>
+  );
+}
+
+function PaymentStatusCard({
+  order,
+  bannerError,
+  onPaid,
+  onError,
+}: {
+  order: TrackedOrder;
+  bannerError?: string | null;
+  onPaid: () => void;
+  onError: (message: string) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const status = order.payment_status ?? 'unpaid';
+  const method = order.payment_method ?? 'cash';
+  const canPay =
+    status === 'unpaid' && order.status !== 'cancelled' && order.status !== 'delivered';
+  const showRetry = Boolean(canPay && (bannerError || method === 'card'));
+
+  async function onPayTestCard() {
+    setBusy(true);
+    try {
+      const result = await openTestCardCheckout(order.id);
+      if (result.status === 'success' || result.status === 'paid') {
+        onPaid();
+        return;
+      }
+      if (result.status === 'cancelled' || result.status === 'dismissed') {
+        onError(result.message || 'Payment was not completed. Tap Retry to try again.');
+        return;
+      }
+      onError(result.message || 'Payment failed. Tap Retry to try again.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not start checkout.';
+      onError(message);
+      Alert.alert('Payment', message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const label =
+    status === 'paid'
+      ? 'Paid by card (test)'
+      : status === 'refunded'
+        ? 'Refunded'
+        : method === 'card'
+          ? 'Card payment pending — complete Checkout or retry'
+          : 'Cash on delivery';
+
+  return (
+    <View style={styles.card}>
+      <AppText weight="bold" style={styles.sectionTitle}>
+        Payment
+      </AppText>
+      <AppText style={styles.bodyMuted}>{label}</AppText>
+      {canPay ? (
+        <Pressable
+          onPress={() => void onPayTestCard()}
+          disabled={busy}
+          style={({ pressed }) => [styles.payButton, (pressed || busy) && styles.pressed]}
+          accessibilityRole="button"
+          accessibilityLabel={showRetry ? 'Retry Stripe payment' : 'Pay with Stripe test card'}>
+          <Ionicons name="card-outline" size={18} color={colors.white} />
+          <AppText weight="semibold" style={styles.payButtonText}>
+            {busy ? 'Opening…' : showRetry ? 'Retry card payment' : 'Pay with card (test)'}
+          </AppText>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -453,6 +623,20 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   automationTitle: { color: ROUTE_ORANGE, fontSize: 14 },
+  payBanner: {
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    padding: 12,
+  },
+  payBannerOk: {
+    backgroundColor: 'rgba(46, 125, 50, 0.08)',
+    borderColor: 'rgba(46, 125, 50, 0.28)',
+  },
+  payBannerErr: {
+    backgroundColor: 'rgba(180, 40, 40, 0.08)',
+    borderColor: 'rgba(180, 40, 40, 0.28)',
+  },
+  payBannerText: { fontSize: 14, lineHeight: 20, color: TRACK_TEXT },
   automationBody: { fontSize: 13, lineHeight: 18, color: TRACK_MUTED },
   mapHero: {
     borderRadius: MAP_RADIUS,
@@ -499,6 +683,18 @@ const styles = StyleSheet.create({
   stepTime: { fontSize: 9, color: TRACK_MUTED },
   sectionTitle: { fontSize: 16, color: TRACK_TEXT },
   bodyMuted: { fontSize: 13, lineHeight: 18, color: TRACK_MUTED },
+  payButton: {
+    marginTop: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: ROUTE_ORANGE,
+    borderRadius: radii.md,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  payButtonText: { color: colors.white, fontSize: 14 },
   riderTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   riderAvatar: {
     width: 48,

@@ -10,6 +10,8 @@ export type RioRestaurant = {
   name: string;
   cuisine: string;
   dishName: string;
+  /** Featured dish from find_offers — used when customer says "order that". */
+  featuredDishId?: string | null;
   imageUrl: string;
   address: string;
   isOpen: boolean;

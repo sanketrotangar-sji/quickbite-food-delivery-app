@@ -17,7 +17,7 @@ export type Database = {
       admin_audit_log: {
         Row: {
           action: string
-          actor_id: string
+          actor_id: string | null
           created_at: string
           id: string
           order_id: string | null
@@ -26,7 +26,7 @@ export type Database = {
         }
         Insert: {
           action: string
-          actor_id: string
+          actor_id?: string | null
           created_at?: string
           id?: string
           order_id?: string | null
@@ -35,7 +35,7 @@ export type Database = {
         }
         Update: {
           action?: string
-          actor_id?: string
+          actor_id?: string | null
           created_at?: string
           id?: string
           order_id?: string | null
@@ -697,12 +697,17 @@ export type Database = {
           offer_percent: number | null
           pickup_km: number | null
           placed_at: string
+          paid_at: string | null
+          payment_method: string
+          payment_status: string
           refund_note: string | null
           refunded_at: string | null
           restaurant_id: string
           rider_earning: number | null
           rider_id: string | null
           status: Database["public"]["Enums"]["order_status"]
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
           tip_amount: number
           total_amount: number
           updated_at: string
@@ -722,6 +727,9 @@ export type Database = {
           id?: string
           notes?: string | null
           offer_percent?: number | null
+          paid_at?: string | null
+          payment_method?: string
+          payment_status?: string
           pickup_km?: number | null
           placed_at?: string
           refund_note?: string | null
@@ -730,6 +738,8 @@ export type Database = {
           rider_earning?: number | null
           rider_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
           tip_amount?: number
           total_amount: number
           updated_at?: string
@@ -749,6 +759,9 @@ export type Database = {
           id?: string
           notes?: string | null
           offer_percent?: number | null
+          paid_at?: string | null
+          payment_method?: string
+          payment_status?: string
           pickup_km?: number | null
           placed_at?: string
           refund_note?: string | null
@@ -757,6 +770,8 @@ export type Database = {
           rider_earning?: number | null
           rider_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
           tip_amount?: number
           total_amount?: number
           updated_at?: string
@@ -1382,6 +1397,59 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      crm_segment_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: { segment: string; member_count: number }[]
+      }
+      crm_list_segment_members: {
+        Args: { p_segment: string; p_limit?: number }
+        Returns: {
+          customer_id: string
+          full_name: string | null
+          email: string | null
+          phone: string | null
+          joined_at: string
+          delivered_count: number
+          delivered_60d: number
+          last_delivered_at: string | null
+          segment: string
+        }[]
+      }
+      crm_create_campaign: {
+        Args: {
+          p_title: string
+          p_description?: string | null
+          p_target_segment: string
+          p_discount_percent: number
+          p_starts_at: string
+          p_ends_at: string
+          p_restaurant_id?: string | null
+        }
+        Returns: Json
+      }
+      crm_launch_campaign: {
+        Args: { p_campaign_id: string }
+        Returns: Json
+      }
+      crm_end_campaign: {
+        Args: { p_campaign_id: string }
+        Returns: Json
+      }
+      crm_campaign_stats: {
+        Args: { p_campaign_id?: string | null }
+        Returns: {
+          campaign_id: string
+          title: string
+          target_segment: string
+          discount_percent: number
+          status: string
+          starts_at: string
+          ends_at: string
+          enrolled: number
+          redeemed: number
+          expired_unredeemed: number
+        }[]
       }
       admin_force_order_status: {
         Args: {

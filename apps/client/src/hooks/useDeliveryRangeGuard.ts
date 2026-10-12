@@ -56,7 +56,7 @@ export function useDeliveryRangeGuard() {
             : [
                 {
                   text: 'Show nearby',
-                  onPress: () => router.push('/(customer)/(tabs)/explore'),
+                  onPress: () => router.push('/(customer)/(tabs)/picks'),
                 },
               ]),
         ]);

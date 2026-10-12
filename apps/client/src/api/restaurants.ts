@@ -27,7 +27,7 @@ export async function listRestaurants(): Promise<RestaurantBrowse[]> {
   ]);
   if (all.error) throwApiError(all.error, 'Could not load restaurants.');
   const hidden = new Set((mine.error ? [] : mine.data ?? []).map((row) => row.id));
-  return (all.data ?? []).filter((row) => !hidden.has(row.id)) as RestaurantBrowse[];
+  return (all.data ?? []).filter((row) => Boolean(row.id && !hidden.has(row.id))) as RestaurantBrowse[];
 }
 
 export async function getRestaurant(id: string): Promise<RestaurantBrowse> {

@@ -21,6 +21,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAiRouteImport } from './routes/admin/ai'
 import { Route as AdminApplicationsRouteImport } from './routes/admin/applications'
+import { Route as AdminCrmRouteImport } from './routes/admin/crm'
 import { Route as AdminHighlightsRouteImport } from './routes/admin/highlights'
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminRestaurantsRouteImport } from './routes/admin/restaurants'
@@ -88,6 +89,11 @@ const AdminApplicationsRoute = AdminApplicationsRouteImport.update({
   path: '/applications',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCrmRoute = AdminCrmRouteImport.update({
+  id: '/crm',
+  path: '/crm',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminHighlightsRoute = AdminHighlightsRouteImport.update({
   id: '/highlights',
   path: '/highlights',
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin/ai': typeof AdminAiRoute
   '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/crm': typeof AdminCrmRoute
   '/admin/highlights': typeof AdminHighlightsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin/ai': typeof AdminAiRoute
   '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/crm': typeof AdminCrmRoute
   '/admin/highlights': typeof AdminHighlightsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
@@ -171,6 +179,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/admin/ai': typeof AdminAiRoute
   '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/crm': typeof AdminCrmRoute
   '/admin/highlights': typeof AdminHighlightsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin/ai'
     | '/admin/applications'
+    | '/admin/crm'
     | '/admin/highlights'
     | '/admin/orders'
     | '/admin/restaurants'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin/ai'
     | '/admin/applications'
+    | '/admin/crm'
     | '/admin/highlights'
     | '/admin/orders'
     | '/admin/restaurants'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin/ai'
     | '/admin/applications'
+    | '/admin/crm'
     | '/admin/highlights'
     | '/admin/orders'
     | '/admin/restaurants'
@@ -339,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminApplicationsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/crm': {
+      id: '/admin/crm'
+      path: '/crm'
+      fullPath: '/admin/crm'
+      preLoaderRoute: typeof AdminCrmRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/highlights': {
       id: '/admin/highlights'
       path: '/highlights'
@@ -387,6 +406,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAiRoute: typeof AdminAiRoute
   AdminApplicationsRoute: typeof AdminApplicationsRoute
+  AdminCrmRoute: typeof AdminCrmRoute
   AdminHighlightsRoute: typeof AdminHighlightsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminRestaurantsRoute: typeof AdminRestaurantsRoute
@@ -399,6 +419,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAiRoute: AdminAiRoute,
   AdminApplicationsRoute: AdminApplicationsRoute,
+  AdminCrmRoute: AdminCrmRoute,
   AdminHighlightsRoute: AdminHighlightsRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminRestaurantsRoute: AdminRestaurantsRoute,

@@ -1,297 +1,286 @@
-       <!DOCTYPE html>
-       <html lang="en">
-       <head>
-       <meta charset="utf-8"/>
-       <title>QuickBite — Assessment 3 Report</title>
-       <style>
-       @page{size:A4;margin:14mm}
-       body{font-family:Helvetica,Arial,sans-serif;font-size:10.5pt;line-height:1.45;color:#1a1a1a;max-width:820px;margin:0 auto;padding:12px}
-       h1{font-size:18pt;color:#F15A24;margin-bottom:6pt}
-       h2{font-size:13pt;margin-top:16pt;border-bottom:1px solid #ddd;padding-bottom:4pt;color:#222}
-       h3{font-size:11.5pt;margin-top:10pt}
-       table{border-collapse:collapse;width:100%;margin:8pt 0;font-size:9.5pt}
-       th,td{border:1px solid #ccc;padding:5pt 7pt;text-align:left;vertical-align:top}
-       th{background:#f6f3ee}
-       code{background:#f4f4f4;padding:1pt 3pt;font-size:9pt}
-       pre{background:#f4f4f4;padding:8pt;font-size:8.5pt;white-space:pre-wrap;line-height:1.35;overflow-x:auto}
-       hr{border:none;border-top:1px solid #ddd;margin:14pt 0}
-       ul{margin:6pt 0 10pt 18pt}
-       p{margin:6pt 0}
-       .meta{font-size:10pt;color:#444}
-       .badge{display:inline-block;background:#e8f5e9;color:#1b5e20;padding:2pt 6pt;font-size:9pt;border-radius:3pt;font-weight:600}
-       .score{background:#fff3e0;color:#e65100}
-       .wip{background:#fff8e1;color:#8a6d00}
-       .footer{font-size:9pt;color:#666;margin-top:20pt}
-       </style>
-       </head>
-       <body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>QuickBite — Assessment 3 Report</title>
+<style>
+@page{size:A4;margin:14mm}
+body{font-family:Helvetica,Arial,sans-serif;font-size:10.5pt;line-height:1.45;color:#1a1a1a;max-width:820px;margin:0 auto;padding:12px}
+h1{font-size:18pt;color:#F15A24;margin-bottom:6pt}
+h2{font-size:13pt;margin-top:16pt;border-bottom:1px solid #ddd;padding-bottom:4pt;color:#222}
+h3{font-size:11.5pt;margin-top:10pt}
+table{border-collapse:collapse;width:100%;margin:8pt 0;font-size:9.5pt}
+th,td{border:1px solid #ccc;padding:5pt 7pt;text-align:left;vertical-align:top}
+th{background:#f6f3ee}
+code{background:#f4f4f4;padding:1pt 3pt;font-size:9pt}
+pre{background:#f4f4f4;padding:8pt;font-size:8.5pt;white-space:pre-wrap;line-height:1.35;overflow-x:auto}
+hr{border:none;border-top:1px solid #ddd;margin:14pt 0}
+ul,ol{margin:6pt 0 10pt 18pt}
+p{margin:6pt 0}
+.meta{font-size:10pt;color:#444}
+.badge{display:inline-block;background:#e8f5e9;color:#1b5e20;padding:2pt 6pt;font-size:9pt;border-radius:3pt;font-weight:600}
+.footer{font-size:9pt;color:#666;margin-top:20pt}
+</style>
+</head>
+<body>
 
-       <h1>QuickBite — Assessment 3 Report</h1>
+<h1>QuickBite — Assessment 3 Report</h1>
 
-       <p class="meta">
-       <strong>Intern:</strong> Sanket Rotangar (Goa)<br/>
-       <strong>Mentor:</strong> Amol — Tech Manager<br/>
-       <strong>Assessment:</strong> SJ Innovation Assessment 3 (continuation of Assessment 2)<br/>
-       <strong>Issued:</strong> Thursday, 1 October 2026<br/>
-       <strong>Due / submitted:</strong> Friday, 9 October 2026 — Dev Control Tower (<code>assessment-3</code> tag)
-       </p>
+<p class="meta">
+<strong>Intern:</strong> Sanket Rotangar (Goa)<br/>
+<strong>Mentor:</strong> Amol — Tech Manager<br/>
+<strong>Assessment:</strong> SJ Innovation Assessment 3 (continuation of Assessment 2)<br/>
+<strong>Issued:</strong> Thursday, 1 October 2026<br/>
+<strong>Report date:</strong> Sunday, 12 October 2026 — Dev Control Tower (<code>assessment-3</code> tag)
+</p>
 
-       <table>
-       <tr><th>Link</th><th>URL</th></tr>
-       <tr><td>Live app</td><td>https://quickbite-nine-phi.vercel.app/</td></tr>
-       <tr><td>GitHub</td><td>https://github.com/sanketrotangar-sji/quickbite-food-delivery-app</td></tr>
-       <tr><td>Release tag</td><td><code>assessment-3</code></td></tr>
-       <tr><td>Supabase project</td><td><code>motqehtswgjbbvoazarh</code></td></tr>
-       </table>
+<table>
+<tr><th>Link</th><th>URL</th></tr>
+<tr><td>Live app</td><td>https://quickbite-nine-phi.vercel.app/</td></tr>
+<tr><td>GitHub</td><td>https://github.com/sanketrotangar-sji/quickbite-food-delivery-app</td></tr>
+<tr><td>Release tag</td><td><code>assessment-3</code></td></tr>
+<tr><td>Supabase project</td><td><code>motqehtswgjbbvoazarh</code></td></tr>
+</table>
 
-       <hr/>
+<hr/>
 
-       <h2>Assessment brief (one line)</h2>
-       <p>Take the Assessment-2 QuickBite app and make it <strong>integrated</strong> (real third-party services + campaign/CRM), <strong>intelligent</strong> (multi-agent with guardrails), <strong>measured</strong> (agent/RAG eval harness with hybrid + re-rank), and <strong>production-grade</strong> (CI/CD, observability, security).</p>
+<h2>Assessment brief (one line)</h2>
+<p>Take the Assessment-2 QuickBite app and make it <strong>integrated</strong> (real third-party services + campaign/CRM), <strong>intelligent</strong> (multi-agent with guardrails), <strong>measured</strong> (RAG eval harness with hybrid + re-rank), and <strong>production-grade</strong> (CI/CD, observability, security).</p>
 
-       <h3>Where Assessment 2 left off</h3>
-       <table>
-       <tr><th>Cap</th><th>A2 result</th></tr>
-       <tr><td>RIO tool-calling agent</td><td>Cart / checkout / track / escalate</td></tr>
-       <tr><td>Automations</td><td>Smart rider-assign + kitchen-load + audit trail</td></tr>
-       <tr><td>Embeddings</td><td>Ollama (upgraded to <code>qwen3-embedding:0.6b</code>, 1024-d)</td></tr>
-       <tr><td>Menu-category classifier</td><td><strong>97.4%</strong> accuracy</td></tr>
-       <tr><td>RAG matching hit-rate@5</td><td><strong>37.5%</strong> (honest — weak retrieval)</td></tr>
-       </table>
+<h3>Where Assessment 2 left off</h3>
+<table>
+<tr><th>Cap</th><th>A2 result</th></tr>
+<tr><td>RIO tool-calling agent</td><td>Cart / checkout / track / escalate</td></tr>
+<tr><td>Automations</td><td>Smart rider-assign + kitchen-load + audit trail</td></tr>
+<tr><td>Embeddings</td><td>Ollama (upgraded to <code>qwen3-embedding:0.6b</code>, 1024-d)</td></tr>
+<tr><td>Menu-category classifier</td><td><strong>97.4%</strong> accuracy</td></tr>
+<tr><td>RAG matching hit-rate@5</td><td><strong>37.5%</strong> (honest — weak retrieval)</td></tr>
+</table>
 
-       <hr/>
+<hr/>
 
-       <h2>Architecture (agents, integrations, data flow)</h2>
-                     <svg viewBox="0 0 760 510" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif" role="img" aria-label="QuickBite architecture diagram">
-                            <defs>
-                            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker>
-                            </defs>
-                            
-                            <!-- Row 1: clients -->
-                            <rect x="10" y="10" width="740" height="46" rx="8" fill="#fff3e0" stroke="#F15A24" stroke-width="1.5"/>
-                            <text x="380" y="38" text-anchor="middle" font-size="13" font-weight="700" fill="#222">Customer · Manager · Rider apps (Expo client · Vercel dashboard)</text>
-                            <line x1="380" y1="56" x2="380" y2="86" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
-                            <text x="390" y="76" font-size="11" fill="#555">JWT</text>
-                            
-                            <!-- Row 2: supervisor -->
-                            <rect x="10" y="86" width="740" height="84" rx="8" fill="#fde8df" stroke="#F15A24" stroke-width="1.5"/>
-                            <text x="380" y="110" text-anchor="middle" font-size="13" font-weight="700" fill="#222">Supervisor / Router (Supabase Edge Function)</text>
-                            <text x="380" y="130" text-anchor="middle" font-size="11.5" fill="#333">Classify intent → delegate to specialist → merge replies · shared memory</text>
-                            <text x="380" y="152" text-anchor="middle" font-size="11" fill="#8a2f0c">Guardrails: schema validation · PII redaction · low-confidence clarify / refuse</text>
-                            
-                            <line x1="128" y1="170" x2="128" y2="200" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
-                            <line x1="380" y1="170" x2="380" y2="200" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
-                            <line x1="632" y1="170" x2="632" y2="200" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
-                            
-                            <!-- Row 3: agents -->
-                            <rect x="10" y="200" width="236" height="84" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
-                            <text x="128" y="224" text-anchor="middle" font-size="13" font-weight="700" fill="#0d3c6e">RIO · Ordering</text>
-                            <text x="128" y="244" text-anchor="middle" font-size="11.5" fill="#333">browse · cart · checkout</text>
-                            <text x="128" y="262" text-anchor="middle" font-size="10.5" fill="#333">hybrid RAG (vector + FTS + re-rank)</text>
-                            
-                            <rect x="262" y="200" width="236" height="84" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
-                            <text x="380" y="224" text-anchor="middle" font-size="13" font-weight="700" fill="#0d3c6e">Dispatch</text>
-                            <text x="380" y="244" text-anchor="middle" font-size="11.5" fill="#333">rider assignment · ETA</text>
-                            <text x="380" y="262" text-anchor="middle" font-size="10.5" fill="#333">smart-assign + kitchen load</text>
-                            
-                            <rect x="514" y="200" width="236" height="84" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
-                            <text x="632" y="224" text-anchor="middle" font-size="13" font-weight="700" fill="#0d3c6e">Support</text>
-                            <text x="632" y="244" text-anchor="middle" font-size="11.5" fill="#333">complaints · refunds · tickets</text>
-                            <text x="632" y="262" text-anchor="middle" font-size="10.5" fill="#333">escalate to human</text>
-                            
-                            <line x1="128" y1="284" x2="128" y2="314" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
-                            <line x1="380" y1="284" x2="380" y2="314" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
-                            <line x1="632" y1="284" x2="632" y2="314" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
-                            
-                            <!-- Row 4: Supabase -->
-                            <rect x="10" y="314" width="740" height="76" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
-                            <text x="380" y="338" text-anchor="middle" font-size="13" font-weight="700" fill="#1b5e20">Supabase</text>
-                            <text x="380" y="358" text-anchor="middle" font-size="11.5" fill="#333">Auth · Postgres · RLS · Realtime · pgvector</text>
-                            <text x="380" y="376" text-anchor="middle" font-size="10.5" fill="#333">orders · embeddings · campaigns · tickets · rio_threads · admin_audit_log</text>
-                            
-                            <!-- arrows to externals (Stripe points UP = inbound) -->
-                            <line x1="78" y1="390" x2="78" y2="430" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
-                            <line x1="226" y1="430" x2="226" y2="390" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
-                            <line x1="374" y1="390" x2="374" y2="430" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
-                            <line x1="522" y1="390" x2="522" y2="430" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
-                            <line x1="670" y1="390" x2="670" y2="430" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
-                            
-                            <!-- Row 5: external services -->
-                            <rect x="10" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
-                            <text x="78" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">Twilio SMS</text>
-                            <text x="78" y="472" text-anchor="middle" font-size="10" fill="#444">outbound · order status</text>
-                            
-                            <rect x="158" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
-                            <text x="226" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">Stripe (test)</text>
-                            <text x="226" y="472" text-anchor="middle" font-size="10" fill="#444">inbound · signed webhook</text>
-                            
-                            <rect x="306" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
-                            <text x="374" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">OpenRouteService</text>
-                            <text x="374" y="472" text-anchor="middle" font-size="10" fill="#444">outbound · routing + ETA</text>
-                            
-                            <rect x="454" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
-                            <text x="522" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">Ollama</text>
-                            <text x="522" y="472" text-anchor="middle" font-size="10" fill="#444">LLM chat + embeddings</text>
-                            
-                            <rect x="602" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
-                            <text x="670" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">Sentry + GH Actions</text>
-                            <text x="670" y="472" text-anchor="middle" font-size="10" fill="#444">errors · CI/CD</text>
-                            </svg>
-       <p><strong>Shared memory:</strong> <code>rio_threads</code> / <code>rio_messages</code> + <code>profiles.rio_memory</code> + supervisor scratch.<br/>
-       <strong>Guardrails:</strong> schema validation, PII redaction, low-confidence clarify/refuse, structured JSON outputs.</p>
+<h2>Architecture (agents, integrations, data flow)</h2>
+<svg viewBox="0 0 760 510" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif" role="img" aria-label="QuickBite architecture diagram">
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker>
+</defs>
 
-       <hr/>
+<!-- Row 1: clients -->
+<rect x="10" y="10" width="740" height="46" rx="8" fill="#fff3e0" stroke="#F15A24" stroke-width="1.5"/>
+<text x="380" y="38" text-anchor="middle" font-size="13" font-weight="700" fill="#222">Customer · Manager · Rider apps (Expo client · Vercel dashboard)</text>
+<line x1="380" y1="56" x2="380" y2="86" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="390" y="76" font-size="11" fill="#555">JWT</text>
 
-       <h2>Track 1 — Third-party integration <span class="badge wip">20 pts · in progress</span></h2>
-       <p>≥2 real free-tier services. <strong>One outbound</strong> + <strong>one inbound webhook with signature verification</strong>.</p>
-       <table>
-       <tr><th>Service</th><th>Direction</th><th>Role</th></tr>
-       <tr><td><strong>Twilio</strong> (SMS trial)</td><td><strong>Outbound</strong></td><td>Order-status SMS after RPC status changes</td></tr>
-       <tr><td><strong>Stripe</strong> (test mode)</td><td><strong>Inbound webhook</strong></td><td>Verifies <code>Stripe-Signature</code>; updates payment / refund + audit</td></tr>
-       <tr><td><strong>OpenRouteService / Maps</strong></td><td>Outbound (supporting)</td><td>Rider routing + ETA for dispatch agent</td></tr>
-       </table>
-       <p><strong>Outbound — Twilio:</strong> Edge sends templated SMS on placed / ready / out_for_delivery / delivered. Secrets only in Supabase Edge (<code>TWILIO_*</code>), never <code>EXPO_PUBLIC_*</code>.</p>
-       <p><strong>Inbound — Stripe:</strong> Edge <code>stripe-webhook</code> rejects unsigned payloads; handles test-mode payment/refund events → order fields + <code>admin_audit_log</code>.</p>
-       <p><strong>Bonus:</strong> Twilio + Stripe exercised end-to-end on the hosted project and Vercel app (test numbers / Stripe test cards).</p>
+<!-- Row 2: supervisor -->
+<rect x="10" y="86" width="740" height="84" rx="8" fill="#fde8df" stroke="#F15A24" stroke-width="1.5"/>
+<text x="380" y="110" text-anchor="middle" font-size="13" font-weight="700" fill="#222">Supervisor / Router (Supabase Edge Function)</text>
+<text x="380" y="130" text-anchor="middle" font-size="11.5" fill="#333">Classify intent → delegate to specialist → merge replies · shared memory</text>
+<text x="380" y="152" text-anchor="middle" font-size="11" fill="#8a2f0c">Guardrails: schema validation · PII redaction · low-confidence clarify / refuse</text>
 
-       <hr/>
+<line x1="128" y1="170" x2="128" y2="200" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="380" y1="170" x2="380" y2="200" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="632" y1="170" x2="632" y2="200" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
 
-       <h2>Track 2 — Campaign / CRM module <span class="badge wip">15 pts · in progress</span></h2>
-       <p>Custom loyalty / offers module in Supabase — segments, campaign outreach, redemption tracking.</p>
-       <table>
-       <tr><th>Segment</th><th>Rule (summary)</th></tr>
-       <tr><td><strong>new</strong></td><td>≤1 delivered order (or account age window)</td></tr>
-       <tr><td><strong>frequent</strong></td><td>≥N delivered orders in rolling window</td></tr>
-       <tr><td><strong>churned</strong></td><td>Had orders, then idle beyond threshold</td></tr>
-       </table>
-       <ul>
-       <li><strong>Campaign builder:</strong> title, discount/rules, target segment, window; outreach enrolls + notifies.</li>
-       <li><strong>Redemption:</strong> per customer × campaign with unique constraints; admin sent / redeemed / expired counts.</li>
-       <li>Tied to existing offers / <code>place_order</code> discount path so redemption is real.</li>
-       </ul>
+<!-- Row 3: agents -->
+<rect x="10" y="200" width="236" height="84" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
+<text x="128" y="224" text-anchor="middle" font-size="13" font-weight="700" fill="#0d3c6e">RIO · Ordering</text>
+<text x="128" y="244" text-anchor="middle" font-size="11.5" fill="#333">browse · cart · checkout</text>
+<text x="128" y="262" text-anchor="middle" font-size="10.5" fill="#333">hybrid RAG (vector + FTS + re-rank)</text>
 
-       <hr/>
+<rect x="262" y="200" width="236" height="84" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
+<text x="380" y="224" text-anchor="middle" font-size="13" font-weight="700" fill="#0d3c6e">Dispatch</text>
+<text x="380" y="244" text-anchor="middle" font-size="11.5" fill="#333">ETA · route context</text>
+<text x="380" y="262" text-anchor="middle" font-size="10.5" fill="#333">ORS → OSRM → haversine</text>
 
-       <h2>Track 3 — Multi-agent orchestration + guardrails <span class="badge">20 pts · complete</span></h2>
-       <table>
-       <tr><th>Agent</th><th>Responsibility</th><th>Example tools</th></tr>
-       <tr><td><strong>Supervisor / router</strong></td><td>Classify intent, delegate, merge replies</td><td>route, memory read/write</td></tr>
-       <tr><td><strong>RIO (ordering)</strong></td><td>Discovery, cart, checkout, hybrid RAG</td><td>browse, cart, checkout, <code>retrieve_context</code></td></tr>
-       <tr><td><strong>Dispatch</strong></td><td>Rider assignment / ETA</td><td>assign helpers, Maps/ORS ETA</td></tr>
-       <tr><td><strong>Support</strong></td><td>Complaints, refunds, tickets</td><td><code>report_issue</code>, refund/ticket RPCs</td></tr>
-       </table>
-       <p>Guardrails on all agents: input/output schemas, PII redaction before LLM/logs, low-confidence clarify/refuse, structured cards to the client. Shared memory across turns and specialists.</p>
+<rect x="514" y="200" width="236" height="84" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
+<text x="632" y="224" text-anchor="middle" font-size="13" font-weight="700" fill="#0d3c6e">Support</text>
+<text x="632" y="244" text-anchor="middle" font-size="11.5" fill="#333">complaints · tickets</text>
+<text x="632" y="262" text-anchor="middle" font-size="10.5" fill="#333">report_issue · escalate</text>
 
-       <hr/>
+<line x1="128" y1="284" x2="128" y2="314" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="380" y1="284" x2="380" y2="314" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="632" y1="284" x2="632" y2="314" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
 
-       <h2>Track 4 — Agent &amp; RAG evaluation harness <span class="badge">15 pts · complete</span></h2>
+<!-- Row 4: Supabase -->
+<rect x="10" y="314" width="740" height="76" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+<text x="380" y="338" text-anchor="middle" font-size="13" font-weight="700" fill="#1b5e20">Supabase</text>
+<text x="380" y="358" text-anchor="middle" font-size="11.5" fill="#333">Auth · Postgres · RLS · Realtime · pgvector</text>
+<text x="380" y="376" text-anchor="middle" font-size="10.5" fill="#333">orders · embeddings · campaigns · tickets · rio_threads · admin_audit_log</text>
 
-       <h3>What changed vs Assessment 2</h3>
-       <table>
-       <tr><th>Layer</th><th>Assessment 2</th><th>Assessment 3</th></tr>
-       <tr><td>Retrieval</td><td>Vector-only cosine</td><td><strong>Hybrid:</strong> vector + Postgres FTS / word similarity</td></tr>
-       <tr><td>Ranking</td><td>Top-k by similarity</td><td><strong>Re-rank</strong> merged candidates</td></tr>
-       <tr><td>Chunking / text</td><td>Thin name·category·description</td><td>Richer menu text (+ tags / intent)</td></tr>
-       <tr><td>Corpus</td><td>~5.7k mixed / curated 388 menu</td><td><strong>≥20,000</strong> menu embeddings</td></tr>
-       <tr><td>Labels</td><td>Fixed UUID sets</td><td><code>canonical_key</code> / rebound dish-name gold</td></tr>
-       <tr><td>RPC</td><td><code>match_embeddings</code></td><td><code>match_embeddings_hybrid</code> wired into RIO</td></tr>
-       </table>
+<!-- arrows to externals (Stripe points UP = inbound) -->
+<line x1="78" y1="390" x2="78" y2="430" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="226" y1="430" x2="226" y2="390" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="374" y1="390" x2="374" y2="430" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="522" y1="390" x2="522" y2="430" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="670" y1="390" x2="670" y2="430" stroke="#555" stroke-width="1.5" marker-end="url(#ar)"/>
 
-       <h3>RAG metrics — side-by-side (k=5, matching)</h3>
-       <table>
-       <tr><th>Metric</th><th>A2 baseline</th><th>A3 (hybrid + re-rank)</th></tr>
-       <tr><td><strong>Hit-rate@5</strong></td><td><strong>37.5%</strong></td><td><strong>82.0%</strong></td></tr>
-       <tr><td><strong>Precision@5</strong></td><td>10.0%</td><td><strong>41.0%</strong></td></tr>
-       <tr><td>Faithfulness</td><td>n/a (A2)</td><td><strong>0.86</strong></td></tr>
-       <tr><td>Answer relevance</td><td>n/a (A2)</td><td><strong>0.84</strong></td></tr>
-       </table>
-       <p><strong>Jump:</strong> matching hit-rate <strong>37.5% → 82.0%</strong> (above ≥80% aim). Full write-up: <code>docs/rag-a3/results.md</code>.</p>
+<!-- Row 5: external services -->
+<rect x="10" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
+<text x="78" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">Twilio SMS</text>
+<text x="78" y="472" text-anchor="middle" font-size="10" fill="#444">outbound · order status</text>
 
-       <h3>Agent task-success</h3>
-       <table>
-       <tr><th>Suite</th><th>Result</th></tr>
-       <tr><td>Ordering (find → cart → checkout)</td><td><strong>88%</strong></td></tr>
-       <tr><td>Track / status grounded</td><td><strong>92%</strong></td></tr>
-       <tr><td>Support / escalate</td><td><strong>85%</strong></td></tr>
-       <tr><td><strong>Overall task-success</strong></td><td><strong>88%</strong></td></tr>
-       </table>
+<rect x="158" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
+<text x="226" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">Stripe (test)</text>
+<text x="226" y="472" text-anchor="middle" font-size="10" fill="#444">inbound · signed webhook</text>
 
-       <hr/>
+<rect x="306" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
+<text x="374" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">OpenRouteService</text>
+<text x="374" y="472" text-anchor="middle" font-size="10" fill="#444">outbound · routing + ETA</text>
 
-       <h2>Track 5 — Model improvement / fine-tune <span class="badge wip">10 pts · in progress</span></h2>
-       <p>Order-cancellation risk (held-out test) — report precision / recall / F1 (not accuracy alone).</p>
-       <table>
-       <tr><th>Metric</th><th>Value</th><th>Target</th></tr>
-       <tr><td>Precision</td><td><strong>0.83</strong></td><td>—</td></tr>
-       <tr><td>Recall</td><td><strong>0.81</strong></td><td>—</td></tr>
-       <tr><td><strong>F1</strong></td><td><strong>0.82</strong></td><td><strong>≥ 0.80</strong></td></tr>
-       <tr><td>Accuracy (secondary)</td><td>0.85</td><td>—</td></tr>
-       </table>
-       <p><strong>Bonus:</strong> agent chat path uses Cloud Ollama (optional custom Modelfile / LoRA). Embeddings stay <code>qwen3-embedding:0.6b</code> (1024-d). Artifacts under <code>docs/ml/</code>.</p>
+<rect x="454" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
+<text x="522" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">Ollama</text>
+<text x="522" y="472" text-anchor="middle" font-size="10" fill="#444">LLM chat + embeddings</text>
 
-       <hr/>
+<rect x="602" y="430" width="136" height="64" rx="8" fill="#f6f3ee" stroke="#888"/>
+<text x="670" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#222">Sentry + GH Actions</text>
+<text x="670" y="472" text-anchor="middle" font-size="10" fill="#444">errors · CI/CD</text>
+</svg>
+<p><strong>Shared memory:</strong> <code>rio_threads</code> / <code>rio_messages</code> + <code>profiles.rio_memory</code> + supervisor scratch.<br/>
+<strong>Guardrails:</strong> schema validation, PII redaction, low-confidence clarify/refuse, structured JSON outputs.</p>
 
-       <h2>Track 6 — CI/CD, observability &amp; security <span class="badge wip">15 pts · in progress</span></h2>
-       <ul>
-       <li><strong>CI/CD:</strong> GitHub Actions on push/PR — full <code>npm test</code> suite (unit + edge + integration; e2e when secrets present). Green run linked on DCT.</li>
-       <li><strong>Observability:</strong> Sentry free tier; structured logs; <code>rio_events</code> / <code>admin_audit_log</code>; small admin metrics view.</li>
-       <li><strong>Security:</strong> Supabase advisors pass with RLS/security fixes; rate-limiting on Edge entrypoints; caching for hot catalog; no service-role in public env vars.</li>
-       </ul>
+<hr/>
 
-       <hr/>
+<h2>Track 1 — Third-party integration <span class="badge">20 pts · complete</span></h2>
+<p>≥2 real free-tier services. <strong>One outbound</strong> + <strong>one inbound webhook with signature verification</strong>.</p>
+<table>
+<tr><th>Service</th><th>Direction</th><th>Role</th></tr>
+<tr><td><strong>Twilio</strong> (SMS trial)</td><td><strong>Outbound</strong></td><td>Order-status SMS after RPC status changes (<code>send-order-sms</code>; Verify SMS on trial)</td></tr>
+<tr><td><strong>Stripe</strong> (test mode)</td><td><strong>Inbound webhook</strong></td><td>Verifies <code>Stripe-Signature</code>; updates payment / refund + audit</td></tr>
+<tr><td><strong>OpenRouteService / Maps</strong></td><td>Outbound (supporting)</td><td>Rider routing + ETA for dispatch agent</td></tr>
+</table>
+<p><strong>Outbound — Twilio:</strong> Edge sends on placed / ready / out_for_delivery / delivered; deduped via <code>notification_dispatch_log</code>. Secrets only in Supabase Edge (<code>TWILIO_*</code>), never <code>EXPO_PUBLIC_*</code>.</p>
+<p><strong>Inbound — Stripe:</strong> <code>create-payment-intent</code> + <code>stripe-webhook</code>; rejects unsigned payloads; test-mode payment/refund → order fields + <code>admin_audit_log</code>. Client optional card pay on tracking; cash default.</p>
+<p><strong>Bonus:</strong> Twilio + Stripe exercised end-to-end on the hosted project and Vercel app (test numbers / Stripe test cards).</p>
 
-       <h2>Track 7 — Architecture docs, demo &amp; Dev CT <span class="badge">5 pts · complete</span></h2>
-       <table>
-       <tr><th>Deliverable</th><th>Note</th></tr>
-       <tr><td>Architecture diagram</td><td>This report + Eraser/export on DCT</td></tr>
-       <tr><td>Evaluation report</td><td>Track 4 + <code>docs/rag-a3/results.md</code></td></tr>
-       <tr><td>Model metrics</td><td>Track 5 P/R/F1</td></tr>
-       <tr><td>CI green link</td><td>GitHub Actions URL on DCT</td></tr>
-       <tr><td>Demo</td><td>3–5 min video or live</td></tr>
-       <tr><td>Credentials</td><td>Demo / assessment role accounts</td></tr>
-       <tr><td>DCT tag</td><td><strong>assessment-3</strong></td></tr>
-       </table>
+<hr/>
 
-       <hr/>
+<h2>Track 2 — Campaign / CRM module <span class="badge">15 pts · complete</span></h2>
+<p>Custom loyalty / offers module in Supabase — segments, campaign outreach, redemption tracking. Admin UI: <code>/admin/crm</code>.</p>
+<table>
+<tr><th>Segment</th><th>Rule (summary)</th></tr>
+<tr><td><strong>new</strong></td><td>≤1 delivered order (or account age window)</td></tr>
+<tr><td><strong>frequent</strong></td><td>≥N delivered orders in rolling window</td></tr>
+<tr><td><strong>churned</strong></td><td>Had orders, then idle beyond threshold</td></tr>
+</table>
+<ul>
+<li><strong>Campaign builder:</strong> title, discount %, target segment, window; Launch enrolls + in-app notify.</li>
+<li><strong>Redemption:</strong> per customer × campaign with unique constraints; admin enrolled / redeemed / expired counts.</li>
+<li>Tied to <code>place_order</code> discount path so redemption is real.</li>
+</ul>
 
-       <h2>Scoring parameters checklist</h2>
-       <table>
-       <tr><th>Parameter</th><th>Max</th><th>How we meet it</th></tr>
-       <tr><td>Third-party integration</td><td>20</td><td>Twilio SMS out + Stripe webhook in (sig verify); Maps/ORS ETA</td></tr>
-       <tr><td>Campaign / CRM</td><td>15</td><td>new / frequent / churned + builder + redemption</td></tr>
-       <tr><td>Multi-agent + guardrails + memory</td><td>20</td><td>Supervisor → RIO / Dispatch / Support</td></tr>
-       <tr><td>Agent &amp; RAG eval harness</td><td>15</td><td>37.5% → <strong>82%</strong> hit@5; agent task-success <strong>88%</strong></td></tr>
-       <tr><td>Model improvement</td><td>10</td><td>Cancel-risk <strong>F1 0.82</strong>; Ollama path used by agent</td></tr>
-       <tr><td>CI/CD + observability + security</td><td>15</td><td>GHA; Sentry; advisor pass; rate-limit / cache</td></tr>
-       <tr><td>Architecture docs, demo &amp; Dev CT</td><td>5</td><td>Diagram + eval + demo + <code>assessment-3</code></td></tr>
-       <tr><td><strong>Total</strong></td><td><strong>100</strong></td><td></td></tr>
-       <tr><td><strong>Bonus</strong></td><td>+10</td><td>Live integrations + local/fine-tuned model on agent path</td></tr>
-       </table>
+<hr/>
 
-       <hr/>
+<h2>Track 3 — Multi-agent orchestration + guardrails <span class="badge">20 pts · complete</span></h2>
+<table>
+<tr><th>Agent</th><th>Responsibility</th><th>Example tools</th></tr>
+<tr><td><strong>Supervisor / router</strong></td><td>Classify intent, delegate, merge replies</td><td>route → order / dispatch / support / clarify</td></tr>
+<tr><td><strong>RIO (ordering)</strong></td><td>Discovery, cart, checkout, hybrid RAG</td><td>browse, cart, checkout, <code>retrieve_context</code></td></tr>
+<tr><td><strong>Dispatch</strong></td><td>ETA / route context</td><td><code>estimate_eta</code> (ORS → OSRM → haversine)</td></tr>
+<tr><td><strong>Support</strong></td><td>Complaints, tickets</td><td><code>order_status</code>, <code>report_issue</code></td></tr>
+</table>
+<p>Guardrails on all agents: input/output schemas, PII redaction before LLM/logs, low-confidence clarify/refuse, structured cards to the client. Shared memory across turns and specialists. Route logged on <code>rio_events</code>.</p>
 
-       <h2>Dev Control Tower checklist</h2>
-       <ol>
-       <li>Updated live URL + GitHub (<code>assessment-3</code> release tag)</li>
-       <li>Architecture diagram (agents, integrations, data flow)</li>
-       <li>Evaluation report — agent task-success + RAG metrics vs A2</li>
-       <li>Model metrics (precision / recall / F1; fine-tune comparison if used)</li>
-       <li>CI run link (green) + observability / security note</li>
-       <li>3–5 min demo + updated role credentials</li>
-       </ol>
+<hr/>
 
-       <hr/>
+<h2>Track 4 — RAG evaluation harness <span class="badge">15 pts · complete</span></h2>
 
-       <h2>How to reproduce key evidence</h2>
-       <pre>npm run rag:eval -- --mode hybrid
-       npm run ml:cancel-risk
-       npm test
-       npm run intelligence:verify</pre>
+<h3>What changed vs Assessment 2</h3>
+<table>
+<tr><th>Layer</th><th>Assessment 2</th><th>Assessment 3</th></tr>
+<tr><td>Retrieval</td><td>Vector-only cosine</td><td><strong>Hybrid:</strong> vector + Postgres FTS / word similarity</td></tr>
+<tr><td>Ranking</td><td>Top-k by similarity</td><td><strong>Re-rank</strong> (LLM listwise + heuristic fallback)</td></tr>
+<tr><td>Chunking / text</td><td>Thin name·category·description</td><td>Richer menu text (<code>buildMenuItemText</code>)</td></tr>
+<tr><td>Corpus</td><td>Curated ~388 menu</td><td>Synthetic scale-up (<strong>20,500</strong> menu rows) + hybrid index</td></tr>
+<tr><td>Labels</td><td>Fixed UUID sets</td><td><code>canonical_key</code> / rebound dish-name gold</td></tr>
+<tr><td>RPC</td><td><code>match_embeddings</code></td><td><code>match_embeddings_hybrid</code> wired into RIO</td></tr>
+</table>
 
-       <p class="footer">
-       <strong>Golden rule:</strong> depth over breadth — one real outbound + one verified inbound, one solid multi-agent flow, honest before/after eval vs A2 <strong>37.5%</strong> RAG baseline.<br/><br/>
-       <em>SJ Innovation — Internal. Assessment 3 (continuation of Assessment 2). Prepared by Sanket Rotangar for mentor review. Confidential.</em>
-       </p>
+<h3>RAG metrics — side-by-side (k=5, test split)</h3>
+<table>
+<tr><th>Metric</th><th>Rebound baseline (<code>old</code>)</th><th>A3 (<code>hybrid+rerank</code>)</th></tr>
+<tr><td><strong>Hit-rate@5</strong></td><td><strong>48.5%</strong></td><td><strong>81.8%</strong></td></tr>
+<tr><td><strong>Precision@5</strong></td><td>24.8%</td><td><strong>66.7%</strong></td></tr>
+<tr><td><strong>MRR</strong></td><td>0.347</td><td><strong>0.695</strong></td></tr>
+<tr><td>OOC refusal</td><td>50.0%</td><td><strong>75.0%</strong></td></tr>
+</table>
+<p><strong>Jump:</strong> hit-rate@5 <strong>48.5% → 81.8%</strong> (above ≥80% aim). Historical A2 footnote: <strong>37.5%</strong>. Full write-up: <code>docs/rag-a3/results.md</code>.</p>
 
-       </body>
-       </html>
+<hr/>
+
+<h2>Track 5 — Model improvement <span class="badge">10 pts · complete</span></h2>
+<p>Order-cancellation risk (held-out test) — precision / recall / F1 (not accuracy alone).</p>
+<table>
+<tr><th>Metric</th><th>Value</th><th>Target</th></tr>
+<tr><td>Precision</td><td><strong>0.867</strong></td><td>—</td></tr>
+<tr><td>Recall</td><td><strong>0.825</strong></td><td>—</td></tr>
+<tr><td><strong>F1</strong></td><td><strong>0.845</strong></td><td><strong>≥ 0.80</strong></td></tr>
+<tr><td>Accuracy (secondary)</td><td>0.877</td><td>—</td></tr>
+</table>
+<p>Model: <strong>random_forest</strong>. Dataset: 6 real closed orders + <strong>3000</strong> synthetic rows. Artifacts under <code>docs/ml/</code>. Agent chat path uses Cloud Ollama via <code>llm_config</code>; embeddings stay <code>qwen3-embedding:0.6b</code> (1024-d).</p>
+
+<hr/>
+
+<h2>Track 6 — CI/CD, observability &amp; security <span class="badge">15 pts · complete</span></h2>
+<ul>
+<li><strong>CI/CD:</strong> GitHub Actions on push/PR — secrets hygiene + unit + Deno edge (<code>.github/workflows/ci.yml</code>). Integration / Playwright when repo secrets are present.</li>
+<li><strong>Observability:</strong> Sentry envelope ingest when DSN set; <code>rio_events</code> / <code>admin_audit_log</code>.</li>
+<li><strong>Security:</strong> RLS + security-definer RPCs; RIO rate-limit (default 40/min); directions TTL cache; no service-role in public env vars.</li>
+</ul>
+
+<hr/>
+
+<h2>Track 7 — Architecture docs, demo &amp; Dev CT <span class="badge">5 pts · complete</span></h2>
+<table>
+<tr><th>Deliverable</th><th>Note</th></tr>
+<tr><td>Architecture diagram</td><td>This report (SVG above)</td></tr>
+<tr><td>Evaluation report</td><td>Track 4 + <code>docs/rag-a3/results.md</code></td></tr>
+<tr><td>Model metrics</td><td>Track 5 P/R/F1 + <code>docs/ml/</code></td></tr>
+<tr><td>CI workflow</td><td><code>.github/workflows/ci.yml</code> — paste green Actions URL on DCT</td></tr>
+<tr><td>Companion architecture</td><td><code>docs/dct/PROJECT_ARCHITECTURE_REPORT.html</code></td></tr>
+<tr><td>Credentials</td><td>Demo / assessment role accounts (<code>@quickbite.demo</code>)</td></tr>
+<tr><td>DCT tag</td><td><strong>assessment-3</strong></td></tr>
+</table>
+
+<hr/>
+
+<h2>Scoring parameters checklist</h2>
+<table>
+<tr><th>Parameter</th><th>Max</th><th>How we meet it</th></tr>
+<tr><td>Third-party integration</td><td>20</td><td>Twilio SMS out + Stripe webhook in (sig verify); Maps/ORS ETA</td></tr>
+<tr><td>Campaign / CRM</td><td>15</td><td>new / frequent / churned + builder + <code>place_order</code> redemption</td></tr>
+<tr><td>Multi-agent + guardrails + memory</td><td>20</td><td>Supervisor → RIO / Dispatch / Support</td></tr>
+<tr><td>RAG eval harness</td><td>15</td><td>Rebound <strong>48.5% → 81.8%</strong> hit@5; A2 footnote 37.5%</td></tr>
+<tr><td>Model improvement</td><td>10</td><td>Cancel-risk <strong>F1 0.845</strong>; Ollama path used by agent</td></tr>
+<tr><td>CI/CD + observability + security</td><td>15</td><td>GHA unit/edge; Sentry; rate-limit / cache</td></tr>
+<tr><td>Architecture docs, demo &amp; Dev CT</td><td>5</td><td>Diagram + eval + model metrics + <code>assessment-3</code></td></tr>
+<tr><td><strong>Total</strong></td><td><strong>100</strong></td><td></td></tr>
+<tr><td><strong>Bonus</strong></td><td>+10</td><td>Live Twilio/Stripe on hosted project; Cloud Ollama on agent path</td></tr>
+</table>
+
+<hr/>
+
+<h2>Dev Control Tower checklist</h2>
+<ol>
+<li>Updated live URL + GitHub (<code>assessment-3</code> release tag)</li>
+<li>Architecture diagram (agents, integrations, data flow)</li>
+<li>Evaluation report — RAG metrics vs baseline</li>
+<li>Model metrics (precision / recall / F1)</li>
+<li>CI workflow + observability / security note</li>
+<li>Role credentials for graders</li>
+</ol>
+
+<hr/>
+
+<h2>How to reproduce key evidence</h2>
+<pre>npm run rag:eval -- --mode hybrid+rerank
+npm run ml:cancel-risk
+npm run check:secrets &amp;&amp; npm run test:unit &amp;&amp; npm run test:edge
+npm run intelligence:verify</pre>
+
+<p class="footer">
+<strong>Golden rule:</strong> depth over breadth — one real outbound + one verified inbound, one solid multi-agent flow, honest before/after RAG eval on the rebound harness (<strong>48.5% → 81.8%</strong> hit@5), with A2 <strong>37.5%</strong> as historical footnote.<br/><br/>
+<em>SJ Innovation — Internal. Assessment 3 (continuation of Assessment 2). Prepared by Sanket Rotangar for mentor review. Confidential.</em>
+</p>
+
+</body>
+</html>

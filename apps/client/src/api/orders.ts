@@ -7,14 +7,21 @@ import { supabase } from './supabaseClient';
 const ORDER_LIST_COLUMNS =
   'id, customer_id, restaurant_id, status, total_amount, delivery_fee, delivery_address, placed_at, updated_at, rider_id, eta_minutes';
 
-async function attachKitchens(rows: Omit<CustomerOrder, 'restaurants' | 'order_items'>[]): Promise<CustomerOrder[]> {
-  const ids = [...new Set(rows.map((row) => row.restaurant_id))];
+async function fetchKitchenMap(restaurantIds: string[]) {
+  const ids = [...new Set(restaurantIds.filter(Boolean))];
   const kitchens = new Map<string, { name: string; image_url: string | null }>();
   if (ids.length > 0) {
     const browse = await supabase.from('restaurant_browse').select('id, name, image_url').in('id', ids);
     if (browse.error) throwApiError(browse.error, 'Could not load orders.');
-    for (const row of browse.data ?? []) kitchens.set(row.id, { name: row.name, image_url: row.image_url });
+    for (const row of browse.data ?? []) {
+      if (row.id) kitchens.set(row.id, { name: row.name ?? 'Kitchen', image_url: row.image_url });
+    }
   }
+  return kitchens;
+}
+
+async function attachKitchens(rows: Omit<CustomerOrder, 'restaurants' | 'order_items'>[]): Promise<CustomerOrder[]> {
+  const kitchens = await fetchKitchenMap(rows.map((row) => row.restaurant_id));
   return rows.map((row) => ({
     ...row,
     order_items: [],
@@ -32,13 +39,7 @@ export async function listCustomerOrders(): Promise<CustomerOrder[]> {
     .limit(40);
   if (error) throwApiError(error, 'Could not load orders.');
   const rows = data ?? [];
-  const ids = [...new Set(rows.map((row) => row.restaurant_id))];
-  const kitchens = new Map<string, { name: string; image_url: string | null }>();
-  if (ids.length > 0) {
-    const browse = await supabase.from('restaurant_browse').select('id, name, image_url').in('id', ids);
-    if (browse.error) throwApiError(browse.error, 'Could not load orders.');
-    for (const row of browse.data ?? []) kitchens.set(row.id, { name: row.name, image_url: row.image_url });
-  }
+  const kitchens = await fetchKitchenMap(rows.map((row) => row.restaurant_id));
   return rows.map((row) => ({
     ...row,
     restaurants: kitchens.get(row.restaurant_id) ?? null,

@@ -12,6 +12,7 @@
       "bundleIdentifier": "com.sjinnovation.quickbite"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "softwareKeyboardLayoutMode": "resize",
       "package": "com.sjinnovation.quickbite",
       "adaptiveIcon": {
