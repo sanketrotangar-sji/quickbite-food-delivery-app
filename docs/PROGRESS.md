@@ -182,6 +182,8 @@ Update this file after every meaningful task. Status as of **2026-10-12**.
 
 ## Changelog (compressed)
 
+- **2026-10-12** — Manager: bump `@tanstack/react-start` 1.168.32 → **1.168.61** (CVE-2026-102989 XSS gate on Vercel)
+- **2026-10-12** — Fix RIO HTTP 503: removed duplicate `const specialist` (BOOT_ERROR); redeployed `rio`
 - **2026-10-12** — A3-T7 **done**: final `ASSESSMENT3_REPORT.{md,html}` + PLAN/PROGRESS sync  
 - **2026-10-12** — Images: backfilled 251 restaurants + 20.5k menu `image_url`s; RemoteImage fallback; RIO no longer returns opaque HTTP 503 on soft failures  
 - **2026-10-12** — RIO continuity: featuredDishId on offer cards; "order that/proceed" fast-path; place_order tool; card digests in thread history  

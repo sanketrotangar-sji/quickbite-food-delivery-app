@@ -259,7 +259,6 @@ Deno.serve(async (req) => {
         return json({ ...outcome, threadId, agent: route.agent });
       }
       const specialist = SPECIALISTS[route.agent];
-      const specialist = SPECIALISTS[route.agent];
       let fast: { text: string; cards: RioCard[]; conflict: RioConflict | null } | null = null;
       try {
         fast = await tryFollowUpOrder(
