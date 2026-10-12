@@ -60,3 +60,4 @@ supabase/seed-data/generated/manifest.json
 scripts/datagen/out/
 
 apps/manager/test-results/
+.vercel
