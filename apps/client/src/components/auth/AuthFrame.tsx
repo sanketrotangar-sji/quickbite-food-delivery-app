@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 
 import { AppText } from '@/components/AppText';
 import { colors, radii, spacing } from '@/constants/theme';
@@ -9,13 +9,23 @@ type AuthFrameProps = {
   children: ReactNode;
   /** Shown under the logo — dashboard uses "Restaurant dashboard". */
   badge?: string;
+  onBack?: () => void;
 };
 
 /** Matches manager `AuthFrame`: cream page + white bordered card + logo. */
-export function AuthFrame({ children, badge = 'Food delivery' }: AuthFrameProps) {
+export function AuthFrame({ children, badge = 'Food delivery', onBack }: AuthFrameProps) {
   return (
     <View style={styles.page}>
       <View style={styles.card}>
+        {onBack ? (
+          <Pressable
+            onPress={onBack}
+            style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel="Go back">
+            <Ionicons name="arrow-back" size={20} color={colors.text} />
+          </Pressable>
+        ) : null}
         <View style={styles.brand}>
           <Image
             source={require('../../../assets/images/logo2.png')}
@@ -59,6 +69,22 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
+    position: 'relative',
+  },
+  backBtn: {
+    position: 'absolute',
+    top: 14,
+    left: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+    backgroundColor: colors.primaryWash,
+  },
+  pressed: {
+    opacity: 0.7,
   },
   brand: {
     alignItems: 'center',

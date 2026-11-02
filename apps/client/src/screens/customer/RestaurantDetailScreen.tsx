@@ -20,6 +20,8 @@ import { RestaurantInfo } from '@/components/restaurant/RestaurantInfo';
 import { RestaurantReviews } from '@/components/restaurant/RestaurantReviews';
 import { SectionHeader } from '@/components/SectionHeader';
 import { colors, formatInr, radii, screenTopGap } from '@/constants/theme';
+import { useAuth } from '@/hooks/useAuth';
+import { useAuthGate } from '@/hooks/useAuthGate';
 import { useCart } from '@/hooks/useCart';
 import { useCartReplacePrompt } from '@/hooks/useCartReplacePrompt';
 import { useDeliveryRangeGuard } from '@/hooks/useDeliveryRangeGuard';
@@ -34,6 +36,8 @@ import type { MenuItem } from '@/types/models';
 const PAGE_PAD = 16;
 
 export function RestaurantDetailScreen({ restaurantId }: { restaurantId?: string }) {
+  const { session } = useAuth();
+  const { requireAuth } = useAuthGate();
   const insets = useSafeAreaInsets();
   const restaurantQuery = useRestaurant(restaurantId);
   const menuQuery = useMenu(restaurantId);
@@ -106,6 +110,19 @@ export function RestaurantDetailScreen({ restaurantId }: { restaurantId?: string
   }
 
   async function addItem(item: MenuItem) {
+    if (!session) {
+      requireAuth({
+        pendingAction: {
+          type: 'add_cart_item',
+          menuItemId: item.id,
+          restaurantId: id,
+          preview: previewFor(item),
+        },
+        returnTo: `/restaurant/${id}`,
+        message: 'Sign in to add dishes to your cart',
+      });
+      return;
+    }
     if (
       !ensureDeliverable(id, {
         lat: restaurant?.lat,

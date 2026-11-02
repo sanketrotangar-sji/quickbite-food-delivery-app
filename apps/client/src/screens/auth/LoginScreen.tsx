@@ -1,8 +1,9 @@
-import { Link } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
 import { signInWithEmail, signInWithGoogle } from '@/api/auth';
+import { getProfile } from '@/api/profiles';
 import { supabaseConfigured } from '@/api/supabaseClient';
 import { AppText } from '@/components/AppText';
 import { AuthFrame, GoogleMark } from '@/components/auth/AuthFrame';
@@ -10,12 +11,47 @@ import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
 import { colors, fonts, spacing } from '@/constants/theme';
+import { useAuthGate } from '@/hooks/useAuthGate';
+import { readLastRole } from '@/lib/last-role';
+import { hasRole } from '@/types/models';
 
 export function LoginScreen() {
+  const params = useLocalSearchParams<{ returnTo?: string; message?: string }>();
+  const { executePendingAction } = useAuthGate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  function handleBack() {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(customer)/(tabs)');
+    }
+  }
+
+  async function handlePostLogin(userId: string) {
+    const executed = await executePendingAction(userId);
+    if (executed) return;
+
+    if (params.returnTo) {
+      router.replace(params.returnTo as never);
+      return;
+    }
+
+    try {
+      const profile = await getProfile(userId);
+      const lastRole = await readLastRole();
+      if (lastRole === 'rider' && hasRole(profile, 'rider')) {
+        router.replace('/(rider)/(tabs)');
+        return;
+      }
+    } catch {
+      // Fallback to customer home
+    }
+    router.replace('/(customer)/(tabs)');
+  }
 
   async function onLogin() {
     if (!supabaseConfigured) {
@@ -28,7 +64,10 @@ export function LoginScreen() {
     }
     setLoading(true);
     try {
-      await signInWithEmail(email, password);
+      const res = await signInWithEmail(email, password);
+      if (res.session?.user?.id) {
+        await handlePostLogin(res.session.user.id);
+      }
     } catch (error) {
       Alert.alert('Could not sign in', error instanceof Error ? error.message : 'Try again.');
     } finally {
@@ -40,6 +79,7 @@ export function LoginScreen() {
     setGoogleLoading(true);
     try {
       await signInWithGoogle();
+      // Google redirects via URL listener; returnTo handled on session change
     } catch (error) {
       Alert.alert('Google sign-in', error instanceof Error ? error.message : 'Try again.');
     } finally {
@@ -54,12 +94,12 @@ export function LoginScreen() {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
-          <AuthFrame>
+          <AuthFrame onBack={handleBack}>
             <AppText heading weight="bold" style={styles.title}>
               Welcome back
             </AppText>
             <AppText muted style={styles.subtitle}>
-              Sign in to order from nearby kitchens or deliver with QuickBite.
+              {params.message ?? 'Sign in to order from nearby kitchens or deliver with QuickBite.'}
             </AppText>
 
             <View style={styles.form}>
@@ -100,7 +140,12 @@ export function LoginScreen() {
               style={styles.authBtn}
             />
 
-            <Link href="/(auth)/signup" style={styles.footerLink}>
+            <Link
+              href={{
+                pathname: '/(auth)/signup',
+                params: { returnTo: params.returnTo, message: params.message },
+              }}
+              style={styles.footerLink}>
               <AppText muted style={styles.footer}>
                 New here?{' '}
                 <AppText weight="bold" style={styles.footerAccent}>

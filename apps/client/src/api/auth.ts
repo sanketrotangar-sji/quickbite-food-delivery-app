@@ -8,11 +8,12 @@ import { supabase } from './supabaseClient';
 WebBrowser.maybeCompleteAuthSession();
 
 export async function signInWithEmail(email: string, password: string) {
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: email.trim(),
     password,
   });
   if (error) throw error;
+  return data;
 }
 
 export async function signUpWithEmail(input: {

@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { Platform, View } from 'react-native';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
+import { AuthGateProvider } from '@/hooks/useAuthGate';
 import { AnimatedSplash } from '@/components/AnimatedSplash';
 import { colors } from '@/constants/theme';
 import { useRiderOrdersRealtime } from '@/features/rider/use-rider-live';
@@ -83,15 +84,17 @@ export default function RootLayout() {
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <NotificationProvider>
-              <AddressesProvider>
-                <SavedHeartsProvider>
-                  <StatusBar style="dark" />
-                  {Platform.OS === 'android' ? <NavigationBar style="light" /> : null}
-                  <RootNav />
-                </SavedHeartsProvider>
-              </AddressesProvider>
-            </NotificationProvider>
+            <AuthGateProvider>
+              <NotificationProvider>
+                <AddressesProvider>
+                  <SavedHeartsProvider>
+                    <StatusBar style="dark" />
+                    {Platform.OS === 'android' ? <NavigationBar style="light" /> : null}
+                    <RootNav />
+                  </SavedHeartsProvider>
+                </AddressesProvider>
+              </NotificationProvider>
+            </AuthGateProvider>
           </AuthProvider>
         </QueryClientProvider>
       </View>
@@ -118,14 +121,11 @@ function RootNav() {
             headerShown: false,
             contentStyle: { backgroundColor: colors.background },
           }}>
-          <Stack.Protected guard={!isAuthed}>
-            <Stack.Screen name="(auth)" />
-          </Stack.Protected>
-          {/* Any signed-in role can browse, cart, order, and rate. Those actions are not role-gated. */}
-          <Stack.Protected guard={isAuthed}>
-            <Stack.Screen name="(customer)" />
-          </Stack.Protected>
-          {/* Mounted for every session so a non-rider gets the blocked screen instead of a blank route. */}
+          {/* Customer screens are open to all users for guest browsing */}
+          <Stack.Screen name="(customer)" />
+          {/* Auth stack is available for sign-in, sign-up, and account switching */}
+          <Stack.Screen name="(auth)" />
+          {/* Rider and blocked screens require an authenticated session */}
           <Stack.Protected guard={isAuthed}>
             <Stack.Screen name="(rider)" />
           </Stack.Protected>

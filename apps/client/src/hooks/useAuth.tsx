@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { AppState } from 'react-native';
 
 import * as Linking from 'expo-linking';
+import { router } from 'expo-router';
 
 import { acceptManagerInvites } from '@/api/applications';
 import { createSessionFromUrl, signOut as apiSignOut } from '@/api/auth';
@@ -163,7 +164,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
         await apiSignOut();
+        setSession(null);
         setProfile(null);
+        router.replace('/(customer)/(tabs)');
       },
       refreshProfile,
     }),

@@ -5,12 +5,14 @@ import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, View } from '
 
 import { AppText } from '@/components/AppText';
 import { EmptyState } from '@/components/EmptyState';
+import { FlowHeader } from '@/components/FlowHeader';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { OrderCard } from '@/components/OrderCard';
 import { Screen } from '@/components/Screen';
 import { ACTIVE_ORDER_BAR_HEIGHT } from '@/components/home/CustomerTabBar';
 import { type OrderStatus } from '@/constants/orderStatus';
 import { colors, formatInr, tabBarInset } from '@/constants/theme';
+import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import { useCartReplacePrompt } from '@/hooks/useCartReplacePrompt';
 import { useDeliveryRangeGuard } from '@/hooks/useDeliveryRangeGuard';
@@ -22,6 +24,7 @@ type Segment = 'active' | 'past';
 const ACTIVE: OrderStatus[] = ['placed', 'preparing', 'ready', 'out_for_delivery'];
 
 export function OrdersScreen() {
+  const { session } = useAuth();
   const orders = useOrders();
   const cart = useCart();
   const replace = useCartReplacePrompt();
@@ -32,6 +35,27 @@ export function OrdersScreen() {
   const active = rows.filter((order) => ACTIVE.includes(order.status));
   const past = rows.filter((order) => !ACTIVE.includes(order.status));
   const visible = segment === 'active' ? active : past;
+
+  if (!session) {
+    return (
+      <Screen>
+        <StatusBar style="dark" />
+        <FlowHeader title="Your orders" subtitle="Active deliveries and past meals" />
+        <EmptyState
+          icon="receipt-outline"
+          title="Sign in to view orders"
+          body="Sign in with your QuickBite account to track live deliveries and reorder your favorites."
+          actionLabel="Sign in or Sign up"
+          onAction={() =>
+            router.push({
+              pathname: '/(auth)/login',
+              params: { returnTo: '/(customer)/(tabs)/reorder' },
+            })
+          }
+        />
+      </Screen>
+    );
+  }
 
   async function addLines(order: CustomerOrder) {
     const lines = order.order_items.filter((line) => line.menu_item_id);

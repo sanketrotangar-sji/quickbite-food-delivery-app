@@ -102,9 +102,11 @@ export function useCustomerOrdersRealtime() {
 }
 
 export function useActiveOrder() {
+  const { session } = useAuth();
   const query = useQuery({
     queryKey: activeOrderQueryKey,
     queryFn: fetchActiveCustomerOrder,
+    enabled: !!session,
     staleTime: 60_000,
     refetchOnMount: false,
   });

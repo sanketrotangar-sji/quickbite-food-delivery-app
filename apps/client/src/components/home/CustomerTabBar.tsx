@@ -7,6 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/AppText';
 import { ORDER_STATUS_META } from '@/constants/orderStatus';
 import { colors, fonts } from '@/constants/theme';
+import { useAuth } from '@/hooks/useAuth';
+import { useAuthGate } from '@/hooks/useAuthGate';
 import { useActiveOrder } from '@/hooks/useOrderTracking';
 
 export const ACTIVE_ORDER_BAR_HEIGHT = 64;
@@ -33,6 +35,8 @@ export function CustomerTabBar({
     navigate: (name: string, params?: object) => void;
   };
 }) {
+  const { session } = useAuth();
+  const { requireAuth } = useAuthGate();
   const insets = useSafeAreaInsets();
   const keyboardVisible = useKeyboardState((state) => state.isVisible);
   const { activeOrder } = useActiveOrder();
@@ -77,6 +81,20 @@ export function CustomerTabBar({
           const icons = ICONS[route.name] ?? { on: 'ellipse', off: 'ellipse-outline' };
           const color = focused ? colors.primary : colors.textMuted;
           const onPress = () => {
+            if (route.name === 'assistant' && !session) {
+              requireAuth({
+                returnTo: '/(customer)/(tabs)/assistant',
+                message: 'Sign in to chat with RIO, your personal AI assistant',
+              });
+              return;
+            }
+            if (route.name === 'reorder' && !session) {
+              requireAuth({
+                returnTo: '/(customer)/(tabs)/reorder',
+                message: 'Sign in to view and track your orders',
+              });
+              return;
+            }
             const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
             if (!focused && !event.defaultPrevented) {
               navigation.navigate(route.name, route.params);

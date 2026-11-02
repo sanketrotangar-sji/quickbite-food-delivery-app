@@ -8,6 +8,7 @@ import {
 } from '@/api/home';
 import { listCustomerOrders } from '@/api/orders';
 import { useAddresses } from '@/hooks/useAddresses';
+import { useAuth } from '@/hooks/useAuth';
 import { POPULAR_CATEGORY_ID, type HomePlace } from '@/lib/home-catalog';
 import { distanceKm } from '@/lib/geo';
 import { ordersQueryKey } from '@/hooks/useOrders';
@@ -42,6 +43,7 @@ export function sortPlacesByDistance(places: HomePlace[]): HomePlace[] {
 }
 
 export function useHomeCatalog() {
+  const { session } = useAuth();
   const queryClient = useQueryClient();
   const { selected } = useAddresses();
   const origin =
@@ -68,7 +70,7 @@ export function useHomeCatalog() {
   });
 
   useEffect(() => {
-    if (!shell.isSuccess) return;
+    if (!shell.isSuccess || !session) return;
     const idle = setTimeout(() => {
       void queryClient.prefetchQuery({
         queryKey: ordersQueryKey,
@@ -77,7 +79,7 @@ export function useHomeCatalog() {
       });
     }, 400);
     return () => clearTimeout(idle);
-  }, [queryClient, shell.isSuccess]);
+  }, [queryClient, session, shell.isSuccess]);
 
   const data = useMemo<HomeCatalog | undefined>(() => {
     if (!shell.data) return undefined;

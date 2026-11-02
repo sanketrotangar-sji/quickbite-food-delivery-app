@@ -43,6 +43,6 @@ export {
   validateAuthForm,
   type RiderCandidate,
   type TicketUrgency,
-} from "../../../supabase/functions/_shared/rules.ts";
+} from "../../../supabase/functions/_shared/rules";
 
 export { brandHex, brandOklchNotes } from "./brand-tokens";

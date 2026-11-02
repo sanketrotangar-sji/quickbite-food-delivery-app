@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
+import { useAuthGate } from '@/hooks/useAuthGate';
 
 type HeartsValue = {
   ready: boolean;
@@ -17,6 +18,7 @@ function storageKey(userId: string) {
 
 export function SavedHeartsProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
+  const { requireAuth } = useAuthGate();
   const userId = session?.user.id ?? null;
   const [ids, setIds] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
@@ -46,14 +48,20 @@ export function SavedHeartsProvider({ children }: { children: ReactNode }) {
 
   const toggle = useCallback(
     (id: string) => {
-      if (!userId) return;
+      if (!userId) {
+        requireAuth({
+          pendingAction: { type: 'toggle_heart', id },
+          message: 'Sign in to save your favorite dishes and kitchens',
+        });
+        return;
+      }
       setIds((current) => {
         const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
         void AsyncStorage.setItem(storageKey(userId), JSON.stringify(next));
         return next;
       });
     },
-    [userId],
+    [userId, requireAuth],
   );
 
   const value = useMemo<HeartsValue>(() => ({ ready, ids: new Set(ids), toggle }), [ids, ready, toggle]);

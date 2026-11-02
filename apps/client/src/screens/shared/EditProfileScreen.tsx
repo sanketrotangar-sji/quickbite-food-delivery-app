@@ -1,3 +1,4 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Children, useState, type ReactNode } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -42,6 +43,72 @@ export function EditProfileScreen() {
   const addressSubtitle = selected
     ? `${displayNickname(selected)} · ${selected.area}`
     : 'Save home, work, and other places';
+
+  if (!profile) {
+    return (
+      <View style={styles.root}>
+        <StatusBar style="dark" />
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: tabBarInset + 28 }}>
+          <View style={[styles.hero, { paddingTop: insets.top + screenTopGap }]}>
+            <View style={styles.avatar}>
+              <Ionicons name="person-outline" size={32} color={colors.white} />
+            </View>
+            <AppText heading style={styles.name}>
+              Welcome to QuickBite
+            </AppText>
+            <AppText style={[styles.email, { textAlign: 'center', marginHorizontal: 20, marginTop: 4 }]}>
+              Sign in to track orders, save delivery addresses, and enjoy personalized food recommendations.
+            </AppText>
+            <View style={{ width: '100%', maxWidth: 280, marginTop: 16 }}>
+              <Button
+                label="Sign in or Sign up"
+                onPress={() =>
+                  router.push({
+                    pathname: '/(auth)/login',
+                    params: { returnTo: '/(customer)/(tabs)/settings' },
+                  })
+                }
+              />
+            </View>
+          </View>
+
+          <View style={styles.sheet}>
+            <Group title="About QuickBite">
+              <ProfileListItem
+                icon="information-circle-outline"
+                title="About"
+                subtitle="Fast fresh food delivery from local kitchens"
+                onPress={() =>
+                  setNote({
+                    title: 'About QuickBite',
+                    body: 'QuickBite connects hungry food lovers with local kitchens, powered by AI and fast delivery riders.',
+                  })
+                }
+              />
+              <ProfileListItem
+                icon="bicycle-outline"
+                title="Deliver with QuickBite"
+                subtitle="Earn money delivering food on your schedule"
+                onPress={() => router.push('/(customer)/careers?kind=rider')}
+              />
+              <ProfileListItem
+                icon="restaurant-outline"
+                title="Partner with QuickBite"
+                subtitle="List your kitchen and reach thousands of customers"
+                onPress={() => router.push('/(customer)/careers?kind=owner')}
+              />
+            </Group>
+          </View>
+        </ScrollView>
+        <NoteSheet
+          visible={note !== null}
+          title={note?.title ?? ''}
+          body={note?.body ?? ''}
+          onClose={() => setNote(null)}
+        />
+      </View>
+    );
+  }
 
   async function onSave() {
     if (!profile) return;

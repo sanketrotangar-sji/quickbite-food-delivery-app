@@ -33,7 +33,7 @@ QuickBite is one Postgres database with **RLS + RPCs** as the authority. Each ro
 | GitHub | [sanketrotangar-sji/quickbite-food-delivery-app](https://github.com/sanketrotangar-sji/quickbite-food-delivery-app) |
 | Lovable (manager UI) | Connect to this monorepo under `apps/manager` only |
 
-**Docs:** [REQUIREMENTS](./docs/REQUIREMENTS.md) (product SoT) · [PROGRESS](./docs/PROGRESS.md) (status) · [PLAN](./docs/PLAN.md) (pre-submission backlog)
+**Docs:** [REQUIREMENTS](./docs/REQUIREMENTS.md) (product SoT) · [Architecture](./docs/architecture.md) (diagrams) · [PROGRESS](./docs/PROGRESS.md) (status) · [PLAN](./docs/PLAN.md) (pre-submission backlog)
 
 ---
 

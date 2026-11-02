@@ -5,8 +5,10 @@ import { KeyboardStickyView, useKeyboardState } from 'react-native-keyboard-cont
 import { Image, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { router } from 'expo-router';
 import type { RioChatMessage } from '@/api/rioChat';
 import { AppText } from '@/components/AppText';
+import { Button } from '@/components/Button';
 import { HomeHero } from '@/components/home/HomeHero';
 import { colors, fonts } from '@/constants/theme';
 import { useAddDish } from '@/hooks/useAddDish';
@@ -104,10 +106,30 @@ export function RioScreen() {
       <View style={styles.root}>
         <StatusBar style="dark" />
         <HomeHero />
-        <View style={styles.signIn}>
-          <AppText muted style={{ color: RIO_MUTED }}>
-            Sign in to talk to RIO.
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, paddingBottom: tabBarHeight + 24 }}>
+          <View style={styles.avatar}>
+            <Image source={RIO_MARK} style={styles.avatarImage} accessibilityLabel="RIO" />
+          </View>
+          <AppText heading weight="bold" style={[styles.rioTitle, { marginTop: 14 }]}>
+            Meet RIO
           </AppText>
+          <AppText style={[styles.rioSubtitle, { textAlign: 'center', marginHorizontal: 20, marginTop: 6, marginBottom: 24 }]}>
+            Sign in to ask RIO for cravings, personalized dish recommendations, and one-tap reorders.
+          </AppText>
+          <View style={{ width: '100%', maxWidth: 280 }}>
+            <Button
+              label="Sign in to chat"
+              onPress={() =>
+                router.push({
+                  pathname: '/(auth)/login',
+                  params: {
+                    returnTo: '/(customer)/(tabs)/assistant',
+                    message: 'Sign in to chat with RIO, your personal AI assistant',
+                  },
+                })
+              }
+            />
+          </View>
         </View>
       </View>
     );

@@ -19,7 +19,7 @@ export default function Index() {
   }, []);
 
   if (loading || !roleReady) return <LogoLoader />;
-  if (!session) return <Redirect href="/(auth)/login" />;
+  if (!session) return <Redirect href="/(customer)/(tabs)" />;
   if (role === 'rider' && hasRole(profile, 'rider')) return <Redirect href="/(rider)/(tabs)" />;
   return <Redirect href="/(customer)/(tabs)" />;
 }

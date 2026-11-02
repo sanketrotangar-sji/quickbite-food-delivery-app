@@ -1,17 +1,29 @@
 import { Alert } from 'react-native';
 
 import { userFacingMessage } from '@/api/errors';
+import { useAuth } from '@/hooks/useAuth';
+import { useAuthGate } from '@/hooks/useAuthGate';
 import { useCart, type CartItemPreview } from '@/hooks/useCart';
 import { useCartReplacePrompt } from '@/hooks/useCartReplacePrompt';
 import { useDeliveryRangeGuard } from '@/hooks/useDeliveryRangeGuard';
 import type { HomeDish } from '@/lib/home-catalog';
 
 export function useAddDish() {
+  const { session } = useAuth();
+  const { requireAuth } = useAuthGate();
   const cart = useCart();
   const replace = useCartReplacePrompt();
   const { ensureDeliverable } = useDeliveryRangeGuard();
 
   async function addDish(dish: HomeDish) {
+    if (!session) {
+      requireAuth({
+        pendingAction: { type: 'add_dish', dish },
+        message: 'Sign in to add dishes to your cart',
+      });
+      return;
+    }
+
     if (!ensureDeliverable(dish.restaurantId, { name: dish.restaurantName })) return;
     const input = {
       menuItemId: dish.id,

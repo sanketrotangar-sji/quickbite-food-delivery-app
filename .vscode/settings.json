@@ -20,5 +20,9 @@
   ],
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
-  }
+  },
+  "markdown-mermaid.mouseNavigation.enabled": "always",
+  "markdown-mermaid.controls.show": "always",
+  "markdown-mermaid.resizable": true,
+  "markdown-mermaid.maxHeight": "90vh"
 }

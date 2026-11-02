@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -10,14 +10,25 @@ import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
 import { colors, fonts, spacing } from '@/constants/theme';
+import { useAuthGate } from '@/hooks/useAuthGate';
 import { validateAuthForm } from '@/lib/auth-form';
 
 export function SignupScreen() {
+  const params = useLocalSearchParams<{ returnTo?: string }>();
+  const { executePendingAction } = useAuthGate();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
+
+  function handleBack() {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(customer)/(tabs)');
+    }
+  }
 
   async function onSignup() {
     if (!supabaseConfigured) {
@@ -37,9 +48,22 @@ export function SignupScreen() {
         fullName,
         phone,
       });
-      if (!data.session) {
+      if (data.session?.user?.id) {
+        const executed = await executePendingAction(data.session.user.id);
+        if (!executed) {
+          if (params.returnTo) router.replace(params.returnTo as never);
+          else router.replace('/(customer)/(tabs)');
+        }
+      } else {
         Alert.alert('Check your email', 'Confirm your address, then come back and sign in.', [
-          { text: 'Go to Sign In', onPress: () => router.replace('/(auth)/login') },
+          {
+            text: 'Go to Sign In',
+            onPress: () =>
+              router.replace({
+                pathname: '/(auth)/login',
+                params: { returnTo: params.returnTo },
+              }),
+          },
         ]);
       }
     } catch (error) {
@@ -56,16 +80,22 @@ export function SignupScreen() {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
-          <AuthFrame>
+          <AuthFrame onBack={handleBack}>
             <AppText heading weight="bold" style={styles.title}>
               Create account
             </AppText>
             <AppText muted style={styles.subtitle}>
-              Order food with email and password, or continue with Google after you sign in.
+              Sign up to start ordering fresh food delivered to your door.
             </AppText>
 
             <View style={styles.form}>
-              <TextField label="Full name" value={fullName} onChangeText={setFullName} />
+              <TextField
+                label="Full name"
+                autoComplete="name"
+                textContentType="name"
+                value={fullName}
+                onChangeText={setFullName}
+              />
               <TextField
                 label="Email"
                 autoCapitalize="none"
@@ -76,23 +106,30 @@ export function SignupScreen() {
                 onChangeText={setEmail}
               />
               <TextField
-                label="Password"
+                label="Phone (optional)"
+                keyboardType="phone-pad"
+                autoComplete="tel"
+                textContentType="telephoneNumber"
+                value={phone}
+                onChangeText={setPhone}
+              />
+              <TextField
+                label="Password (min 6 chars)"
                 secureTextEntry
                 autoComplete="new-password"
                 textContentType="newPassword"
                 value={password}
                 onChangeText={setPassword}
               />
-              <TextField
-                label="Phone (optional)"
-                keyboardType="phone-pad"
-                value={phone}
-                onChangeText={setPhone}
-              />
               <Button label="Create account" onPress={onSignup} loading={loading} style={styles.authBtn} />
             </View>
 
-            <Link href="/(auth)/login" style={styles.footerLink}>
+            <Link
+              href={{
+                pathname: '/(auth)/login',
+                params: { returnTo: params.returnTo },
+              }}
+              style={styles.footerLink}>
               <AppText muted style={styles.footer}>
                 Already have an account?{' '}
                 <AppText weight="bold" style={styles.footerAccent}>

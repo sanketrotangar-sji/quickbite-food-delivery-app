@@ -19,11 +19,13 @@ import { VegMark } from '@/components/VegMark';
 import { userFacingMessage } from '@/api/errors';
 import { colors, formatInr, radii } from '@/constants/theme';
 import { useAddresses } from '@/hooks/useAddresses';
+import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import { displayNickname } from '@/lib/addresses';
 import { getPaymentPreference, setPaymentPreference } from '@/lib/payment-preference';
 
 export function CartScreen() {
+  const { session } = useAuth();
   const cart = useCart();
   const { selected, hydrated } = useAddresses();
   const [addressOpen, setAddressOpen] = useState(false);
@@ -47,6 +49,27 @@ export function CartScreen() {
       return;
     }
     router.push('/(customer)/checkout');
+  }
+
+  if (!session) {
+    return (
+      <Screen>
+        <StatusBar style="dark" />
+        <FlowHeader title="Cart" />
+        <EmptyState
+          icon="cart-outline"
+          title="Sign in to view your cart"
+          body="Your saved dishes and active orders are securely linked to your account."
+          actionLabel="Sign in or Sign up"
+          onAction={() =>
+            router.push({
+              pathname: '/(auth)/login',
+              params: { returnTo: '/(customer)/cart' },
+            })
+          }
+        />
+      </Screen>
+    );
   }
 
   if (cart.isLoading && cart.items.length === 0) {
