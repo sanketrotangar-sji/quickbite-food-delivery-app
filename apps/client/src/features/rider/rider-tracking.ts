@@ -4,8 +4,7 @@ import * as TaskManager from 'expo-task-manager';
 import { useSyncExternalStore } from 'react';
 import { AppState, Platform, type AppStateStatus } from 'react-native';
 
-import { updateRiderLocation } from '@/api/rider';
-import { supabase } from '@/api/supabaseClient';
+import { isRiderOrderActive, updateRiderLocation } from '@quickbite/api/mobile/rider';
 import { isExpoGo } from '@/lib/runtime';
 
 const LOCATION_TASK = 'quickbite-rider-location';
@@ -155,18 +154,7 @@ export async function restoreRiderTracking(options?: { isRider?: boolean; isOnli
   if (!orderId) return;
 
   // Confirm the order is still an active assignment for this rider before GPS starts.
-  const { data, error } = await supabase
-    .from('orders')
-    .select('id, status, rider_id')
-    .eq('id', orderId)
-    .maybeSingle();
-
-  const active =
-    !error &&
-    data &&
-    data.rider_id != null &&
-    data.status !== 'delivered' &&
-    data.status !== 'cancelled';
+  const active = await isRiderOrderActive(orderId);
 
   if (!active) {
     await stopRiderTracking(orderId);

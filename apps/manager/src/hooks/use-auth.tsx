@@ -2,8 +2,8 @@ import type { Session } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { exchangeCodeForSession, signOut as apiSignOut } from '@/api/auth';
-import { acceptManagerInvites } from '@/api/partners';
-import { getProfile, type Profile } from '@/api/profiles';
+import { acceptManagerInvites } from '@quickbite/api/dashboard/partners';
+import { getProfile, type Profile } from '@quickbite/api/dashboard/profiles';
 import { supabase } from '@/integrations/supabase/client';
 
 type AuthValue = {
@@ -120,6 +120,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await apiSignOut();
         setProfile(null);
         setProfileError(null);
+        if (typeof window !== "undefined") {
+          window.location.assign("/login");
+        }
       },
       refreshProfile: async () => {
         if (!session?.user.id) return;

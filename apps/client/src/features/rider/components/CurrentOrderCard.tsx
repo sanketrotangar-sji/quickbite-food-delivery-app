@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import type { DeliveryCoordinate } from '@/api/deliveries';
+import type { DeliveryCoordinate } from '@quickbite/api/mobile/deliveries';
 import { AppText } from '@/components/AppText';
 import { ROUTE_ORANGE } from '@/components/maps/quickbite-map-style';
 import { colors, radii } from '@/constants/theme';
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#FFE8DC',
+    backgroundColor: colors.primarySoft,
     borderRadius: radii.pill,
     paddingHorizontal: 10,
     paddingVertical: 4,

@@ -1,12 +1,12 @@
 import { Tabs, useSegments } from 'expo-router';
 import { useEffect, type ComponentProps } from 'react';
 
-import { setRiderDuty } from '@/api/rider';
-import { CustomerTabBar } from '@/components/home/CustomerTabBar';
+import { setRiderDuty } from '@quickbite/api/mobile/rider';
+import { CustomerTabBar } from '@/features/home/components/CustomerTabBar';
 import { colors } from '@/constants/theme';
 import { stopRiderTracking } from '@/features/rider/rider-tracking';
 import { useAuth } from '@/hooks/useAuth';
-import { useCustomerOrdersRealtime } from '@/hooks/useOrderTracking';
+import { useCustomerOrdersRealtime } from '@/features/orders/useOrderTracking';
 import { rememberRole } from '@/lib/last-role';
 import { hasRole } from '@/types/models';
 

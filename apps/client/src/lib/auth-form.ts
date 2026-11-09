@@ -1,1 +1,1 @@
-export { validateAuthForm } from '@quickbite/shared';
+export { validateAuthForm } from '@quickbite/domain';

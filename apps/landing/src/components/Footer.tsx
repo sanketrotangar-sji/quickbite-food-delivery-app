@@ -1,4 +1,4 @@
-import { CONTACT_EMAIL, DASHBOARD_URL, NAV_LINKS } from '../config';
+import { CONTACT_EMAIL, getDashboardUrl, NAV_LINKS } from '../config';
 
 const supportLinks = [
   { label: 'Help & Support', href: `mailto:${CONTACT_EMAIL}` },
@@ -16,7 +16,7 @@ const social = [
 
 export function Footer() {
   return (
-    <footer className="mt-4 bg-[#171717] text-white">
+    <footer className="mt-4 bg-qb-text text-white">
       <div className="qb-container grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
         <div className="lg:pr-6">
           <a href="#home" aria-label="QuickBite home">
@@ -63,7 +63,7 @@ export function Footer() {
               </li>
             ))}
             <li>
-              <a href={DASHBOARD_URL} className="text-sm text-white/60 transition hover:text-white">
+              <a href={getDashboardUrl()} className="text-sm text-white/60 transition hover:text-white">
                 For Business
               </a>
             </li>

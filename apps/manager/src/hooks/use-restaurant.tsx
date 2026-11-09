@@ -1,14 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { isPartner } from '@/api/profiles';
+import { isPartner } from '@quickbite/api/dashboard/profiles';
 import {
   listMyRestaurants,
   updateOwnedRestaurant,
   getRestaurantRatingSummary,
   type Restaurant,
   type RestaurantPatch,
-} from '@/api/restaurants';
+} from '@quickbite/api/dashboard/restaurants';
 
 import { useAuth } from './use-auth';
 

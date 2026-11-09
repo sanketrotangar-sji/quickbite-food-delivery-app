@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { loadAdminRiders } from '@/api/admin';
+import { loadAdminRiders } from '@quickbite/api/dashboard/admin';
 
 export function AdminRidersPage() {
   const riders = useQuery({ queryKey: ['admin-riders'], queryFn: loadAdminRiders });

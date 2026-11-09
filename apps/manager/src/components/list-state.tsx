@@ -53,3 +53,32 @@ export function ListShell({
   if (empty) return <ListEmpty title={empty.title} body={empty.body} />;
   return children;
 }
+
+export function StatCard({
+  label,
+  value,
+  hint,
+  icon,
+}: {
+  label: string;
+  value: number | string | undefined;
+  hint: string;
+  icon?: ReactNode;
+}) {
+  return (
+    <article className="flex h-full min-h-[7.25rem] min-w-0 flex-col rounded-xl border border-border bg-card p-4">
+      {icon ? (
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+          <p className="truncate text-xs font-bold text-muted-foreground">{label}</p>
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
+            {icon}
+          </span>
+        </div>
+      ) : (
+        <p className="truncate text-xs font-bold text-muted-foreground">{label}</p>
+      )}
+      <p className="font-heading mt-2 truncate text-xl font-extrabold sm:text-2xl">{value ?? '—'}</p>
+      <p className="mt-1 truncate text-[11px] font-bold text-success">{hint}</p>
+    </article>
+  );
+}

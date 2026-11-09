@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Children, type ReactNode } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { setRiderDuty } from '@/api/rider';
+import { setRiderDuty } from '@quickbite/api/mobile/rider';
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { ProfileListItem } from '@/components/ProfileListItem';
@@ -21,6 +21,8 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { greetingName } from '@/lib/home-catalog';
 import { rememberRole } from '@/lib/last-role';
+import { toast } from 'sonner-native';
+import { showDialog } from '@/lib/dialog';
 
 function initialsFrom(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -43,7 +45,7 @@ export function RiderProfileScreen() {
 
   function switchToCustomer() {
     if (active) {
-      Alert.alert(
+      showDialog(
         'Finish this delivery first',
         'You already accepted an order. Stay on the rider app until it is delivered or cancelled.',
       );
@@ -60,7 +62,7 @@ export function RiderProfileScreen() {
         await rememberRole('customer');
         router.replace('/(customer)/(tabs)');
       } catch (error) {
-        Alert.alert('Could not switch', error instanceof Error ? error.message : 'Try again.');
+        toast.error('Could not switch', { description: error instanceof Error ? error.message : 'Try again.' });
       }
     })();
   }
@@ -113,7 +115,7 @@ export function RiderProfileScreen() {
             label="Log out"
             variant="ghost"
             onPress={() => {
-              Alert.alert('Log out?', 'You can sign back in anytime.', [
+              showDialog('Log out?', 'You can sign back in anytime.', [
                 { text: 'Stay' },
                 { text: 'Log out', style: 'destructive', onPress: () => void signOut() },
               ]);

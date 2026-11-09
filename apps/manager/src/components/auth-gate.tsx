@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 
-import { isAdmin, isPartner } from '@/api/profiles';
+import { isAdmin, isPartner } from '@quickbite/api/dashboard/profiles';
 import { useAuth } from '@/hooks/use-auth';
 
 const AUTH_PATHS = new Set(['/login', '/signup']);

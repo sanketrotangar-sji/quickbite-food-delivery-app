@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { useEffect, type ComponentProps } from 'react';
 
 import { colors } from '@/constants/theme';
-import { RiderTabBar } from '@/features/rider/RiderTabBar';
+import { RiderTabBar } from '@/features/rider/components/RiderTabBar';
 import { rememberRole } from '@/lib/last-role';
 
 export default function RiderTabs() {

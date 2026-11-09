@@ -5,9 +5,10 @@ import {
   loadAdminTickets,
   setAdminTicketStatus,
   type AdminTicket,
-} from '@/api/admin';
+} from '@quickbite/api/dashboard/admin';
 import { Button } from '@/components/ui/button';
-import type { Database } from '@/integrations/supabase/types';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import type { Database } from '@quickbite/db';
 
 type TicketStatus = Database['public']['Enums']['ticket_status'];
 
@@ -91,57 +92,54 @@ export function AdminTicketsPage() {
         ) : null}
       </div>
 
-      {selected ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-card p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
+      <Sheet open={Boolean(selected)} onOpenChange={(open) => !open && setSelected(undefined)}>
+        <SheetContent className="w-full overflow-y-auto bg-card sm:max-w-lg">
+          {selected ? (
+            <>
+              <SheetHeader>
                 <p className="text-xs font-bold uppercase text-primary">{selected.urgency} urgency</p>
-                <h2 className="mt-1 text-xl font-extrabold">{selected.issue_type}</h2>
+                <SheetTitle>{selected.issue_type}</SheetTitle>
+                <SheetDescription>{selected.description}</SheetDescription>
+              </SheetHeader>
+              <dl className="mt-6 space-y-2 text-sm">
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">Customer</dt>
+                  <dd className="font-semibold">{selected.customer_name || selected.customer_email || '—'}</dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">Kitchen</dt>
+                  <dd className="font-semibold">{selected.restaurant_name || '—'}</dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">Order</dt>
+                  <dd className="font-semibold">
+                    {selected.order_id.slice(0, 8)}… · {selected.order_status ?? '—'}
+                    {selected.order_total != null ? ` · ₹${Math.round(selected.order_total)}` : ''}
+                  </dd>
+                </div>
+              </dl>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {STATUSES.map((status) => (
+                  <Button
+                    key={status}
+                    size="sm"
+                    variant={selected.status === status ? 'default' : 'outline'}
+                    disabled={update.isPending || selected.status === status}
+                    className="capitalize"
+                    onClick={() => {
+                      void update.mutateAsync({ id: selected.id, status }).then(() => {
+                        setSelected({ ...selected, status });
+                      });
+                    }}
+                  >
+                    {status.replace('_', ' ')}
+                  </Button>
+                ))}
               </div>
-              <Button type="button" variant="ghost" size="sm" onClick={() => setSelected(undefined)}>
-                Close
-              </Button>
-            </div>
-            <p className="mt-3 text-sm text-muted-foreground">{selected.description}</p>
-            <dl className="mt-4 space-y-2 text-sm">
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Customer</dt>
-                <dd className="font-semibold">{selected.customer_name || selected.customer_email || '—'}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Kitchen</dt>
-                <dd className="font-semibold">{selected.restaurant_name || '—'}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Order</dt>
-                <dd className="font-semibold">
-                  {selected.order_id.slice(0, 8)}… · {selected.order_status ?? '—'}
-                  {selected.order_total != null ? ` · ₹${Math.round(selected.order_total)}` : ''}
-                </dd>
-              </div>
-            </dl>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {STATUSES.map((status) => (
-                <Button
-                  key={status}
-                  size="sm"
-                  variant={selected.status === status ? 'default' : 'outline'}
-                  disabled={update.isPending || selected.status === status}
-                  className="capitalize"
-                  onClick={() => {
-                    void update.mutateAsync({ id: selected.id, status }).then(() => {
-                      setSelected({ ...selected, status });
-                    });
-                  }}
-                >
-                  {status.replace('_', ' ')}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : null}
+            </>
+          ) : null}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

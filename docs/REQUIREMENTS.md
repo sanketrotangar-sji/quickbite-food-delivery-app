@@ -69,8 +69,10 @@ placed → preparing → ready → out_for_delivery → delivered
 | `order_items` | No `created_at` (snapshot lines) |
 | `order_status_history` | `changed_at`; bigint identity PK |
 | `rider_locations` | PK = `rider_id` |
-| `user_roles` / `restaurant_members` | Composite PKs |
+| `restaurant_members` | Composite PK |
+| `rider_profiles` / `customer_preferences` / `order_payments` | PK = owning FK (`rider_id` / `customer_id` / `order_id`) |
 | `automation_config` | PK = `key` |
+| `notification_jobs` | Unique `dedupe_key` (outbox) |
 
 ---
 
@@ -97,10 +99,11 @@ placed → preparing → ready → out_for_delivery → delivered
 
 | Table | Key columns | Purpose |
 |-------|-------------|---------|
-| `profiles` | `id` (= auth user), `full_name`, `email`, `phone`, `role`, `is_online`, `vehicle_label`, `plate`, timestamps | One identity per user |
-| `restaurants` | `owner_id`, `name`, `cuisine`, `address`, `phone`, `image_url`, `is_open`, `branch_name`, `lat`/`lng`, `offer_percent`, `prep_minutes`, `capacity_threshold` | Kitchen / branch |
-| `menu_items` | `restaurant_id`, `name`, `description`, `price`, `is_available`, `category`, `is_veg`, images | Dishes |
-| `orders` | `customer_id`, `restaurant_id`, `rider_id`, `status`, `total_amount`, `delivery_fee`, `discount_amount`, `offer_percent`, address + lat/lng, `delivery_address_id`, `drop_km`/`pickup_km`, rider pay, `placed_at`, `delivered_at`, refund fields, `payment_method`/`payment_status`/`paid_at`, Stripe test ids | One checkout |
+| `profiles` | `id` (= auth user), `full_name`, `email`, `phone`, `role`, `is_online`, `vehicle_label`, `plate`, `rio_memory`, timestamps | One identity per user (rider/RIO fields dual-written to side tables) |
+| `restaurants` | `owner_id`, `name`, `cuisine`, `address`, `phone`, `image_url`, `is_open`, `branch_name`, `lat`/`lng`, `offer_percent`, `prep_minutes`, `capacity_threshold`, `opens_at`/`closes_at` (IST; close < open = past midnight; null = always), `cost_for_two`, `is_pure_veg`, `is_synthetic` | Kitchen / branch (`is_synthetic` = eval corpus only). Open now = `is_open` AND inside hours (`private.restaurant_open_now`) |
+| `menu_items` | `restaurant_id`, `name`, `description`, `price`, `is_available`, `category`, `category_id`, `is_bestseller`, `is_veg`, `tags`, `canonical_key`, `is_synthetic`, images | Dishes (`category` text ↔ `category_id` dual-written by trigger) |
+| `menu_categories` | `restaurant_id`, `name` (unique per kitchen, case-insensitive), `sort_order` | Ordered menu sections; everyone reads, kitchen staff / admin write |
+| `orders` | `customer_id`, `restaurant_id`, `rider_id`, `status`, `total_amount`, `delivery_fee`, `discount_amount`, `offer_percent`, `campaign_id`, address + lat/lng, `delivery_address_id`, `drop_km`/`pickup_km`, rider pay, `placed_at`, `delivered_at`, refund + payment mirror columns, Stripe test ids | One checkout |
 | `order_items` | `order_id`, `menu_item_id`, `quantity`, `unit_price`, name snapshot | Frozen line items |
 | `cart_items` | `customer_id`, `menu_item_id`, `quantity`, `restaurant_id` | Pre-checkout basket (one restaurant) |
 | `order_status_history` | `order_id`, `status`, `changed_at`, `changed_by` | Audit trail (trigger-written) |
@@ -112,19 +115,22 @@ placed → preparing → ready → out_for_delivery → delivered
 
 | Table | Purpose |
 |-------|---------|
-| `user_roles` | Mirror of `profiles.role` (legacy multi-role table; single-role product) |
 | `applications` | Rider / owner applications |
 | `restaurant_members` | Active managers on a restaurant |
 | `manager_invites` | Pending owner invites |
-| `home_highlights` | Home offers / promo rail |
-| `crm_campaigns` / `crm_campaign_enrollments` | A3-T2 custom CRM campaigns + outreach/redemption |
-| `crm_customer_segments` (view) | new / frequent / churned / active segment membership |
+| `home_highlights` | Home promo rail with `starts_at` / `ends_at` window + `priority` (**presentation only** — does not change checkout math; expired rows never returned by `home_feed`) |
+| `crm_campaigns` / `crm_campaign_enrollments` | Offer campaigns + outreach/redemption (discount engine with kitchen `offer_percent`) |
+| `crm_customer_segments` (view) | new / frequent / churned / active (ignores synthetic-kitchen orders) |
 | `notifications` | In-app inbox |
 | `push_device_tokens` | Expo push endpoints |
+| `notification_jobs` | Outbound outbox (`push` / `sms` / `in_app`); unique `dedupe_key` |
 | `support_tickets` | Customer / kitchen support |
 | `automation_events` / `automation_config` | Auto-assign, kitchen-load, accept-timeout knobs + logs |
 | `admin_audit_log` | Audited admin force-status / refund / ticket / ops edits |
-| `notification_dispatch_log` | Push + SMS webhook dedupe (`preparing`/`delivered` + `sms_*`) |
+| `notification_dispatch_log` | Legacy Push + SMS webhook dedupe (kept for compatibility) |
+| `order_payments` | Payment/refund side table; dual-written with `orders.payment_*` mirrors |
+| `rider_profiles` | Rider duty / vehicle (dual-written with `profiles` rider columns) |
+| `customer_preferences` | Durable RIO prefs (dual-written with `profiles.rio_memory`) |
 
 ### Intelligence / RIO
 
@@ -134,13 +140,19 @@ placed → preparing → ready → out_for_delivery → delivered
 | `embeddings` | pgvector(1024) curated RAG corpus (`source_table`, `source_id`, `content_hash`, `content`, `metadata`, generated `fts`) — menu + comment ratings |
 | `rio_threads` / `rio_messages` | Cloud chat history (customer-owned; last ~8 turns fed to LLM) |
 | `rio_events` | Per-turn provider/model/tools/latency |
-| `profiles.rio_memory` | Durable RIO prefs (diet, spice, budget, cuisines, avoid) — survives New chat |
+| `customer_preferences.rio_memory` / `profiles.rio_memory` | Durable RIO prefs (diet, spice, budget, cuisines, avoid) — dual-written |
+
+### Offers (checkout)
+
+Discount engines at `place_order`: **kitchen** `restaurants.offer_percent` and **CRM** active enrollments. Resolved by `private.resolve_checkout_offer` (max of kitchen vs campaign; campaign applies only when ≥ kitchen). `home_highlights` never applies a discount.
 
 ### Views
 
 | View | Why |
 |------|-----|
-| `restaurant_browse` | Customer catalog without owner phone / sensitive columns |
+| `restaurant_browse` | Customer catalog without owner phone / sensitive columns; **excludes `is_synthetic` kitchens** |
+
+Screen RPCs (`home_feed`, `browse_restaurants`, `restaurant_detail`) are security definer and return the same customer-safe columns as `restaurant_browse`; they also exclude synthetic kitchens and the caller's own kitchens, and compute distance, ETA, 8 km range and open-now on the server. Guests (`anon`) may call them so browsing works before login.
 | `restaurant_rating_public` / `restaurant_rating_summary` | Safe averages for cards |
 
 ---
@@ -151,7 +163,12 @@ placed → preparing → ready → out_for_delivery → delivered
 
 | RPC | Purpose |
 |-----|---------|
-| `place_order` | Cart → order + items; discounts; delivery fee; 8 km guard; clear cart |
+| `home_feed(lat, lng)` | Home screen in one call: live offers, cravings, popular dishes, order-again, first page of nearby kitchens (anon + authenticated) |
+| `browse_restaurants(lat, lng, cuisine, veg_only, offers_only, min_rating, open_only, query, sort, cursor, limit)` | Paged kitchen list (keyset cursor). Sorts: relevance / eta / rating / distance / offer. Out-of-range kitchens dropped server-side (anon + authenticated) |
+| `restaurant_detail(id, lat, lng)` | Kitchen card + ordered menu sections (Bestsellers first) + distance / in-range (anon + authenticated) |
+| `order_tracking(order_id)` | Tracking screen in one call: order, items, status history, rider pin (security invoker; existing RLS) |
+| `place_order` | Cart → order + items; discounts via `private.resolve_checkout_offer`; delivery fee; 8 km guard; clear cart |
+| `enqueue_notification_job` / `mark_notification_job` | Service-role outbox helpers for push/SMS/in-app |
 | `restaurant_set_order_status` | Kitchen legal transitions |
 | `claim_delivery` | Rider claims unclaimed job |
 | `rider_set_order_status` | `out_for_delivery` / `delivered` |
@@ -159,7 +176,7 @@ placed → preparing → ready → out_for_delivery → delivered
 | `rider_set_duty` / `rider_update_location` | Online + GPS |
 | `submit_application` / `admin_review_application` | Partner pipeline |
 | `owner_create_branch` / `owner_invite_manager` / `accept_manager_invite` / `owner_revoke_manager` | Owner ops |
-| `admin_set_ticket_status` / `admin_force_order_status` / `admin_mark_order_refunded` / `admin_update_restaurant_ops` | Audited admin |
+| `admin_set_ticket_status` / `admin_force_order_status` / `admin_mark_order_refunded` / `admin_update_restaurant_ops` / `admin_overview` | Audited admin + overview count RPC |
 | `crm_segment_counts` / `crm_list_segment_members` / `crm_create_campaign` / `crm_launch_campaign` / `crm_end_campaign` / `crm_campaign_stats` | A3-T2 CRM admin |
 | `activate_llm_config` | Switch RIO chat provider |
 | `match_embeddings` | Vector search (PII-scoped); kept for eval baseline |
@@ -173,7 +190,7 @@ placed → preparing → ready → out_for_delivery → delivered
 
 | Trigger | Effect |
 |---------|--------|
-| `on_auth_user_created` | Insert customer profile |
+| `on_auth_user_created` | Insert customer profile (`profiles.role = 'customer'` only; `user_roles` insert removed in `20261107010000`) |
 | `profiles_guard_update` | Block client role/email edits |
 | `cart_items_rules` | One restaurant per cart |
 | `orders_log_status_*` | Append history |
@@ -185,6 +202,7 @@ placed → preparing → ready → out_for_delivery → delivered
 | Function | Auth | Role |
 |----------|------|------|
 | `rio` | JWT required | Customer assistant: supervisor → order / dispatch / support (+ clarify); tools + stream. Per-user rate limit (default 40/min; `RIO_RATE_LIMIT` / `RIO_RATE_WINDOW_MS`). Optional `SENTRY_DSN` on unhandled errors. |
+| `vision-food` | JWT / anon | Assessment 4 Option 2: Multimodal food photo search (`mode: "search"` → Vision LLM + `qwen3-embedding:0.6b` + `match_embeddings_hybrid` + 8 km range filter) and manager dish auto-tagging (`mode: "autotag"` → `category`, `isVeg`, `spiceLevel`, `tags[]`). Per-user rate limit (default 20/min). |
 | `directions` | JWT required | Map/route helper; short TTL cache on route responses (`_shared/ttlCache`) |
 | `notify-new-order` | `WEBHOOK_SECRET` | Push on accept / delivered |
 | `send-order-sms` | `WEBHOOK_SECRET` | Twilio outbound on placed / ready / out_for_delivery / delivered (Verify SMS on free trial; ContentSid/Body when upgraded) |
@@ -269,7 +287,8 @@ Anon key is public. Service role is server/scripts/edge only.
 | Piece | Rule |
 |-------|------|
 | GitHub Actions `.github/workflows/ci.yml` | On push/PR to `main`: `check:secrets`, `test:unit`, `test:edge`. Integration / Playwright run when repo secrets are set (`SUPABASE_*`, `PLAYWRIGHT=1`). |
-| Sentry | Optional. Manager `VITE_SENTRY_DSN`, client `EXPO_PUBLIC_SENTRY_DSN`, Edge `SENTRY_DSN` — envelope ingest, no SDK required. Omit DSN = no-op. |
+| Sentry | Optional. Manager `VITE_SENTRY_DSN`, client `EXPO_PUBLIC_SENTRY_DSN`, Edge `SENTRY_DSN` — envelope ingest, no SDK required. Omit DSN = no-op. Optional release: `VITE_APP_RELEASE` / `EXPO_PUBLIC_APP_RELEASE` / `SENTRY_RELEASE` (default `quickbite@dev`). |
+| Admin Ops | Manager `/admin/ops` — admin-only 24h metrics from `orders`, `rio_events`, `automation_events`, `admin_audit_log` (existing RLS; no new tables). |
 | Caching | RIO read tools via `rio/_toolCache`; directions via `_shared/ttlCache`. |
 | Advisors | Review Supabase Dashboard → Database → Advisors after schema changes; fix blocking RLS before ship. |
 

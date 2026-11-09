@@ -5,6 +5,8 @@ import { Platform } from 'react-native';
 
 import { supabase } from './supabaseClient';
 
+export { supabaseConfigured } from './supabaseClient';
+
 WebBrowser.maybeCompleteAuthSession();
 
 export async function signInWithEmail(email: string, password: string) {

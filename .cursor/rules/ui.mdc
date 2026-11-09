@@ -1,0 +1,27 @@
+---
+description: Expo client UI + state rules (motion, lists, sheets, feedback, tokens, query keys)
+globs: apps/client/**/*.ts,apps/client/**/*.tsx
+alwaysApply: false
+---
+
+# Client UI + state
+
+Full text: `docs/STANDARDS.md` §3a / §3b. `npm run lint` in `apps/client` enforces the bans.
+
+## Use these
+
+- Motion: `react-native-reanimated` with `ReduceMotion.System`. Never `Animated` from `react-native`.
+- Lists: `@shopify/flash-list` (no `estimatedItemSize` in v2). Never `FlatList` / `SectionList` / `ScrollView` + `.map` over fetched data.
+- Sheets: `@/components/Sheet` (title, headerLeft/Right, sticky footer). No custom `Modal` slide-ups.
+- Feedback: `toast` from `sonner-native`; confirms via `showDialog` (`@/lib/dialog`). Never `Alert` directly.
+- Press: `PressableScale` / `Button`. Loading/error/empty: `QueryView` + `Skeleton` + `EmptyState`; user copy from `errorCopy()`.
+- Images: `RemoteImage`.
+- Tokens: `colors`, `radii`, `type`, `motion`, `elevation` from `@/constants/theme`; text via `AppText variant`. No hex or literal `fontSize` in new code.
+
+## State
+
+- React Query keys only from `src/lib/query-keys.ts`. Location-dependent keys use `pointKey()`.
+- Device prefs: zustand `persist` on MMKV (`@/lib/storage`). No new AsyncStorage stores.
+- Screens/components never import `@/api/supabaseClient`, `@quickbite/db`, or call `.rpc(` / `functions.invoke(`.
+- Lists come from paged screen RPCs (`home_feed`, `browse_restaurants`, `restaurant_detail`, `order_tracking`); do not fetch-all and filter on device.
+- Realtime only while needed (active order, rider role).

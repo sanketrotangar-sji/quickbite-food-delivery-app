@@ -6,8 +6,9 @@ import {
   loadLlmConfigs,
   updateLlmChatModel,
   type AdminLlmConfig,
-} from '@/api/admin';
+} from '@quickbite/api/dashboard/admin';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 /** Hosted Ollama chat models (see https://ollama.buildyourai.consulting/api/docs). */
 const CLOUD_OLLAMA_CHAT_MODELS = ['llama3.2:latest', 'qwen2.5:3b'] as const;
@@ -76,9 +77,9 @@ function ProviderCard({
       <label className="mt-5 block text-xs font-bold uppercase text-muted-foreground" htmlFor={`model-${row.id}`}>
         Chat model
       </label>
-      <input
+      <Input
         id={`model-${row.id}`}
-        className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+        className="mt-1.5 bg-background"
         value={model}
         onChange={(event) => setModel(event.target.value)}
         disabled={busy}

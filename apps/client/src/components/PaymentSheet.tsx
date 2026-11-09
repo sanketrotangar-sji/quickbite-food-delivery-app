@@ -1,8 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Modal, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
+import { Sheet } from '@/components/Sheet';
 import { colors, radii } from '@/constants/theme';
 
 export type PaymentMethodId = 'cash' | 'card';
@@ -35,77 +35,48 @@ export function PaymentSheet({
   selectedId?: PaymentMethodId;
   onSelect?: (id: PaymentMethodId) => void;
 }) {
-  const { height } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
-
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.fill}>
-        <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Close payment methods" />
-        <View style={[styles.sheet, { maxHeight: height * 0.72, paddingBottom: Math.max(insets.bottom, 16) }]}>
-          <View style={styles.handle} />
-          <AppText heading weight="semibold" style={styles.title}>
-            Payment method
-          </AppText>
-          <AppText muted style={styles.caption}>
-            Cash is default. Card (test) uses Stripe test mode after checkout — no real charge.
-          </AppText>
-          <View style={styles.list}>
-            {METHODS.map((method) => {
-              const active = method.id === selectedId;
-              return (
-                <Pressable
-                  key={method.id}
-                  disabled={!method.enabled}
-                  onPress={() => {
-                    onSelect?.(method.id);
-                    onClose();
-                  }}
-                  style={[styles.pay, !method.enabled && styles.payOff, active && styles.payOn]}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active, disabled: !method.enabled }}
-                  accessibilityLabel={`Select ${method.title}`}>
-                  <Ionicons name={method.icon} size={20} color={method.enabled ? colors.primary : colors.textMuted} />
-                  <View style={styles.copy}>
-                    <AppText weight="semibold" style={!method.enabled ? styles.muted : undefined}>
-                      {method.title}
-                    </AppText>
-                    <AppText muted style={styles.hint}>
-                      {method.hint}
-                    </AppText>
-                  </View>
-                  <View style={[styles.radio, active && styles.radioOn]}>{active ? <View style={styles.radioDot} /> : null}</View>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
+    <Sheet
+      visible={visible}
+      onClose={onClose}
+      title="Payment method"
+      subtitle="Cash is default. Card (test) uses Stripe test mode after checkout — no real charge.">
+      <View style={styles.list}>
+        {METHODS.map((method) => {
+          const active = method.id === selectedId;
+          return (
+            <Pressable
+              key={method.id}
+              disabled={!method.enabled}
+              onPress={() => {
+                onSelect?.(method.id);
+                onClose();
+              }}
+              style={[styles.pay, !method.enabled && styles.payOff, active && styles.payOn]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active, disabled: !method.enabled }}
+              accessibilityLabel={`Select ${method.title}`}>
+              <Ionicons name={method.icon} size={20} color={method.enabled ? colors.primary : colors.textMuted} />
+              <View style={styles.copy}>
+                <AppText weight="semibold" style={!method.enabled ? styles.muted : undefined}>
+                  {method.title}
+                </AppText>
+                <AppText muted style={styles.hint}>
+                  {method.hint}
+                </AppText>
+              </View>
+              <View style={[styles.radio, active && styles.radioOn]}>
+                {active ? <View style={styles.radioDot} /> : null}
+              </View>
+            </Pressable>
+          );
+        })}
       </View>
-    </Modal>
+    </Sheet>
   );
 }
 
 const styles = StyleSheet.create({
-  fill: { flex: 1, justifyContent: 'flex-end' },
-  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: colors.overlay },
-  sheet: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    gap: 8,
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.border,
-    marginBottom: 4,
-  },
-  title: { fontSize: 18 },
-  caption: { fontSize: 13 },
   list: { gap: 8, marginTop: 4 },
   pay: {
     flexDirection: 'row',

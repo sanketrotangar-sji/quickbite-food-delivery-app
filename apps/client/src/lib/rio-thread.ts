@@ -1,5 +1,5 @@
-import type { RioCard } from '@/api/rio';
-import type { RioChatMessage } from '@/api/rioChat';
+import type { RioCard } from '@quickbite/api/mobile/rio';
+import type { RioChatMessage } from '@quickbite/api/mobile/rioChat';
 
 export const RIO_STARTERS = [
   'Find me dinner',

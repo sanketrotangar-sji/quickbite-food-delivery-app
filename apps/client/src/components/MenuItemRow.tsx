@@ -5,7 +5,7 @@ import { AppText } from '@/components/AppText';
 import { QuantityStepper } from '@/components/QuantityStepper';
 import { VegMark } from '@/components/VegMark';
 import { colors, formatInr, radii } from '@/constants/theme';
-import type { MenuItem } from '@/types/models';
+import type { DetailMenuItem as MenuItem } from '@quickbite/api/mobile/catalog';
 import { RemoteImage } from '@/components/RemoteImage';
 
 export function MenuItemRow({
@@ -30,15 +30,13 @@ export function MenuItemRow({
   const unavailable = !item.is_available || disabled;
   return (
     <View style={[styles.row, unavailable && styles.dim]}>
-      {item.image_url ? (
-        <RemoteImage uri={item.image_url} slot="thumb" style={styles.image} />
-      ) : (
-        <View style={[styles.image, styles.fallback]}>
-          <AppText weight="bold" style={styles.fallbackText}>
-            {item.name.slice(0, 1).toUpperCase()}
-          </AppText>
-        </View>
-      )}
+      <RemoteImage
+        uri={item.image_url}
+        fallbackText={item.name}
+        fallbackFontSize={18}
+        slot="thumb"
+        style={styles.image}
+      />
       <View style={styles.copy}>
         <View style={styles.nameRow}>
           <AppText weight="semibold" numberOfLines={2} style={styles.name}>
@@ -46,7 +44,7 @@ export function MenuItemRow({
           </AppText>
           <Pressable
             onPress={onToggleLike}
-            hitSlop={6}
+            hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel={liked ? `Remove ${item.name} from favorites` : `Save ${item.name}`}>
             <Ionicons name={liked ? 'heart' : 'heart-outline'} size={16} color={liked ? colors.primary : colors.text} />

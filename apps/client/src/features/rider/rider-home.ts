@@ -1,4 +1,4 @@
-import type { DeliveryCoordinate } from '@/api/deliveries';
+import type { DeliveryCoordinate } from '@quickbite/api/mobile/deliveries';
 
 export type RiderHomePhase = 'loading' | 'error' | 'ready';
 

@@ -1,0 +1,9 @@
+{
+  "name": "@quickbite/db",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Generated Supabase Database types (single source)",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts"
+}

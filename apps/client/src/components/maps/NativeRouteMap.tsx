@@ -11,8 +11,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
-import type { DeliveryCoordinate } from '@/api/deliveries';
-import { getDrivingRoute, type RouteLine } from '@/api/routes';
+import type { DeliveryCoordinate } from '@quickbite/api/mobile/deliveries';
+import { getDrivingRoute, type RouteLine } from '@quickbite/api/mobile/routes';
 import { AppText } from '@/components/AppText';
 import { MAP_LAND, QUICKBITE_MAP_STYLE, ROUTE_ORANGE } from '@/components/maps/quickbite-map-style';
 import { colors, radii } from '@/constants/theme';

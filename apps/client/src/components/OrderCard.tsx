@@ -119,15 +119,13 @@ export function OrderCard({
 }
 
 function Thumb({ imageUrl, initial, size }: { imageUrl?: string | null; initial: string; size: number }) {
-  if (imageUrl) {
-    return <RemoteImage uri={imageUrl} slot="thumb" style={[styles.thumb, { width: size, height: size }]} />;
-  }
   return (
-    <View style={[styles.thumb, styles.fallback, { width: size, height: size }]}>
-      <AppText weight="bold" style={styles.fallbackText}>
-        {initial}
-      </AppText>
-    </View>
+    <RemoteImage
+      uri={imageUrl}
+      fallbackText={initial}
+      slot="thumb"
+      style={[styles.thumb, { width: size, height: size }]}
+    />
   );
 }
 

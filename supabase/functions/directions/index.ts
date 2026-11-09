@@ -1,4 +1,5 @@
 import { corsHeaders } from "../_shared/cors.ts";
+import { distanceKm } from "../_shared/rules.ts";
 import { cacheGet, cacheSet } from "../_shared/ttlCache.ts";
 
 type Coordinate = { latitude: number; longitude: number };
@@ -24,14 +25,7 @@ function valid(point: unknown): point is Coordinate {
 }
 
 function haversineMeters(from: Coordinate, to: Coordinate) {
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const R = 6371000;
-  const dLat = toRad(to.latitude - from.latitude);
-  const dLng = toRad(to.longitude - from.longitude);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(from.latitude)) * Math.cos(toRad(to.latitude)) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
+  return Math.round(distanceKm(from, to) * 1000);
 }
 
 async function fetchOrs(from: Coordinate, to: Coordinate, apiKey: string) {

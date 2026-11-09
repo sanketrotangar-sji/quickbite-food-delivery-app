@@ -1,5 +1,5 @@
 import { ArrowRight } from 'lucide-react';
-import { DASHBOARD_URL } from '../config';
+import { getDashboardUrl } from '../config';
 import { StoreBadges } from './StoreBadges';
 
 export function Hero() {
@@ -31,7 +31,7 @@ export function Hero() {
               Get the App
               <ArrowRight className="h-4 w-4" />
             </a>
-            <a href={DASHBOARD_URL} className="qb-btn-secondary">
+            <a href={getDashboardUrl()} className="qb-btn-secondary">
               Go to Dashboard
             </a>
           </div>

@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Installed into .git/hooks/pre-commit by: node scripts/install-git-hooks.mjs
+root="$(git rev-parse --show-toplevel)"
+cd "$root" || exit 1
+exec node scripts/git-pre-commit.mjs

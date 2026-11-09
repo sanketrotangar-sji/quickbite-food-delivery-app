@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DASHBOARD_URL, NAV_LINKS } from '../config';
+import { getDashboardUrl, NAV_LINKS } from '../config';
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -49,7 +49,7 @@ export function Navbar() {
           <a href="#download" className="qb-btn-primary h-10 px-4 text-[0.8125rem]">
             Download App
           </a>
-          <a href={DASHBOARD_URL} className="qb-btn-secondary h-10 px-4 text-[0.8125rem]">
+          <a href={getDashboardUrl()} className="qb-btn-secondary h-10 px-4 text-[0.8125rem]">
             Dashboard Login
           </a>
         </div>
@@ -91,7 +91,7 @@ export function Navbar() {
                 Download App
               </a>
               <a
-                href={DASHBOARD_URL}
+                href={getDashboardUrl()}
                 className="qb-btn-secondary w-full"
                 onClick={() => setOpen(false)}
               >

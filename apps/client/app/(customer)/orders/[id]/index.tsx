@@ -1,4 +1,4 @@
-import { OrderTrackingScreen } from '@/screens/customer/OrderTrackingScreen';
+import { OrderTrackingScreen } from '@/features/orders/screens/OrderTrackingScreen';
 
 export default function CustomerOrderTrackingRoute() {
   return <OrderTrackingScreen />;

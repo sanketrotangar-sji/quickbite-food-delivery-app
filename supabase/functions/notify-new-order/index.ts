@@ -1,4 +1,8 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import {
+  enqueueNotificationJob,
+  markNotificationJob,
+} from "../_shared/notificationOutbox.ts";
 import { secretsMatch } from "../_shared/webhookAuth.ts";
 
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
@@ -232,6 +236,17 @@ Deno.serve(async (req) => {
     });
   }
 
+  const dedupeKey = `${order.id}:${event}`;
+  await enqueueNotificationJob(admin, {
+    userId: order.customer_id,
+    orderId: order.id,
+    channel: "push",
+    templateKey: event,
+    payload: { status: order.status },
+    dedupeKey,
+  });
+  await markNotificationJob(admin, dedupeKey, "processing");
+
   const recipients: Recipient[] = [];
 
   if (event === "preparing") {
@@ -283,7 +298,22 @@ Deno.serve(async (req) => {
     });
   }
 
-  if (recipients.length === 0) return json({ ok: true, ignored: true });
+  if (recipients.length === 0) {
+    await markNotificationJob(admin, dedupeKey, "skipped", "no_recipients");
+    return json({ ok: true, ignored: true });
+  }
+
+  // Parallel in-app outbox rows (presentation inbox still written below).
+  for (const recipient of recipients) {
+    await enqueueNotificationJob(admin, {
+      userId: recipient.userId,
+      orderId: order.id,
+      channel: "in_app",
+      templateKey: event,
+      payload: { title: recipient.title, body: recipient.body },
+      dedupeKey: `${order.id}:${event}:in_app:${recipient.userId}`,
+    });
+  }
 
   const { error: inboxError } = await admin.from("notifications").insert(
     recipients.map(({ userId, title, body }) => ({
@@ -318,10 +348,11 @@ Deno.serve(async (req) => {
     }))
   );
   const push = await sendExpoPush(admin, messages);
+  await markNotificationJob(admin, dedupeKey, "sent");
 
   return json({
     ok: true,
-    idempotencyKey: `${order.id}:${event}`,
+    idempotencyKey: dedupeKey,
     inboxRows: recipients.length,
     pushMessages: push.sent,
     disabledTokens: push.disabled,

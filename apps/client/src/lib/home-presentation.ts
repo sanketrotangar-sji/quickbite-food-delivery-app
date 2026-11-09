@@ -1,22 +1,21 @@
 export type PresentationSource = {
   offerPercent?: number | null;
   prepMinutes?: number | null;
+  etaMin?: number;
+  etaMax?: number;
 };
 
-export function presentationFor(id: string, source?: PresentationSource) {
-  let hash = 0;
-  for (const char of id) hash = (hash * 33 + char.charCodeAt(0)) % 100000;
-  const hashedLow = 15 + (hash % 16);
-  const hashedHigh = hashedLow + 8 + (hash % 8);
-  const reviews = 120 + (hash % 2200);
-  const hashedDiscount = [15, 20, 25, 30, 40][hash % 5] ?? 20;
-  const minutesLow = source?.prepMinutes != null ? source.prepMinutes : hashedLow;
-  const minutesHigh = source?.prepMinutes != null ? source.prepMinutes + 10 : hashedHigh;
+export function presentationFor(_id: string, source?: PresentationSource) {
+  const minutesLow =
+    source?.etaMin ?? (source?.prepMinutes != null && source.prepMinutes > 0 ? source.prepMinutes : 20);
+  const minutesHigh = source?.etaMax ?? minutesLow + 10;
+  const discount =
+    source?.offerPercent != null && source.offerPercent > 0 ? Math.round(source.offerPercent) : 0;
   return {
     eta: `${minutesLow}-${minutesHigh} mins`,
     minutesLow,
-    reviewsLabel: reviews >= 1000 ? `${(reviews / 1000).toFixed(1)}K` : String(reviews),
-    discount: source?.offerPercent != null ? source.offerPercent : hashedDiscount,
+    reviewsLabel: '',
+    discount,
     freeAbove: 249,
   };
 }
@@ -25,9 +24,19 @@ export function placePresentation(place: {
   id: string;
   offerPercent?: number | null;
   prepMinutes?: number | null;
+  etaMin?: number;
+  etaMax?: number;
 }) {
   return presentationFor(place.id, {
     offerPercent: place.offerPercent,
     prepMinutes: place.prepMinutes,
+    etaMin: place.etaMin,
+    etaMax: place.etaMax,
   });
+}
+
+/** "Open", or "Opens 11:00" / "Closed" for kitchens that are shut right now. */
+export function openStatusLabel(place: { isOpen: boolean; opensAt?: string | null }) {
+  if (place.isOpen) return 'Open';
+  return place.opensAt ? `Opens ${place.opensAt.slice(0, 5)}` : 'Closed';
 }

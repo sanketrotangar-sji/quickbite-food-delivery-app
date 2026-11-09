@@ -1,5 +1,5 @@
 import { cartHash, cartTotals, DELIVERY_MAX_KM, money, STANDARD_DELIVERY_FEE } from "../_shared/cartMath.ts";
-import { ticketUrgency } from "../_shared/rules.ts";
+import { haversineKm, ticketUrgency } from "../_shared/rules.ts";
 import { cachedTool } from "./_toolCache.ts";
 import { isUuid } from "./guardrails.ts";
 
@@ -138,17 +138,6 @@ type Dish = {
   restaurant_id: string;
 };
 
-function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number) {
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const R = 6371;
-  const dLat = toRad(bLat - aLat);
-  const dLng = toRad(bLng - aLng);
-  const x =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(x));
-}
-
 /** Same rules as client assertWithinDeliveryRange (missing kitchen coords → skip). */
 function rangeError(
   originLat: number | null,
@@ -245,15 +234,53 @@ function kitchenDistanceKm(
   return haversineKm(deliveryLat, deliveryLng, Number(kitchen.lat), Number(kitchen.lng));
 }
 
+/** null = unknown (no delivery pin). Cart/checkout still require a pin via rangeError. */
 function inDeliveryRange(
   kitchen: Kitchen,
   deliveryLat: number | null,
   deliveryLng: number | null,
-): boolean {
-  if (deliveryLat == null || deliveryLng == null) return true;
+): boolean | null {
+  if (deliveryLat == null || deliveryLng == null) return null;
   const km = kitchenDistanceKm(kitchen, deliveryLat, deliveryLng);
   if (km == null) return true;
   return km <= DELIVERY_MAX_KM;
+}
+
+/** Same rows the app lists: browse_restaurants (no synthetic, own kitchens hidden, 8 km). */
+async function browseKitchens(
+  db: Db,
+  args: {
+    query?: string | null;
+    deliveryLat: number | null;
+    deliveryLng: number | null;
+    openOnly?: boolean;
+    vegOnly?: boolean;
+    limit?: number;
+  },
+): Promise<Kitchen[]> {
+  const { data, error } = await db.rpc("browse_restaurants", {
+    p_lat: args.deliveryLat ?? undefined,
+    p_lng: args.deliveryLng ?? undefined,
+    p_query: args.query || undefined,
+    p_open_only: args.openOnly ?? false,
+    p_veg_only: args.vegOnly ?? false,
+    p_limit: args.limit ?? 40,
+  });
+  if (error) throw new Error(errText(error) || "Could not load restaurants.");
+  const items = ((data as { items?: Record<string, unknown>[] } | null)?.items ?? []);
+  return items.map((row) => ({
+    id: String(row.id),
+    name: String(row.name ?? ""),
+    cuisine: (row.cuisine as string | null) ?? null,
+    description: (row.description as string | null) ?? null,
+    address: String(row.address ?? ""),
+    image_url: (row.image_url as string | null) ?? null,
+    is_open: row.is_open === true,
+    offer_percent: row.offer_percent == null ? null : Number(row.offer_percent),
+    prep_minutes: row.prep_minutes == null ? null : Number(row.prep_minutes),
+    lat: row.lat == null ? null : Number(row.lat),
+    lng: row.lng == null ? null : Number(row.lng),
+  }));
 }
 
 async function loadKitchens(db: Db, ids: string[]) {
@@ -304,21 +331,13 @@ async function searchRestaurantsUncached(
 
   const kitchenPromise = (async () => {
     if (!query) return [] as Kitchen[];
-    let request = db
-      .from("restaurant_browse")
-      .select("id, name, cuisine, description, address, image_url, is_open, offer_percent, prep_minutes, lat, lng")
-      .order("is_open", { ascending: false })
-      .order("offer_percent", { ascending: false, nullsFirst: false })
-      .limit(40);
-    if (!includeClosed) request = request.eq("is_open", true);
-    if (query) {
-      request = request.or(
-        `name.ilike.%${query}%,cuisine.ilike.%${query}%,description.ilike.%${query}%`,
-      );
-    }
-    const { data, error } = await request;
-    if (error) throw new Error(errText(error) || "Could not search restaurants.");
-    return ((data ?? []) as Kitchen[]).filter((kitchen) => !exclude.has(kitchen.id));
+    const rows = await browseKitchens(db, {
+      query,
+      deliveryLat,
+      deliveryLng,
+      openOnly: !includeClosed,
+    });
+    return rows.filter((kitchen) => !exclude.has(kitchen.id));
   })();
 
   const dishPromise = (async () => {
@@ -326,6 +345,7 @@ async function searchRestaurantsUncached(
       .from("menu_items")
       .select("id, name, description, price, image_url, is_available, is_veg, category, restaurant_id")
       .eq("is_available", true)
+      .eq("is_synthetic", false)
       .limit(40);
     if (query) {
       request = request.or(`name.ilike.%${query}%,category.ilike.%${query}%,description.ilike.%${query}%`);
@@ -397,10 +417,8 @@ async function searchRestaurantsUncached(
       return a.place.name.localeCompare(b.place.name);
     });
 
-  const inRangeIds = new Set(ranked.map((row) => row.place.id));
-  if (deliveryLat != null && deliveryLng != null) {
-    dishes = dishes.filter((dish) => inRangeIds.has(dish.restaurant_id));
-  }
+  const visibleIds = new Set(ranked.map((row) => row.place.id));
+  dishes = dishes.filter((dish) => visibleIds.has(dish.restaurant_id));
 
   const places = diversifyPlaces(
     ranked.map((row) => row.place),
@@ -488,7 +506,7 @@ export async function browseThemes(
   }
 
   const kitchens = ((kitchensRaw ?? []) as Kitchen[]).filter((k) =>
-    inDeliveryRange(k, deliveryLat, deliveryLng)
+    inDeliveryRange(k, deliveryLat, deliveryLng) !== false
   );
   const kitchenIds = kitchens.map((k) => k.id);
   if (kitchenIds.length === 0) {
@@ -508,6 +526,7 @@ export async function browseThemes(
     .from("menu_items")
     .select("category, name, restaurant_id, is_veg, is_available")
     .eq("is_available", true)
+    .eq("is_synthetic", false)
     .in("restaurant_id", kitchenIds)
     .limit(400);
   if (vegOnly) dishQuery = dishQuery.eq("is_veg", true);
@@ -596,6 +615,7 @@ export async function findOffers(
     .from("menu_items")
     .select("id, name, description, price, image_url, is_available, is_veg, category, restaurant_id")
     .or(`name.ilike.%${query}%,category.ilike.%${query}%,description.ilike.%${query}%`)
+    .eq("is_synthetic", false)
     .limit(80);
   if (narrowId) dishRequest = dishRequest.eq("restaurant_id", narrowId);
   if (vegOnly) dishRequest = dishRequest.eq("is_veg", true);
@@ -643,7 +663,8 @@ export async function findOffers(
     price: number;
     is_available: boolean;
     is_veg: boolean;
-    in_range: boolean;
+    /** null = no delivery pin yet. */
+    in_range: boolean | null;
   };
 
   const bestByKitchen = new Map<string, OfferRow>();
@@ -671,13 +692,13 @@ export async function findOffers(
     }
     // Prefer available + open over unavailable/closed for the featured offer.
     const score = (o: OfferRow) =>
-      (o.is_available ? 4 : 0) + (o.is_open ? 2 : 0) + (o.in_range ? 1 : 0);
+      (o.is_available ? 4 : 0) + (o.is_open ? 2 : 0) + (o.in_range !== false ? 1 : 0);
     if (score(candidate) > score(prev)) bestByKitchen.set(kitchen.id, candidate);
   }
 
   const allOffers = [...bestByKitchen.values()];
   const ready = allOffers
-    .filter((o) => o.is_available && o.is_open && o.in_range)
+    .filter((o) => o.is_available && o.is_open && o.in_range !== false)
     .sort((a, b) => {
       if (a.distance_km != null && b.distance_km != null && a.distance_km !== b.distance_km) {
         return a.distance_km - b.distance_km;
@@ -685,7 +706,7 @@ export async function findOffers(
       return a.restaurant_name.localeCompare(b.restaurant_name);
     });
   const soft = allOffers
-    .filter((o) => !o.is_available || !o.is_open || !o.in_range)
+    .filter((o) => !o.is_available || !o.is_open || o.in_range === false)
     .slice(0, 8);
 
   const places: RioRestaurant[] = ready.slice(0, 8).map((o) => {
@@ -775,6 +796,7 @@ export async function verifyDish(
     .from("menu_items")
     .select("id, name, description, price, image_url, is_available, is_veg, category, restaurant_id")
     .eq("restaurant_id", kitchen.id)
+    .eq("is_synthetic", false)
     .or(`name.ilike.%${query}%,category.ilike.%${query}%,description.ilike.%${query}%`)
     .limit(10);
   if (error) {
@@ -812,7 +834,7 @@ export async function verifyDish(
   const any = available ?? matches[0];
 
   let status: string = "available";
-  if (!inRange) status = "out_of_range";
+  if (inRange === false) status = "out_of_range";
   else if (!kitchen.is_open) status = "closed";
   else if (!any.is_available) status = "unavailable";
 
@@ -844,7 +866,9 @@ export async function verifyDish(
           ? `Yes — ${kitchen.name} offers ${any.name}, but the kitchen is closed right now.`
           : `${kitchen.name} is outside the ${DELIVERY_MAX_KM} km delivery range from this address.`,
       instruction:
-        status === "available"
+        status === "available" && inRange == null
+          ? "Dish is available. No delivery pin yet: before cart add, ask the customer to pick a delivery address."
+          : status === "available"
           ? "Customer can get_menu or cart add this dish_id."
           : "Acknowledge they are right about the kitchen, explain the blocker, offer find_offers alternatives.",
     },
@@ -857,20 +881,15 @@ async function getMenuUncached(db: Db, args: { restaurant_id?: unknown }): Promi
   if (!isUuid(args.restaurant_id)) {
     return { data: { error: "A restaurant id is required." }, cards: [], conflict: null };
   }
-  const [{ data: kitchen, error: kitchenError }, { data: rows, error }] = await Promise.all([
-    db.from("restaurant_browse").select("id, name").eq("id", args.restaurant_id).maybeSingle(),
-    db
-      .from("menu_items")
-      .select("id, restaurant_id, name, description, price, image_url, is_available, is_veg, category")
-      .eq("restaurant_id", args.restaurant_id)
-      .eq("is_available", true)
-      .order("category")
-      .order("name")
-      .limit(10),
-  ]);
-  if (kitchenError || error) throw new Error(errText(kitchenError ?? error) || "Could not load menu.");
-  if (!kitchen) return { data: { error: "Restaurant not found." }, cards: [], conflict: null };
-  const items: RioMenuItem[] = ((rows ?? []) as Dish[]).map((row) => ({
+  const { data, error } = await db.rpc("restaurant_detail", { p_id: args.restaurant_id });
+  if (error) throw new Error(errText(error) || "Could not load menu.");
+  const detail = data as {
+    restaurant?: { id: string; name: string; is_open?: boolean };
+    sections?: { name: string; items: Dish[] }[];
+  } | null;
+  if (!detail?.restaurant) return { data: { error: "Restaurant not found." }, cards: [], conflict: null };
+  const kitchen = detail.restaurant;
+  const toItem = (row: Dish & { is_bestseller?: boolean }): RioMenuItem => ({
     id: row.id,
     restaurantId: row.restaurant_id,
     name: row.name,
@@ -880,17 +899,26 @@ async function getMenuUncached(db: Db, args: { restaurant_id?: unknown }): Promi
     isAvailable: row.is_available,
     isVeg: row.is_veg,
     category: row.category,
+  });
+  const sections = (detail.sections ?? []).map((section) => ({
+    name: section.name,
+    items: (section.items ?? []).map(toItem),
   }));
+  const items = sections.flatMap((section) => section.items);
   return {
     data: {
       restaurant_id: kitchen.id,
       restaurant_name: kitchen.name,
-      items: items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        is_veg: item.isVeg,
-        category: item.category,
+      is_open: kitchen.is_open ?? null,
+      item_count: items.length,
+      sections: sections.map((section) => ({
+        name: section.name,
+        items: section.items.slice(0, 15).map((item) => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          is_veg: item.isVeg,
+        })),
       })),
     },
     cards: [{ kind: "menu", restaurantId: kitchen.id, restaurantName: kitchen.name, items: items.slice(0, 8) }],
@@ -1023,6 +1051,7 @@ async function menuItemForCart(db: Db, menuItemId: string) {
     .from("menu_items")
     .select("id, name, restaurant_id, is_available")
     .eq("id", menuItemId)
+    .eq("is_synthetic", false)
     .maybeSingle();
   if (error) throw new Error(errText(error) || "Could not load that dish.");
   return data as { id: string; name: string; restaurant_id: string; is_available: boolean } | null;
@@ -1848,16 +1877,18 @@ async function hydrateMenuMeta(
   const { data, error } = await db
     .from("menu_items")
     .select("id, restaurant_id, name, price, category, is_veg, is_available")
+    .eq("is_synthetic", false)
     .in("id", menuIds);
-  if (error || !data?.length) return chunks;
+  if (error) return chunks;
 
   const byId = new Map(
-    (data as Array<Record<string, unknown>>).map((row) => [String(row.id), row]),
+    ((data ?? []) as Array<Record<string, unknown>>).map((row) => [String(row.id), row]),
   );
-  return chunks.map((c) => {
+  return chunks.flatMap((c) => {
+    if (c.source_table !== "menu_items") return [c];
     const row = byId.get(c.source_id);
-    if (!row) return c;
-    return {
+    if (!row) return [];
+    return [{
       ...c,
       meta: {
         ...c.meta,
@@ -1868,7 +1899,7 @@ async function hydrateMenuMeta(
         is_veg: row.is_veg,
         is_available: row.is_available,
       },
-    };
+    }];
   });
 }
 

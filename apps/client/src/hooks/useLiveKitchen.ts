@@ -4,9 +4,9 @@ import { usePathname } from 'expo-router';
 
 import { supabase } from '@/api/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
-import { ordersQueryKey } from '@/hooks/useOrders';
+import { queryKeys } from '@/lib/query-keys';
 
-/** Only invalidate home catalog while the customer is on Home or Explore. */
+/** Refetch the catalog immediately only on Home / Explore; elsewhere mark it stale for the next visit. */
 function isCatalogFocused(pathname: string | null) {
   if (!pathname) return false;
   if (pathname.includes('/picks')) return true;
@@ -30,15 +30,12 @@ export function useLiveKitchen() {
     if (!userId) return;
 
     const refreshKitchens = () => {
-      void queryClient.invalidateQueries({ queryKey: ['restaurants'] });
-      void queryClient.invalidateQueries({ queryKey: ['restaurant'] });
-      void queryClient.invalidateQueries({ queryKey: ['menu'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.restaurant.all });
       if (kitchenTimer.current) clearTimeout(kitchenTimer.current);
       kitchenTimer.current = setTimeout(() => {
-        if (!isCatalogFocused(pathnameRef.current)) return;
-        void queryClient.invalidateQueries({ queryKey: ['home-catalog'] });
-        void queryClient.invalidateQueries({ queryKey: ['home-shell'] });
-        void queryClient.invalidateQueries({ queryKey: ['home-dishes'] });
+        const refetchType = isCatalogFocused(pathnameRef.current) ? 'active' : 'none';
+        void queryClient.invalidateQueries({ queryKey: queryKeys.home.all, refetchType });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.places.all, refetchType });
       }, 4000);
     };
 
@@ -46,13 +43,6 @@ export function useLiveKitchen() {
       .channel(`kitchen-live-${userId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'restaurants' }, refreshKitchens)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, refreshKitchens)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders', filter: `customer_id=eq.${userId}` },
-        () => {
-          void queryClient.invalidateQueries({ queryKey: ordersQueryKey });
-        },
-      )
       .subscribe();
 
     return () => {

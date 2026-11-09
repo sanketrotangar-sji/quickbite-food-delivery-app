@@ -6,7 +6,14 @@ const monorepoRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
-config.watchFolders = [monorepoRoot];
+config.watchFolders = [
+  path.resolve(monorepoRoot, 'packages'),
+  path.resolve(monorepoRoot, 'node_modules'),
+];
+config.resolver.blockList = [
+  /.*\/apps\/(manager|landing)\/.*/,
+  /.*\/node_modules\/.*\/android\/build\/.*/,
+];
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(monorepoRoot, 'node_modules'),

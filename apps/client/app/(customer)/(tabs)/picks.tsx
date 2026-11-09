@@ -1,4 +1,4 @@
-import { ExploreScreen } from '@/screens/customer/ExploreScreen';
+import { ExploreScreen } from '@/features/explore/screens/ExploreScreen';
 
 export default function ExploreRoute() {
   return <ExploreScreen />;

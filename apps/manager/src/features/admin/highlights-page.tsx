@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { X } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 
 import {
   deleteHighlight,
@@ -8,9 +7,11 @@ import {
   loadHighlights,
   saveHighlight,
   type AdminHighlight,
-} from '@/api/admin';
+} from '@quickbite/api/dashboard/admin';
 import { displayImageUrl } from '@/lib/images';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 type HighlightForm = {
   title: string;
@@ -142,110 +143,79 @@ export function AdminHighlightsPage() {
           </article>
         ))}
       </div>
-      <Panel
-        open={open}
-        title={editing ? 'Edit offer' : 'Add offer'}
-        description="Shown on the customer home carousel. Link a restaurant for the Order Now button."
-        onClose={() => setOpen(false)}>
-        <div className="space-y-3">
-          <label className="block text-sm font-bold">
-            Title
-            <input className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} />
-          </label>
-          <label className="block text-sm font-bold">
-            Subtitle
-            <input className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium" value={form.subtitle} onChange={(event) => setForm({ ...form, subtitle: event.target.value })} />
-          </label>
-          <label className="block text-sm font-bold">
-            Badge
-            <input
-              className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium"
-              placeholder="20% OFF"
-              value={form.badge}
-              onChange={(event) => setForm({ ...form, badge: event.target.value })}
-            />
-          </label>
-          <label className="block text-sm font-bold">
-            Image URL
-            <input className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium" value={form.image_url} onChange={(event) => setForm({ ...form, image_url: event.target.value })} />
-          </label>
-          <label className="block text-sm font-bold">
-            Restaurant
-            <select
-              className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium"
-              value={form.restaurant_id}
-              onChange={(event) => setForm({ ...form, restaurant_id: event.target.value })}>
-              <option value="">Select kitchen</option>
-              {(restaurants.data ?? []).map((row) => (
-                <option key={row.id} value={row.id}>
-                  {row.name}
-                  {row.branch_name ? ` · ${row.branch_name}` : ''}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block text-sm font-bold">
-            CTA label
-            <input
-              className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium"
-              value={form.cta_label}
-              onChange={(event) => setForm({ ...form, cta_label: event.target.value })}
-            />
-          </label>
-          <label className="block text-sm font-bold">
-            Kind
-            <select className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium" value={form.kind} onChange={(event) => setForm({ ...form, kind: event.target.value as HighlightForm['kind'] })}>
-              <option value="offer">Offer</option>
-              <option value="video">Video</option>
-            </select>
-          </label>
-          <label className="block text-sm font-bold">
-            Sort order
-            <input className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium" value={form.sort_order} onChange={(event) => setForm({ ...form, sort_order: event.target.value })} />
-          </label>
-          <label className="flex items-center justify-between rounded-lg border border-border p-3 text-sm font-bold">
-            Active
-            <input type="checkbox" checked={form.is_active} onChange={(event) => setForm({ ...form, is_active: event.target.checked })} />
-          </label>
-          {error ? <p className="text-sm font-semibold text-destructive">{error}</p> : null}
-          <Button type="button" onClick={() => void save.mutate()} disabled={save.isPending}>
-            {save.isPending ? 'Saving…' : 'Save'}
-          </Button>
-        </div>
-      </Panel>
-    </div>
-  );
-}
-
-function Panel({
-  open,
-  title,
-  description,
-  onClose,
-  children,
-}: {
-  open: boolean;
-  title: string;
-  description?: string;
-  onClose: () => void;
-  children: ReactNode;
-}) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-foreground/40">
-      <button className="flex-1" aria-label="Close panel" onClick={onClose} />
-      <aside className="h-full w-full max-w-md overflow-y-auto border-l border-border bg-card p-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-extrabold">{title}</h2>
-            {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent className="w-full overflow-y-auto bg-card sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>{editing ? 'Edit offer' : 'Add offer'}</SheetTitle>
+            <SheetDescription>Shown on the customer home carousel. Link a restaurant for the Order Now button.</SheetDescription>
+          </SheetHeader>
+          <div className="mt-6 space-y-3">
+            <label className="block text-sm font-bold">
+              Title
+              <Input className="mt-2 font-medium" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} />
+            </label>
+            <label className="block text-sm font-bold">
+              Subtitle
+              <Input className="mt-2 font-medium" value={form.subtitle} onChange={(event) => setForm({ ...form, subtitle: event.target.value })} />
+            </label>
+            <label className="block text-sm font-bold">
+              Badge
+              <Input
+                className="mt-2 font-medium"
+                placeholder="20% OFF"
+                value={form.badge}
+                onChange={(event) => setForm({ ...form, badge: event.target.value })}
+              />
+            </label>
+            <label className="block text-sm font-bold">
+              Image URL
+              <Input className="mt-2 font-medium" value={form.image_url} onChange={(event) => setForm({ ...form, image_url: event.target.value })} />
+            </label>
+            <label className="block text-sm font-bold">
+              Restaurant
+              <select
+                className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium"
+                value={form.restaurant_id}
+                onChange={(event) => setForm({ ...form, restaurant_id: event.target.value })}>
+                <option value="">Select kitchen</option>
+                {(restaurants.data ?? []).map((row) => (
+                  <option key={row.id} value={row.id}>
+                    {row.name}
+                    {row.branch_name ? ` · ${row.branch_name}` : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-sm font-bold">
+              CTA label
+              <Input
+                className="mt-2 font-medium"
+                value={form.cta_label}
+                onChange={(event) => setForm({ ...form, cta_label: event.target.value })}
+              />
+            </label>
+            <label className="block text-sm font-bold">
+              Kind
+              <select className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-medium" value={form.kind} onChange={(event) => setForm({ ...form, kind: event.target.value as HighlightForm['kind'] })}>
+                <option value="offer">Offer</option>
+                <option value="video">Video</option>
+              </select>
+            </label>
+            <label className="block text-sm font-bold">
+              Sort order
+              <Input className="mt-2 font-medium" value={form.sort_order} onChange={(event) => setForm({ ...form, sort_order: event.target.value })} />
+            </label>
+            <label className="flex items-center justify-between rounded-lg border border-border p-3 text-sm font-bold">
+              Active
+              <input type="checkbox" checked={form.is_active} onChange={(event) => setForm({ ...form, is_active: event.target.checked })} />
+            </label>
+            {error ? <p className="text-sm font-semibold text-destructive">{error}</p> : null}
+            <Button type="button" onClick={() => void save.mutate()} disabled={save.isPending}>
+              {save.isPending ? 'Saving…' : 'Save'}
+            </Button>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close">
-            <X className="size-4" />
-          </button>
-        </div>
-        <div className="mt-6">{children}</div>
-      </aside>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

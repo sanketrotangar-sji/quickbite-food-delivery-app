@@ -19,6 +19,8 @@ function parseDsn(dsn: string): SentryParsed | null {
 
 const dsn = (import.meta.env['VITE_SENTRY_DSN'] as string | undefined)?.trim() ?? "";
 const parsed = dsn ? parseDsn(dsn) : null;
+const release =
+  (import.meta.env['VITE_APP_RELEASE'] as string | undefined)?.trim() || "quickbite@dev";
 
 export function initSentry() {
   if (!parsed || typeof window === "undefined") return;
@@ -49,6 +51,7 @@ export async function captureException(
     platform: "javascript",
     level: "error",
     environment: (import.meta.env['VITE_SENTRY_ENVIRONMENT'] as string | undefined) ?? "manager",
+    release,
     exception: {
       values: [
         {

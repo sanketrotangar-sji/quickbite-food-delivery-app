@@ -1,4 +1,4 @@
-import { brandHex } from '../../../../packages/shared/src/brand-tokens';
+import { brandHex, motion as motionTokens, typeScale } from '@quickbite/domain';
 
 export const colors = {
   background: brandHex.background,
@@ -15,6 +15,17 @@ export const colors = {
   forestForeground: brandHex.forestForeground,
   success: brandHex.success,
   successSoft: brandHex.successSoft,
+  successBorder: brandHex.successBorder,
+  star: brandHex.star,
+  starSoft: brandHex.starSoft,
+  veg: brandHex.veg,
+  vegSoft: brandHex.vegSoft,
+  warning: brandHex.warning,
+  warningSoft: brandHex.warningSoft,
+  info: brandHex.info,
+  infoSoft: brandHex.infoSoft,
+  quick: brandHex.quick,
+  quickSoft: brandHex.quickSoft,
   text: brandHex.text,
   textMuted: brandHex.textMuted,
   border: brandHex.border,
@@ -23,6 +34,8 @@ export const colors = {
   stepLine: brandHex.stepLine,
   white: brandHex.white,
   danger: brandHex.danger,
+  dangerSoft: brandHex.dangerSoft,
+  dangerBorder: brandHex.dangerBorder,
   overlay: brandHex.overlay,
 } as const;
 
@@ -49,6 +62,26 @@ export const fonts = {
   bold: 'Manrope_700Bold',
   heading: 'Sora_700Bold',
   headingMedium: 'Sora_600SemiBold',
+} as const;
+
+export const type = typeScale;
+export const motion = motionTokens;
+
+export const elevation = {
+  card: {
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  sheet: {
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: -4 },
+    elevation: 8,
+  },
 } as const;
 
 export const tabBarInset = 88;

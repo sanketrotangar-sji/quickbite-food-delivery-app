@@ -33,7 +33,7 @@ QuickBite is one Postgres database with **RLS + RPCs** as the authority. Each ro
 | GitHub | [sanketrotangar-sji/quickbite-food-delivery-app](https://github.com/sanketrotangar-sji/quickbite-food-delivery-app) |
 | Lovable (manager UI) | Connect to this monorepo under `apps/manager` only |
 
-**Docs:** [REQUIREMENTS](./docs/REQUIREMENTS.md) (product SoT) · [Architecture](./docs/architecture.md) (diagrams) · [PROGRESS](./docs/PROGRESS.md) (status) · [PLAN](./docs/PLAN.md) (pre-submission backlog)
+**Docs:** [REQUIREMENTS](./docs/REQUIREMENTS.md) (product) · [STANDARDS](./docs/STANDARDS.md) (how we write code) · [Architecture](./docs/architecture.md) (diagrams) · [PROGRESS](./docs/PROGRESS.md) (status) · [PLAN](./docs/PLAN.md) (backlog) · [AGENTS](./AGENTS.md)
 
 ---
 
@@ -110,20 +110,20 @@ Full tables, RLS, and workflow: [`docs/REQUIREMENTS.md`](./docs/REQUIREMENTS.md)
 ```text
 QuickBite/
 ├── apps/
-│   ├── landing/          # Marketing site
-│   ├── manager/          # Admin + restaurant dashboard
-│   └── client/           # Customer + rider Expo app
+│   ├── landing/          # Marketing site (also embedded on dashboard /)
+│   ├── manager/          # Kitchen + admin dashboard (features/auth|kitchen|admin)
+│   └── client/           # Customer + rider Expo app (src/features/*)
+├── packages/
+│   ├── domain/           # Pure rules (@quickbite/domain)
+│   ├── db/               # Generated types once (@quickbite/db)
+│   ├── api/              # RPC wrappers (@quickbite/api)
+│   └── shared/           # Deprecated re-export of domain
 ├── supabase/
 │   ├── migrations/       # Schema, RLS, RPCs (source of truth)
-│   ├── functions/        # notify-new-order, send-order-sms, create-payment-intent, stripe-webhook, directions, rio
-│   └── seed.sql          # Local demo seed
-├── packages/shared/
-├── assets/               # README screenshots
-├── docs/
-│   ├── REQUIREMENTS.md   # Product / schema SoT
-│   └── PROGRESS.md       # Done / next / decisions
+│   ├── functions/        # Edge: rio, payments, sms, push, directions
+│   └── seed.sql
+├── docs/                 # REQUIREMENTS, STANDARDS, PROGRESS, PLAN, architecture
 ├── scripts/
-├── .env.example
 └── README.md
 ```
 

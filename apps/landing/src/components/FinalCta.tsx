@@ -1,4 +1,4 @@
-import { DASHBOARD_URL } from '../config';
+import { getDashboardUrl } from '../config';
 import { StoreBadges } from './StoreBadges';
 
 export function FinalCta() {
@@ -25,7 +25,7 @@ export function FinalCta() {
             <p className="mt-8 text-sm text-qb-forest-fg/75">
               Already using QuickBite?{' '}
               <a
-                href={DASHBOARD_URL}
+                href={getDashboardUrl()}
                 className="font-bold text-qb-forest-fg underline decoration-qb-forest-fg/35 underline-offset-4 transition hover:decoration-qb-forest-fg"
               >
                 Dashboard Login

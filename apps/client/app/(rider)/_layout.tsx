@@ -1,13 +1,13 @@
 import { Redirect, Stack } from 'expo-router';
 
-import { LogoLoader } from '@/components/LogoLoader';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { hasRole } from '@/types/models';
 
 export default function RiderLayout() {
   const { profile, loading } = useAuth();
-  if (loading) return <LogoLoader />;
+  // Root splash covers cold start; after sign-in the profile is already loaded.
+  if (loading) return null;
   if (!hasRole(profile, 'rider')) return <Redirect href="/(blocked)/rider" />;
 
   return (

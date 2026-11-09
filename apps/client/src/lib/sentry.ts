@@ -19,6 +19,7 @@ function parseDsn(dsn: string): SentryParsed | null {
 
 const dsn = (process.env.EXPO_PUBLIC_SENTRY_DSN ?? "").trim();
 const parsed = dsn ? parseDsn(dsn) : null;
+const release = (process.env.EXPO_PUBLIC_APP_RELEASE ?? "").trim() || "quickbite@dev";
 
 export async function captureException(
   error: unknown,
@@ -39,6 +40,7 @@ export async function captureException(
     platform: "javascript",
     level: "error",
     environment: process.env.EXPO_PUBLIC_SENTRY_ENVIRONMENT ?? "client",
+    release,
     exception: {
       values: [
         {

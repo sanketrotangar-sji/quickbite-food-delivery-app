@@ -6,7 +6,8 @@
  *   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... \
  *   node scripts/backfill-embeddings.mjs --source all
  *
- * Flags: --source menu_items|ratings|all  --force  --limit N  --concurrency N
+ * Flags: --source menu_items|ratings|all  --force  --limit N  --concurrency N  --include-synthetic
+ * Synthetic eval rows (is_synthetic) are skipped unless --include-synthetic is passed.
  * Menu text: buildMenuItemText (restaurant · dish · category · Veg|Non-veg · tags · description).
  * Ratings: non-empty comments only.
  * Writes content, content_hash, metadata, embedding. Skips unchanged hash unless --force.
@@ -134,15 +135,18 @@ async function fetchAllPages(buildQuery) {
 }
 
 async function loadRows(db, source) {
+  const includeSynthetic = hasFlag('--include-synthetic');
   if (source === 'menu_items') {
-    const rows = await fetchAllPages(() =>
-      db
+    const rows = await fetchAllPages(() => {
+      let query = db
         .from('menu_items')
         .select(
           'id, name, category, description, is_veg, is_available, tags, canonical_key, restaurant_id, restaurants(name)',
         )
-        .order('id'),
-    );
+        .order('id');
+      if (!includeSynthetic) query = query.eq('is_synthetic', false);
+      return query;
+    });
     return {
       rows,
       textOf: (row) => buildMenuItemText(row, row.restaurants),

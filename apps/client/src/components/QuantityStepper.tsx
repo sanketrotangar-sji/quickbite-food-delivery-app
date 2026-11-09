@@ -19,7 +19,7 @@ export function QuantityStepper({
     <View style={styles.stepper}>
       <Pressable
         onPress={onDecrease}
-        hitSlop={6}
+        hitSlop={10}
         style={({ pressed }) => [styles.stepBtn, pressed && styles.pressed]}
         accessibilityLabel={quantity === 1 ? `Remove ${label}` : `Remove one ${label}`}>
         <Ionicons name={quantity === 1 ? 'trash-outline' : 'remove'} size={16} color={colors.primary} />
@@ -29,7 +29,7 @@ export function QuantityStepper({
       </AppText>
       <Pressable
         onPress={onIncrease}
-        hitSlop={6}
+        hitSlop={10}
         style={({ pressed }) => [styles.stepBtn, pressed && styles.pressed]}
         accessibilityLabel={`Add one ${label}`}>
         <Ionicons name="add" size={16} color={colors.primary} />
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primarySoft,
     overflow: 'hidden',
   },
-  stepBtn: { width: 30, height: 30, alignItems: 'center', justifyContent: 'center' },
+  stepBtn: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
   pressed: { opacity: 0.55 },
   qty: { minWidth: 16, textAlign: 'center', color: colors.primary, fontSize: 14 },
 });

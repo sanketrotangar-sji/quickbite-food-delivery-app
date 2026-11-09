@@ -67,7 +67,7 @@ schema_paths = []
 enabled = true
 # Specifies an ordered list of seed files to load during db reset.
 # Supports glob patterns relative to supabase directory: "./seeds/*.sql"
-sql_paths = ["./seed.sql"]
+sql_paths = ["./seed.sql", "./seeds/goa_demo.sql"]
 
 [db.network_restrictions]
 # Enable management of network restrictions.
@@ -454,6 +454,12 @@ entrypoint = "./functions/stripe-webhook/index.ts"
 enabled = true
 verify_jwt = true
 entrypoint = "./functions/directions/index.ts"
+
+[functions.vision-food]
+enabled = true
+verify_jwt = false
+import_map = "./functions/vision-food/deno.json"
+entrypoint = "./functions/vision-food/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/notify-new-order/*.html" ]

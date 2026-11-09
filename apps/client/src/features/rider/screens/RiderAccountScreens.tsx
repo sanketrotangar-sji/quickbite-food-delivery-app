@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
-import { EmptyState } from '@/components/EmptyState';
 import { FlowHeader } from '@/components/FlowHeader';
-import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
 import { colors, radii } from '@/constants/theme';
-import { useRiderNotices, useMarkNoticeRead } from '@/features/rider/use-rider-live';
 import { useAuth } from '@/hooks/useAuth';
 import {
   getPushNotificationsEnabled,
   setPushNotificationsEnabled,
 } from '@/notifications/NotificationProvider';
+import { toast } from 'sonner-native';
+import { showDialog } from '@/lib/dialog';
 
 export function PersonalScreen() {
   const { profile, refreshProfile } = useAuth();
@@ -26,12 +25,12 @@ export function PersonalScreen() {
     if (!profile?.id || saving) return;
     setSaving(true);
     try {
-      const { updateProfile } = await import('@/api/profiles');
+      const { updateProfile } = await import('@quickbite/api/mobile/profiles');
       await updateProfile(profile.id, { full_name: name.trim(), phone: phone.trim() || null });
       await refreshProfile();
-      Alert.alert('Saved', 'Your profile was updated.');
+      toast.success('Saved', { description: 'Your profile was updated.' });
     } catch (error) {
-      Alert.alert('Could not save', error instanceof Error ? error.message : 'Try again.');
+      toast.error('Could not save', { description: error instanceof Error ? error.message : 'Try again.' });
     } finally {
       setSaving(false);
     }
@@ -60,16 +59,15 @@ export function VehicleScreen() {
     if (!profile?.id || saving) return;
     setSaving(true);
     try {
-      const { supabase } = await import('@/api/supabaseClient');
-      const { error } = await supabase
-        .from('profiles')
-        .update({ vehicle_label: kind.trim() || null, plate: plate.trim() || null })
-        .eq('id', profile.id);
-      if (error) throw error;
+      const { updateProfile } = await import('@quickbite/api/mobile/profiles');
+      await updateProfile(profile.id, {
+        vehicle_label: kind.trim() || null,
+        plate: plate.trim() || null,
+      });
       await refreshProfile();
-      Alert.alert('Saved', 'Vehicle details updated.');
+      toast.success('Saved', { description: 'Vehicle details updated.' });
     } catch (error) {
-      Alert.alert('Could not save', error instanceof Error ? error.message : 'Try again.');
+      toast.error('Could not save', { description: error instanceof Error ? error.message : 'Try again.' });
     } finally {
       setSaving(false);
     }
@@ -129,7 +127,7 @@ export function PreferencesScreen() {
       const next = await setPushNotificationsEnabled(enabling);
       setAlerts(next);
       if (enabling && !next) {
-        Alert.alert('Notifications are off', 'Allow notifications in your device settings, then try again.', [
+        showDialog('Notifications are off', 'Allow notifications in your device settings, then try again.', [
           { text: 'Not now' },
           {
             text: 'Open settings',
@@ -140,7 +138,7 @@ export function PreferencesScreen() {
         ]);
       }
     } catch (error) {
-      Alert.alert(
+      showDialog(
         'Could not update notifications',
         error instanceof Error ? error.message : 'Try again.',
       );
@@ -189,54 +187,6 @@ export function PreferencesScreen() {
   );
 }
 
-export function NotificationsScreen() {
-  const notices = useRiderNotices();
-  const markRead = useMarkNoticeRead();
-  const items = notices.data ?? [];
-
-  return (
-    <Screen>
-      <FlowHeader title="Notifications" />
-      {notices.isLoading ? (
-        <View style={styles.list}>
-          <LoadingSkeleton rows={3} />
-        </View>
-      ) : null}
-      {!notices.isLoading && items.length === 0 ? (
-        <EmptyState icon="notifications-outline" title="You're caught up" body="New requests and payout notes will show up here." />
-      ) : null}
-      {!notices.isLoading && items.length > 0 ? (
-        <ScrollView contentContainerStyle={styles.list}>
-          {items.map((item) => (
-            <Pressable
-              key={item.id}
-              onPress={() => {
-                if (!item.readAt) void markRead.mutate(item.id);
-              }}
-              style={[styles.noteCard, !item.readAt && styles.unread]}>
-              <View style={styles.doc}>
-                <AppText weight="semibold">{item.title}</AppText>
-                {!item.readAt ? <View style={styles.dot} /> : null}
-              </View>
-              <AppText muted style={styles.body}>
-                {item.body}
-              </AppText>
-              <AppText muted style={styles.when}>
-                {new Date(item.createdAt).toLocaleString(undefined, {
-                  month: 'short',
-                  day: 'numeric',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                })}
-              </AppText>
-            </Pressable>
-          ))}
-        </ScrollView>
-      ) : null}
-    </Screen>
-  );
-}
-
 const styles = StyleSheet.create({
   form: { paddingHorizontal: 16, paddingBottom: 24, gap: 12 },
   note: { fontSize: 12, lineHeight: 16 },
@@ -252,17 +202,4 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   ok: { color: colors.success },
-  list: { paddingHorizontal: 16, paddingBottom: 24, gap: 10 },
-  noteCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 14,
-    gap: 4,
-  },
-  unread: { borderColor: colors.primary },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary },
-  body: { fontSize: 13, lineHeight: 18 },
-  when: { fontSize: 12 },
 });

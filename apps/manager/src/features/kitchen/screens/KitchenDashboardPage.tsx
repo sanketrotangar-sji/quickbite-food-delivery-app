@@ -1,0 +1,516 @@
+import { Link } from "@tanstack/react-router";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Bike,
+  CheckCircle2,
+  ChevronRight,
+  Clock3,
+  PackageCheck,
+  Plus,
+  ReceiptIndianRupee,
+  Sparkles,
+  Timer,
+  TrendingUp,
+  Utensils,
+  X,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Bar, BarChart, XAxis, YAxis } from "recharts";
+import { riderPanelLabel } from "@quickbite/api/dashboard/orders";
+import { Button } from "@/components/ui/button";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { StatCard } from "@/components/list-state";
+import { OrderCard } from "@/components/order-card";
+import { OrderDrawer } from "@/components/order-drawer";
+import { QuickBiteShell } from "@/components/quickbite-shell";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  useAdvanceOrder,
+  useCancelOrder,
+  useManagerOrders,
+  useManagerOrderStats,
+} from "@/hooks/use-manager-orders";
+import { useManagerMenu, useToggleMenuAvailability } from "@/hooks/use-manager-menu";
+import { useMinuteTick } from "@/hooks/use-minute-tick";
+import { useOwnedRestaurant, useRestaurantRatings } from "@/hooks/use-restaurant";
+import {
+  areaFromAddress,
+  avgPrepLabel,
+  compactRupee,
+  formatRupee,
+  greetingFor,
+  hourlyPaceFromStats,
+  kitchenLoad,
+  orderElapsed,
+  percentChangeLabel,
+  statsOnDay,
+  statsRevenue,
+} from "@/lib/dashboard-stats";
+import type { MenuItem, Order } from "@/lib/quickbite-data";
+
+const WELCOME_STORAGE_KEY = "quickbite-welcome-date";
+const EMPTY_ORDERS: Order[] = [];
+const EMPTY_MENU: MenuItem[] = [];
+
+
+export function KitchenDashboardPage() {
+  const now = new Date();
+  const tick = useMinuteTick();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const { profile } = useAuth();
+  const { data: restaurant, isLoading: restaurantLoading } = useOwnedRestaurant();
+  const { data: ratings } = useRestaurantRatings(restaurant?.id);
+  const ordersQuery = useManagerOrders();
+  const statsQuery = useManagerOrderStats();
+  const allOrders = ordersQuery.data ?? EMPTY_ORDERS;
+  const statsRows = statsQuery.data ?? [];
+  const menuItems = useManagerMenu().data ?? EMPTY_MENU;
+  const advanceOrder = useAdvanceOrder();
+  const cancelOrder = useCancelOrder();
+  const toggleAvailability = useToggleMenuAvailability();
+  const [selected, setSelected] = useState<Order>();
+  const [welcome, setWelcome] = useState(false);
+  const orders = allOrders.filter(
+    (order) =>
+      order.status === "placed" || order.status === "preparing" || order.status === "ready",
+  );
+  const preparing = orders.filter((order) => order.status === "preparing").length;
+  const placed = orders.filter((order) => order.status === "placed");
+  const unavailable = menuItems.filter((item) => !item.available);
+  const todayStats = statsOnDay(statsRows, now);
+  const yesterdayStats = statsOnDay(statsRows, yesterday);
+  const todayRevenue = statsRevenue(todayStats);
+  const yesterdayRevenue = statsRevenue(yesterdayStats);
+  const load = kitchenLoad(preparing, restaurant?.capacity_threshold ?? undefined);
+  const prep = avgPrepLabel(allOrders, now);
+  const pace = hourlyPaceFromStats(statsRows, now);
+  const selectedFresh = useMemo(
+    () =>
+      orders.find((order) => order.id === selected?.id) ??
+      allOrders.find((order) => order.id === selected?.id),
+    [allOrders, orders, selected],
+  );
+  const oldestPlaced = placed.reduce<Order | undefined>(
+    (oldest, order) => (!oldest || order.placedAt < oldest.placedAt ? order : oldest),
+    undefined,
+  );
+  const riderOrder = orders.find(
+    (order) => order.riderId && (order.status === "ready" || order.status === "preparing"),
+  );
+  const attentionCount =
+    (oldestPlaced ? 1 : 0) + (riderOrder ? 1 : 0) + (unavailable.length > 0 ? 1 : 0);
+  const firstName = profile?.full_name?.trim() || profile?.email || "";
+  const kitchenName = restaurant?.name ?? "this kitchen";
+  const statsLoading = restaurantLoading || statsQuery.isLoading;
+  const liveLoading = restaurantLoading || ordersQuery.isLoading;
+
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const lastShown = window.localStorage.getItem(WELCOME_STORAGE_KEY);
+    if (lastShown !== today) {
+      setWelcome(true);
+      window.localStorage.setItem(WELCOME_STORAGE_KEY, today);
+    }
+  }, []);
+
+  const advance = (id: string) => {
+    const current = allOrders.find((order) => order.id === id);
+    if (current) void advanceOrder.mutateAsync({ id: current.id, status: current.status });
+  };
+
+  const cancel = (id: string) => {
+    void cancelOrder.mutateAsync(id);
+  };
+
+  const statuses = ["placed", "preparing", "ready"] as const;
+  const laneLabels: Record<(typeof statuses)[number], string> = {
+    placed: "Incoming",
+    preparing: "Preparing",
+    ready: "Ready",
+  };
+
+  const statCards = [
+    {
+      label: "Orders today",
+      value: statsLoading ? "…" : String(todayStats.length),
+      change: statsLoading
+        ? "Loading…"
+        : todayStats.length === 0 && yesterdayStats.length === 0
+          ? `No orders yet for ${kitchenName}`
+          : percentChangeLabel(todayStats.length, yesterdayStats.length),
+      icon: PackageCheck,
+    },
+    {
+      label: "Today’s revenue",
+      value: statsLoading ? "…" : formatRupee(todayRevenue),
+      change: statsLoading
+        ? "Loading…"
+        : todayRevenue === 0 && yesterdayRevenue === 0
+          ? `No sales yet for ${kitchenName}`
+          : percentChangeLabel(todayRevenue, yesterdayRevenue),
+      icon: ReceiptIndianRupee,
+    },
+    {
+      label: "In preparation",
+      value: liveLoading ? "…" : String(preparing),
+      change: `${load.preparing}/${load.threshold} · ${load.label}`,
+      icon: Clock3,
+    },
+    { label: "Avg prep (to ready)", value: prep.value, change: prep.change, icon: Timer },
+  ];
+
+  return (
+    <QuickBiteShell>
+      <div className="mx-auto max-w-[1500px]">
+        <section aria-label="Today’s metrics" className="grid grid-cols-2 items-stretch gap-3 xl:grid-cols-4">
+          {statCards.map(({ label, value, change, icon: Icon }) => (
+            <StatCard key={label} label={label} value={value} hint={change} icon={<Icon size={15} />} />
+          ))}
+        </section>
+
+        <div className="mt-5 grid items-stretch gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <section className="flex h-full min-w-0 flex-col rounded-xl border border-border bg-card p-4 sm:p-5">
+            <div className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3">
+              <div className="min-w-0">
+                <h1 className="text-xl font-extrabold">Live orders</h1>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {liveLoading
+                    ? `Loading live orders for ${kitchenName}…`
+                    : orders.length === 0
+                      ? `No live orders for ${kitchenName}`
+                      : `${orders.length} orders need the team’s attention`}
+                </p>
+              </div>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/orders" search={{ status: "all", q: "" }}>
+                  View all <ChevronRight />
+                </Link>
+              </Button>
+            </div>
+            <div className="grid flex-1 items-stretch gap-4 lg:grid-cols-3">
+              {statuses.map((status) => {
+                const laneOrders = orders
+                  .filter((order) => order.status === status)
+                  .sort((a, b) => a.placedAt.localeCompare(b.placedAt));
+                const featured = laneOrders[0];
+                const listed = laneOrders.slice(1, 3);
+                const hidden = Math.max(0, laneOrders.length - 3);
+                return (
+                  <div key={status} className="flex h-full min-h-52 min-w-0 flex-col gap-3">
+                    <div className="flex items-center justify-between gap-2 px-0.5">
+                      <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
+                        {laneLabels[status]}
+                      </p>
+                      <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-extrabold">
+                        {laneOrders.length}
+                      </span>
+                    </div>
+                    {featured ? (
+                      <OrderCard
+                        order={featured}
+                        onOpen={() => setSelected(featured)}
+                        onAdvance={() => advance(featured.id)}
+                      />
+                    ) : (
+                      <div className="flex min-h-52 flex-1 items-center justify-center rounded-lg border border-dashed border-border px-3 text-center text-xs text-muted-foreground">
+                        No orders here
+                      </div>
+                    )}
+                    {listed.map((order) => (
+                      <div
+                        key={order.id}
+                        className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border border-border px-3 py-2"
+                      >
+                        <button type="button" onClick={() => setSelected(order)} className="min-w-0 text-left">
+                          <span className="block truncate text-sm font-extrabold">#{order.displayId}</span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {areaFromAddress(order.address, order.customer)} · {orderElapsed(order.placedAt, tick)}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          className="text-xs font-bold text-primary"
+                          onClick={() =>
+                            order.status === "placed" || order.status === "preparing"
+                              ? advance(order.id)
+                              : setSelected(order)
+                          }
+                        >
+                          {order.status === "placed" ? "Accept" : order.status === "preparing" ? "Ready" : "View"}
+                        </button>
+                      </div>
+                    ))}
+                    {hidden > 0 ? (
+                      <Button asChild variant="ghost" size="sm" className="justify-start px-1">
+                        <Link to="/orders" search={{ status, q: "" }}>
+                          Load more
+                          <ChevronRight />
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <div className="flex h-full flex-col gap-5">
+            <section className="rounded-xl border border-border bg-card p-4">
+              <h2 className="text-sm font-extrabold">Quick actions</h2>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <Button asChild variant="outline" className="h-auto justify-between bg-card px-3 py-3">
+                  <Link to="/menu" search={{ q: "" }}>
+                    <span className="flex items-center gap-2">
+                      <Plus />
+                      Add item
+                    </span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto justify-between bg-card px-3 py-3">
+                  <Link to="/menu" search={{ q: "" }}>
+                    <span className="flex items-center gap-2">
+                      <Utensils />
+                      Menu
+                    </span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto justify-between bg-card px-3 py-3">
+                  <Link to="/orders" search={{ status: "all", q: "" }}>
+                    History
+                  </Link>
+                </Button>
+                {profile?.role === "restaurant_owner" ? (
+                  <Button asChild variant="outline" className="h-auto justify-between bg-card px-3 py-3">
+                    <Link to="/business">Profile</Link>
+                  </Button>
+                ) : null}
+              </div>
+            </section>
+
+          <aside className="overflow-hidden rounded-xl border border-border bg-card">
+            <div className="border-b border-border bg-forest px-5 py-4 text-forest-foreground">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="size-4" />
+                <h2 className="text-sm font-extrabold">Needs attention</h2>
+                <span className="ml-auto rounded-md bg-card/15 px-2 py-0.5 text-[10px] font-extrabold">
+                  {attentionCount}
+                </span>
+              </div>
+              <p className="mt-1 text-[11px] text-forest-foreground/70">
+                Priority checks for this service
+              </p>
+            </div>
+            <div className="divide-y divide-border px-5">
+              <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-4">
+                <span className="grid size-8 place-items-center rounded-lg bg-primary-soft text-primary">
+                  <Clock3 size={15} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-extrabold">
+                    {oldestPlaced ? "New order waiting" : "No new orders"}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {oldestPlaced
+                      ? `${areaFromAddress(oldestPlaced.address, `#${oldestPlaced.displayId}`)} · ${orderElapsed(oldestPlaced.placedAt, tick)}`
+                      : "Queue is clear"}
+                  </p>
+                </div>
+                {oldestPlaced ? (
+                  <Button size="sm" onClick={() => advance(oldestPlaced.id)}>
+                    Accept
+                  </Button>
+                ) : null}
+              </div>
+              <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-4">
+                <span className="grid size-8 place-items-center rounded-lg bg-success-soft text-success">
+                  <Bike size={15} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-extrabold">
+                    {riderOrder ? "Rider on order" : "No rider assigned"}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {riderOrder
+                      ? `${areaFromAddress(riderOrder.address, `#${riderOrder.displayId}`)} · ${orderElapsed(riderOrder.placedAt, tick)}`
+                      : "Waiting on kitchen"}
+                  </p>
+                </div>
+                <span
+                  className={
+                    riderOrder?.riderId
+                      ? "text-xs font-bold text-success"
+                      : "text-xs font-bold text-muted-foreground"
+                  }
+                >
+                  {riderOrder ? riderPanelLabel(riderOrder) : "Unassigned"}
+                </span>
+              </div>
+              <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-4">
+                <span className="grid size-8 place-items-center rounded-lg bg-warning-soft text-warning-foreground">
+                  <Utensils size={15} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-extrabold">{unavailable.length} unavailable items</p>
+                  <p className="truncate text-xs text-muted-foreground">Could affect peak demand</p>
+                </div>
+                <Button asChild variant="ghost" size="icon">
+                  <Link to="/menu" search={{ q: "" }} aria-label="Review unavailable items">
+                    <ArrowRight />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+            <div className="border-t border-border bg-secondary px-5 py-4">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-extrabold">Kitchen capacity</span>
+                <span className="font-extrabold text-success">
+                  {load.preparing}/{load.threshold} · {load.label}
+                </span>
+              </div>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-border">
+                <div
+                  className="h-full rounded-full bg-success transition-all"
+                  style={{ width: `${Math.min(100, load.percent)}%` }}
+                />
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Avg prep (to ready): {prep.value}
+              </p>
+            </div>
+          </aside>
+          </div>
+        </div>
+
+        <div className="mt-5 grid items-stretch gap-5 xl:grid-cols-[1.2fr_1fr]">
+          <section className="flex h-full flex-col rounded-xl border border-border bg-card p-5">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+              <div className="min-w-0">
+                <h2 className="font-extrabold">Unavailable items</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {unavailable.length} of {menuItems.length} menu items paused
+                </p>
+              </div>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/menu" search={{ q: "" }}>Manage menu</Link>
+              </Button>
+            </div>
+            <div className="mt-4 grid flex-1 content-start gap-3 sm:grid-cols-2">
+              {unavailable.length ? (
+                unavailable.map((item) => (
+                  <div
+                    key={item.id}
+                    className="grid grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-border p-3"
+                  >
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="size-12 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <span className="size-12 rounded-lg bg-secondary" />
+                    )}
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-extrabold">{item.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {item.category} · ₹{item.price}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        void toggleAvailability.mutateAsync({ id: item.id, available: true })
+                      }
+                    >
+                      <CheckCircle2 />
+                      Restore
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <p className="col-span-full flex min-h-40 items-center justify-center rounded-lg border border-dashed border-border px-3 text-center text-sm text-muted-foreground">
+                  Every menu item is available.
+                </p>
+              )}
+            </div>
+          </section>
+          <section className="flex h-full flex-col rounded-xl border border-border bg-card p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-extrabold">Today’s pace</h2>
+                <p className="mt-1 text-xs text-muted-foreground">Orders by service hour</p>
+              </div>
+              <TrendingUp className="size-5 text-success" />
+            </div>
+            <ChartContainer
+              config={{ orders: { label: "Orders", color: "var(--primary)" } }}
+              className="mt-4 aspect-[2.4/1] w-full"
+            >
+              <BarChart data={pace} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+                <XAxis dataKey="label" tickLine={false} axisLine={false} interval={3} tick={{ fontSize: 10 }} />
+                <YAxis allowDecimals={false} width={24} tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="count" fill="var(--color-orders)" radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ChartContainer>
+            <p className="mt-2 text-[10px] font-semibold text-muted-foreground">8 AM through 11 PM</p>
+          </section>
+        </div>
+
+        {welcome && (
+          <aside className="fixed left-4 right-4 top-24 z-40 overflow-hidden rounded-xl border border-border bg-card shadow-card-hover sm:left-auto sm:right-6 sm:w-[370px]">
+            <div className="h-1 bg-success" />
+            <div className="p-5">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setWelcome(false)}
+                className="absolute right-3 top-3"
+                aria-label="Dismiss welcome"
+              >
+                <X />
+              </Button>
+              <span className="grid size-9 place-items-center rounded-lg bg-success-soft text-success">
+                <Sparkles size={18} />
+              </span>
+              <p className="font-heading mt-4 text-base font-extrabold">
+                {greetingFor(now, firstName)}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                The kitchen is ready for a smooth service.
+              </p>
+              <div className="mt-4 grid grid-cols-3 divide-x divide-border border-y border-border py-3 text-center">
+                <div>
+                  <strong className="block text-sm">{yesterdayStats.length}</strong>
+                  <span className="text-[10px] text-muted-foreground">Orders</span>
+                </div>
+                <div>
+                  <strong className="block text-sm">{compactRupee(yesterdayRevenue)}</strong>
+                  <span className="text-[10px] text-muted-foreground">Revenue</span>
+                </div>
+                <div>
+                  <strong className="block text-sm">
+                    {ratings && ratings.count > 0 ? ratings.average.toFixed(1) : "—"}
+                  </strong>
+                  <span className="text-[10px] text-muted-foreground">Rating</span>
+                </div>
+              </div>
+              <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                Yesterday finished strongly. Wishing you and the team a great day.
+              </p>
+            </div>
+          </aside>
+        )}
+        <OrderDrawer
+          order={selectedFresh}
+          onClose={() => setSelected(undefined)}
+          onAdvance={advance}
+          onCancel={cancel}
+        />
+      </div>
+    </QuickBiteShell>
+  );
+}

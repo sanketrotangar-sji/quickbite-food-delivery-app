@@ -1,5 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 import {
+  Activity,
   Bike,
   Bot,
   Building2,
@@ -43,6 +44,7 @@ const nav = [
   { to: '/admin/highlights', label: 'Offers', icon: Sparkles, exact: false },
   { to: '/admin/crm', label: 'CRM', icon: Target, exact: false },
   { to: '/admin/ai', label: 'AI', icon: Bot, exact: false },
+  { to: '/admin/ops', label: 'Ops', icon: Activity, exact: false },
 ] as const;
 
 function initials(name: string) {

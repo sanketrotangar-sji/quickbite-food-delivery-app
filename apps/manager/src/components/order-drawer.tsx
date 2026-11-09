@@ -1,6 +1,6 @@
 import { Check, Circle, Clock3, MapPin, Phone, Bike } from "lucide-react";
 import { useState } from "react";
-import { ORDER_STATUS_LABELS } from "@quickbite/shared";
+import { ORDER_STATUS_LABELS } from '@quickbite/domain';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -84,7 +84,7 @@ export function OrderDrawer({
               <SheetHeader className="border-b border-border p-6 pr-14">
                 <div className="flex items-center gap-2">
                   <span className="rounded-md bg-status px-2 py-1 text-[10px] font-extrabold uppercase text-status-foreground">
-                    {order.status === "placed" ? "New order" : order.status.replaceAll("_", " ")}
+                    {order.status === "placed" ? "New order" : (ORDER_STATUS_LABELS[order.status] ?? order.status)}
                   </span>
                   <span className="text-xs text-muted-foreground">{orderElapsed(order.placedAt, now)}</span>
                 </div>

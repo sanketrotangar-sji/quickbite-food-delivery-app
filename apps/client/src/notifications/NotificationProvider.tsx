@@ -5,7 +5,13 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 
+import {
+  disableUserPushTokens,
+  hasEnabledPushDeviceToken,
+  registerPushDeviceToken,
+} from '@quickbite/api/mobile/notices';
 import { supabase } from '@/api/supabaseClient';
+import { colors } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { supportsRemotePush } from '@/lib/runtime';
 import { routeFromNotification } from '@/notifications/routes';
@@ -23,7 +29,6 @@ function getNotifications(): NotificationsModule | null {
   if (notificationsModule !== undefined) return notificationsModule;
   try {
     // Lazy load so Expo Go never evaluates the removed Android push path at import time.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     notificationsModule = require('expo-notifications') as NotificationsModule;
   } catch (error) {
     console.warn('Push notifications unavailable in this runtime.', error);
@@ -49,7 +54,8 @@ function getProjectId() {
   return Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
 }
 
-export async function registerCurrentDeviceForPush() {
+/** `prompt: false` registers only when permission was already granted (no OS dialog). */
+export async function registerCurrentDeviceForPush({ prompt = false }: { prompt?: boolean } = {}) {
   const Notifications = getNotifications();
   if (!Notifications || !Device.isDevice) return null;
   ensureNotificationHandler(Notifications);
@@ -59,11 +65,12 @@ export async function registerCurrentDeviceForPush() {
       name: 'Order updates',
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#E85D04',
+      lightColor: colors.primary,
     });
   }
 
   const current = await Notifications.getPermissionsAsync();
+  if (current.status !== 'granted' && !prompt) return null;
   const permission =
     current.status === 'granted' ? current : await Notifications.requestPermissionsAsync();
   if (permission.status !== 'granted') return null;
@@ -75,17 +82,16 @@ export async function registerCurrentDeviceForPush() {
   }
 
   const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-  const { error } = await supabase.rpc('register_push_device', {
-    p_token: token,
-    p_platform: Platform.OS as 'ios' | 'android',
-    p_metadata: {
+  await registerPushDeviceToken({
+    token,
+    platform: Platform.OS as 'ios' | 'android',
+    metadata: {
       device_name: Device.deviceName,
       model_name: Device.modelName,
       os_name: Device.osName,
       os_version: Device.osVersion,
     },
   });
-  if (error) throw new Error(error.message);
   return token;
 }
 
@@ -95,13 +101,7 @@ export async function getPushNotificationsEnabled() {
   if (!Notifications) return false;
   const permission = await Notifications.getPermissionsAsync();
   if (permission.status !== 'granted') return false;
-  const { data, error } = await supabase
-    .from('push_device_tokens')
-    .select('enabled')
-    .eq('enabled', true)
-    .limit(1);
-  if (error) throw new Error(error.message);
-  return (data?.length ?? 0) > 0;
+  return hasEnabledPushDeviceToken();
 }
 
 export async function setPushNotificationsEnabled(enabled: boolean) {
@@ -109,18 +109,10 @@ export async function setPushNotificationsEnabled(enabled: boolean) {
     if (!supportsRemotePush()) {
       throw new Error('Push notifications need an EAS development or preview build.');
     }
-    const token = await registerCurrentDeviceForPush();
+    const token = await registerCurrentDeviceForPush({ prompt: true });
     return Boolean(token);
   }
-  const { data } = await supabase.auth.getSession();
-  const userId = data.session?.user.id;
-  if (!userId) return false;
-  const { error } = await supabase
-    .from('push_device_tokens')
-    .update({ enabled: false })
-    .eq('user_id', userId);
-  if (error) throw new Error(error.message);
-  return false;
+  return disableUserPushTokens();
 }
 
 async function disableTokenWithSession(token: string, userId: string, accessToken: string) {

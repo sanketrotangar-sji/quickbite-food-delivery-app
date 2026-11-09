@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ORDER_STATUSES, ORDER_STATUS_LABELS, shortOrderId, type OrderStatus } from '@quickbite/domain';
 import { useState } from 'react';
 
 import {
@@ -6,20 +7,11 @@ import {
   adminMarkOrderRefunded,
   loadAdminOrders,
   type AdminOrderRow,
-} from '@/api/admin';
+} from '@quickbite/api/dashboard/admin';
 import { Button } from '@/components/ui/button';
-import type { Database } from '@/integrations/supabase/types';
-
-type OrderStatus = Database['public']['Enums']['order_status'];
-
-const STATUSES: OrderStatus[] = [
-  'placed',
-  'preparing',
-  'ready',
-  'out_for_delivery',
-  'delivered',
-  'cancelled',
-];
+import { Input } from '@/components/ui/input';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
 
 export function AdminOrdersPage() {
   const queryClient = useQueryClient();
@@ -61,8 +53,8 @@ export function AdminOrdersPage() {
         Force status or mark a COD refund. Every action needs a note and writes an audit row.
       </p>
 
-      <input
-        className="mt-5 w-full max-w-md rounded-lg border border-border bg-card px-3 py-2 text-sm"
+      <Input
+        className="mt-5 max-w-md bg-card"
         placeholder="Search by order id fragment or address"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
@@ -85,7 +77,7 @@ export function AdminOrdersPage() {
           >
             <div className="min-w-0">
               <p className="truncate font-extrabold">
-                #{order.id.replace(/-/g, '').slice(-6).toUpperCase()} · {order.restaurant_name ?? 'Kitchen'}
+                #{shortOrderId(order.id)} · {order.restaurant_name ?? 'Kitchen'}
               </p>
               <p className="mt-1 truncate text-xs text-muted-foreground">
                 {order.customer_name ?? 'Customer'} · {order.delivery_address}
@@ -94,7 +86,7 @@ export function AdminOrdersPage() {
             <div className="text-right">
               <p className="text-sm font-extrabold">₹{Math.round(order.total_amount)}</p>
               <p className="text-xs font-bold capitalize text-muted-foreground">
-                {order.status.replaceAll('_', ' ')}
+                {ORDER_STATUS_LABELS[order.status] ?? order.status}
                 {order.refunded_at ? ' · refunded' : ''}
               </p>
             </div>
@@ -102,75 +94,72 @@ export function AdminOrdersPage() {
         ))}
       </div>
 
-      {selected ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center">
-          <div className="w-full max-w-lg space-y-4 rounded-xl border border-border bg-card p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-xl font-extrabold">
-                  Order #{selected.id.replace(/-/g, '').slice(-6).toUpperCase()}
-                </h2>
-                <p className="mt-1 text-xs text-muted-foreground">{selected.id}</p>
+      <Sheet open={Boolean(selected)} onOpenChange={(open) => !open && setSelected(undefined)}>
+        <SheetContent className="w-full overflow-y-auto bg-card sm:max-w-lg">
+          {selected ? (
+            <>
+              <SheetHeader>
+                <SheetTitle>Order #{shortOrderId(selected.id)}</SheetTitle>
+                <SheetDescription>{selected.id}</SheetDescription>
+              </SheetHeader>
+
+              <div className="mt-6 space-y-4">
+                <label className="block text-sm">
+                  <span className="font-bold">Force status</span>
+                  <select
+                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+                    value={status}
+                    onChange={(event) => setStatus(event.target.value as OrderStatus)}
+                  >
+                    {ORDER_STATUSES.map((item) => (
+                      <option key={item} value={item}>
+                        {ORDER_STATUS_LABELS[item]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block text-sm">
+                  <span className="font-bold">Note (required)</span>
+                  <Textarea
+                    className="mt-1 bg-background"
+                    rows={3}
+                    value={note}
+                    onChange={(event) => setNote(event.target.value)}
+                    placeholder="Why this admin action is needed"
+                  />
+                </label>
+
+                {(force.error || refund.error) && (
+                  <p className="text-sm font-semibold text-destructive">
+                    {((force.error || refund.error) as Error).message}
+                  </p>
+                )}
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    disabled={!note.trim() || force.isPending}
+                    onClick={() => void force.mutateAsync()}
+                  >
+                    Force status
+                  </Button>
+                  <Button
+                    variant="outline"
+                    disabled={!note.trim() || refund.isPending || Boolean(selected.refunded_at)}
+                    onClick={() => {
+                      if (window.confirm('Mark this order as COD refunded and cancel it?')) {
+                        void refund.mutateAsync();
+                      }
+                    }}
+                  >
+                    Mark COD refund
+                  </Button>
+                </div>
               </div>
-              <Button type="button" variant="ghost" size="sm" onClick={() => setSelected(undefined)}>
-                Close
-              </Button>
-            </div>
-
-            <label className="block text-sm">
-              <span className="font-bold">Force status</span>
-              <select
-                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-                value={status}
-                onChange={(event) => setStatus(event.target.value as OrderStatus)}
-              >
-                {STATUSES.map((item) => (
-                  <option key={item} value={item}>
-                    {item.replaceAll('_', ' ')}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block text-sm">
-              <span className="font-bold">Note (required)</span>
-              <textarea
-                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-                rows={3}
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
-                placeholder="Why this admin action is needed"
-              />
-            </label>
-
-            {(force.error || refund.error) && (
-              <p className="text-sm font-semibold text-destructive">
-                {((force.error || refund.error) as Error).message}
-              </p>
-            )}
-
-            <div className="flex flex-wrap gap-2">
-              <Button
-                disabled={!note.trim() || force.isPending}
-                onClick={() => void force.mutateAsync()}
-              >
-                Force status
-              </Button>
-              <Button
-                variant="outline"
-                disabled={!note.trim() || refund.isPending || Boolean(selected.refunded_at)}
-                onClick={() => {
-                  if (window.confirm('Mark this order as COD refunded and cancel it?')) {
-                    void refund.mutateAsync();
-                  }
-                }}
-              >
-                Mark COD refund
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+            </>
+          ) : null}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

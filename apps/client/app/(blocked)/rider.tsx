@@ -1,4 +1,4 @@
-import { RoleBlockedScreen } from '@/screens/shared/RoleBlockedScreen';
+import { RoleBlockedScreen } from '@/features/auth/screens/RoleBlockedScreen';
 
 export default function RiderBlockedRoute() {
   return (

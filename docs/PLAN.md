@@ -57,13 +57,31 @@ Defaults were **4 → 3 → 1 → 2 → 5 → 6 → 7**. Live order: **T6 before
 | Ops      | `OPENROUTESERVICE_API_KEY` in Supabase secrets if Maps/ETA must avoid OSRM fallback (may fold into T1) |
 | Ops      | EAS preview APK link for graders                                                                       |
 | Ops      | Optional: deploy `apps/landing` as its own Vercel project                                              |
-| Later    | Drop `user_roles` mirror (`profiles.role` is SoT)                                                      |
+| Done     | Schema hardening P0–P5 (drop `user_roles`, fence synthetic, checkout offer helper, `order_payments`, notification outbox, profile side tables) |
+| Ops      | Apply pending migrations `2026110401*`–`2026110406*` via `supabase db push` (requires CLI login)       |
+| Later    | Drop legacy `orders.payment_*` / `profiles` rider+rio mirror columns after dual-write proves stable     |
 | Later    | **P7** — Clean demo seed / careful cloud wipe if graders need a fresh cast (backup first)              |
 
 
 ---
 
 
+
+## Audit fixes (2026-11-07)
+
+From the Ponytail audit. One step per task. Do not start the next step in the same change. Steps 1 and 4 write SQL: stop and get a yes before creating the migration.
+
+1. **Sign-up trigger.** New migration `supabase/migrations/20261107010000_fix_handle_new_user.sql` replaces `public.handle_new_user()` with the profile insert only. Delete the `insert into public.user_roles`. Keep `on conflict (id) do nothing` and `role = 'customer'`. No other trigger edits. Then note it in REQUIREMENTS (the `on_auth_user_created` row) and PROGRESS.
+2. **Dead Home fetchers.** In `packages/api/src/mobile/home.ts`, delete `fetchHomeCatalog`, `fetchHomeShell`, and `fetchHomeDishes`, plus helpers that only those three call. Grep the repo first. Keep `fetchFavoritesCatalog` and `fetchSimilarPlaces`. Run `packages/api` typecheck.
+3. **Dead package and one-off scripts.** Delete `packages/shared/` (nothing imports `@quickbite/shared`). Delete `scripts/migrate-client-features.mjs`, `scripts/migrate-packages-api.mjs`, and `scripts/extract-manager-pages.mjs` (no `package.json` script calls them). Fix the title in `packages/domain/README.md` (it still says `@quickbite/shared`). Refresh the lockfile with `npm install`.
+4. **Admin lists that load every row.** New migration adds one security-definer RPC, `admin_overview()`, returning counts only (kitchens, open kitchens, applications by status, profiles by role, active orders). `packages/api/src/dashboard/admin.ts` calls that RPC for the overview. List functions (`applications`, `profiles`, `restaurants`, `tickets`, `orders`) get `.range(0, 49)` and a matching limit argument. Do not add a new dashboard page.
+5. **Menu image upload.** Move the `supabase.storage.from('menu-images')` call out of `apps/manager/src/lib/images.ts` into `packages/api/src/dashboard/menu.ts`. The screen keeps calling the api wrapper. Add one Vitest that the upload helper sends the thumb path and content type.
+6. **Kitchen status test.** One Vitest next to `apps/manager/src/api/orders.test.ts` for the legal kitchen transition helper already in `@quickbite/domain` (`nextKitchenStatus`). No new UI.
+7. **RIO file split.** Split `supabase/functions/rio/index.ts` by job, not by line count: HTTP entry stays in `index.ts`; the model turn loop moves to `turn.ts`; SSE write helpers move to `stream.ts`. Behavior stays the same. Existing `guardrails.test.ts` and `supervisor.test.ts` must still pass. Do not add a new agent.
+8. **One-line api shims.** Delete `apps/client/src/api/*.ts` and `apps/manager/src/api/*.ts` files whose body is only `export * from '@quickbite/api/...'`. Point those imports at `@quickbite/api`. Keep `apps/client/src/api/auth.ts`, `payments.ts`, and `supabaseClient.ts`. A tsconfig alias cannot do this: `@/*` already maps to `./src/*`, and those three files are real code in the same folder.
+9. **Style warnings, last.** Only in a file a step above already edits: swap a literal `fontSize` for an `AppText` `variant` when the size matches `type` in `@/constants/theme`. Do not open screens only to clear the ~290 warnings.
+
+Not in this list: Explore/Favorites FlashList, rider `NearbyOrderCard`, recent-search UI, splash asset deletion, cloud `db push`, `rio` deploy. Those stay in PROGRESS as separate ops.
 
 ## Out of scope (unless product asks)
 

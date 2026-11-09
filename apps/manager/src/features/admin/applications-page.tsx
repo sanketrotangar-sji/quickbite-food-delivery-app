@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
-import { loadAdminApplications, reviewApplication, type AdminApplication } from '@/api/admin';
+import { loadAdminApplications, reviewApplication, type AdminApplication } from '@quickbite/api/dashboard/admin';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 const FIELD_LABELS: Record<string, string> = {
   phone: 'Phone',
@@ -114,8 +115,8 @@ function ApplicationCard({
       {row.review_note ? <p className="mt-3 text-sm text-muted-foreground">Note: {row.review_note}</p> : null}
       {row.status === 'pending' ? (
         <div className="mt-4">
-          <textarea
-            className="w-full rounded-lg border border-border bg-card p-3 text-sm"
+          <Textarea
+            className="bg-card"
             rows={2}
             placeholder="Optional note to the applicant"
             value={notes[row.id] ?? ''}

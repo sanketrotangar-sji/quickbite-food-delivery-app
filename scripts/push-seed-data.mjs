@@ -192,15 +192,6 @@ async function syncProfile(user) {
     const { error } = await supabase.from('profiles').upsert({ id: user.id, ...patch }, { onConflict: 'id' });
     if (error) throw new Error(`profiles upsert ${user.email}: ${error.message}`);
   });
-
-  await supabase.from('user_roles').delete().eq('user_id', user.id);
-  const { error: urErr } = await supabase.from('user_roles').insert({
-    user_id: user.id,
-    role: user.role,
-  });
-  if (urErr && !/duplicate|23505/i.test(urErr.message)) {
-    throw new Error(`user_roles ${user.email}: ${urErr.message}`);
-  }
 }
 
 async function walkOrderStatus(order) {

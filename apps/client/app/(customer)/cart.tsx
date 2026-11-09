@@ -1,4 +1,4 @@
-import { CartScreen } from '@/screens/customer/CartScreen';
+import { CartScreen } from '@/features/cart/screens/CartScreen';
 
 export default function CartRoute() {
   return <CartScreen />;

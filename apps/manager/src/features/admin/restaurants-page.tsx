@@ -6,8 +6,10 @@ import {
   setAdminRestaurantOpen,
   updateAdminRestaurantOps,
   type AdminRestaurant,
-} from '@/api/admin';
+} from '@quickbite/api/dashboard/admin';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 export function AdminRestaurantsPage() {
   const queryClient = useQueryClient();
@@ -83,8 +85,8 @@ export function AdminRestaurantsPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         Open/close kitchens, or edit geo, offer %, prep, and capacity threshold.
       </p>
-      <input
-        className="mt-5 w-full max-w-sm rounded-lg border border-border bg-card px-3 py-2 text-sm"
+      <Input
+        className="mt-5 max-w-sm bg-card"
         placeholder="Search name, cuisine, owner, or manager"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
@@ -162,40 +164,42 @@ export function AdminRestaurantsPage() {
         ) : null}
       </div>
 
-      {editing ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center">
-          <div className="w-full max-w-lg space-y-3 rounded-xl border border-border bg-card p-5">
-            <div className="flex items-start justify-between gap-3">
-              <h2 className="text-xl font-extrabold">Ops · {editing.name}</h2>
-              <Button type="button" variant="ghost" size="sm" onClick={() => setEditing(undefined)}>
-                Close
-              </Button>
-            </div>
-            {(
-              [
-                ['address', 'Address'],
-                ['lat', 'Latitude'],
-                ['lng', 'Longitude'],
-                ['offer_percent', 'Offer %'],
-                ['prep_minutes', 'Prep minutes'],
-                ['capacity_threshold', 'Capacity threshold'],
-              ] as const
-            ).map(([key, label]) => (
-              <label key={key} className="block text-sm">
-                <span className="font-bold">{label}</span>
-                <input
-                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-                  value={draft[key]}
-                  onChange={(event) => setDraft((current) => ({ ...current, [key]: event.target.value }))}
-                />
-              </label>
-            ))}
-            <Button disabled={saveOps.isPending} onClick={() => void saveOps.mutateAsync()}>
-              Save ops
-            </Button>
-          </div>
-        </div>
-      ) : null}
+      <Sheet open={Boolean(editing)} onOpenChange={(open) => !open && setEditing(undefined)}>
+        <SheetContent className="w-full overflow-y-auto bg-card sm:max-w-lg">
+          {editing ? (
+            <>
+              <SheetHeader>
+                <SheetTitle>Ops · {editing.name}</SheetTitle>
+                <SheetDescription>Update geo coordinates, offer %, prep minutes, and capacity threshold.</SheetDescription>
+              </SheetHeader>
+              <div className="mt-6 space-y-3">
+                {(
+                  [
+                    ['address', 'Address'],
+                    ['lat', 'Latitude'],
+                    ['lng', 'Longitude'],
+                    ['offer_percent', 'Offer %'],
+                    ['prep_minutes', 'Prep minutes'],
+                    ['capacity_threshold', 'Capacity threshold'],
+                  ] as const
+                ).map(([key, label]) => (
+                  <label key={key} className="block text-sm">
+                    <span className="font-bold">{label}</span>
+                    <Input
+                      className="mt-1 bg-background"
+                      value={draft[key]}
+                      onChange={(event) => setDraft((current) => ({ ...current, [key]: event.target.value }))}
+                    />
+                  </label>
+                ))}
+                <Button disabled={saveOps.isPending} onClick={() => void saveOps.mutateAsync()}>
+                  Save ops
+                </Button>
+              </div>
+            </>
+          ) : null}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

@@ -111,3 +111,57 @@ export function pickNearestRider(candidates: RiderCandidate[]): RiderCandidate |
   });
   return sorted[0] ?? null;
 }
+
+/** Great-circle distance in kilometers between lat/lng coordinates. */
+export function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(bLat - aLat);
+  const dLng = toRad(bLng - aLng);
+  const lat1 = toRad(aLat);
+  const lat2 = toRad(bLat);
+  const h =
+    Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+export function distanceKm(
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number },
+): number {
+  return haversineKm(a.latitude, a.longitude, b.latitude, b.longitude);
+}
+
+export function formatKm(km: number): string {
+  if (!Number.isFinite(km) || km <= 0) return "—";
+  return `${km < 10 ? km.toFixed(1) : Math.round(km)} km`;
+}
+
+/** Short 6-character uppercase display ID for an order UUID. */
+export function shortOrderId(id: string): string {
+  return id.replace(/-/g, "").slice(-6).toUpperCase();
+}
+
+/** Order display code: prefers explicit QB... note, else last 6 hex characters of id. */
+export function formatOrderCode(id: string, notes?: string | null): string {
+  const trimmed = notes?.trim();
+  if (trimmed && /^QB\d+$/i.test(trimmed)) return trimmed.toUpperCase();
+  return shortOrderId(id);
+}
+
+export type ImageSlot = "thumb" | "hero" | "full";
+
+/**
+ * Prefer Storage sibling thumbs (`foo.png` -> `foo.sm.webp`) for thumb/hero slots.
+ */
+export function getDisplayImageUrl(
+  url: string | null | undefined,
+  slot: ImageSlot = "full",
+): string {
+  if (!url) return "";
+  if (slot === "full") return url;
+  if (!url.includes("/storage/v1/object/public/")) return url;
+  if (/\.sm\.webp(\?|$)/i.test(url)) return url;
+  return url.replace(/\.(png|jpe?g|webp)(\?|$)/i, ".sm.webp$2");
+}
+

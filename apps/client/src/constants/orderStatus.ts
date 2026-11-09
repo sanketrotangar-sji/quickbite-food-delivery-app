@@ -1,4 +1,5 @@
-import type { Enums } from '@/types/database';
+import type { Enums } from '@quickbite/db';
+import { colors } from './theme';
 
 export type OrderStatus = Enums<'order_status'>;
 
@@ -13,43 +14,43 @@ type StatusMeta = {
 export const ORDER_STATUS_META: Record<OrderStatus, StatusMeta> = {
   placed: {
     label: 'Placed',
-    color: '#C97800',
-    background: '#FFF1D6',
+    color: colors.warning,
+    background: colors.warningSoft,
     customerHint: 'Waiting for the restaurant to accept',
     riderHint: 'Not available yet',
   },
   preparing: {
     label: 'Preparing',
-    color: '#E85D04',
-    background: '#FFE8D6',
+    color: colors.primary,
+    background: colors.primarySoft,
     customerHint: 'Kitchen is on it',
     riderHint: 'Claim early — still cooking',
   },
   ready: {
     label: 'Ready',
-    color: '#1B4332',
-    background: '#D8F3DC',
+    color: colors.forest,
+    background: colors.successSoft,
     customerHint: 'Waiting for pickup',
     riderHint: 'Pick up now',
   },
   out_for_delivery: {
     label: 'On the way',
-    color: '#1D4E89',
-    background: '#D6E8FF',
+    color: colors.info,
+    background: colors.infoSoft,
     customerHint: 'Rider is heading to you',
     riderHint: 'En route — tap delivered at the door',
   },
   delivered: {
     label: 'Delivered',
-    color: '#1B4332',
-    background: '#E8F5E9',
+    color: colors.forest,
+    background: colors.successSoft,
     customerHint: 'Enjoy — you can rate this order',
     riderHint: 'Completed',
   },
   cancelled: {
     label: 'Cancelled',
-    color: '#6B6B6B',
-    background: '#ECECEC',
+    color: colors.textMuted,
+    background: colors.stepTrack,
     customerHint: 'This order was cancelled',
     riderHint: 'Not available',
   },

@@ -1,25 +1,26 @@
 import { Redirect } from 'expo-router';
-import { useEffect, useState } from 'react';
 
-import { LogoLoader } from '@/components/LogoLoader';
+import { entryHref, resolveEntryRoute } from '@/features/auth/entry';
+import { useAuthPrefs } from '@/features/auth/store';
+import { useLocationStore } from '@/features/location/store';
 import { useAuth } from '@/hooks/useAuth';
-import { readLastRole, type AppSide } from '@/lib/last-role';
+import { getLastRole } from '@/lib/last-role';
 import { hasRole } from '@/types/models';
 
 export default function Index() {
   const { session, profile, loading } = useAuth();
-  const [role, setRole] = useState<AppSide | null>(null);
-  const [roleReady, setRoleReady] = useState(false);
+  const loginSkipped = useAuthPrefs((s) => s.loginSkipped);
+  const hasLocation = useLocationStore((s) => s.point != null);
 
-  useEffect(() => {
-    void readLastRole().then((value) => {
-      setRole(value);
-      setRoleReady(true);
-    });
-  }, []);
+  // The root splash stays up until auth resolves, so nothing renders underneath.
+  if (loading) return null;
 
-  if (loading || !roleReady) return <LogoLoader />;
-  if (!session) return <Redirect href="/(customer)/(tabs)" />;
-  if (role === 'rider' && hasRole(profile, 'rider')) return <Redirect href="/(rider)/(tabs)" />;
-  return <Redirect href="/(customer)/(tabs)" />;
+  const route = resolveEntryRoute({
+    hasSession: Boolean(session),
+    canRide: hasRole(profile, 'rider'),
+    lastRole: getLastRole(),
+    hasLocation,
+    loginSkipped,
+  });
+  return <Redirect href={entryHref(route)} />;
 }

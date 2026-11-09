@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { Alert } from 'react-native';
 
 import {
   claimDelivery,
@@ -11,25 +10,26 @@ import {
   markDelivered,
   startDelivery,
   type RiderDelivery,
-} from '@/api/deliveries';
-import { userFacingMessage } from '@/api/errors';
-import { listMyNotifications, markNotificationRead } from '@/api/notices';
+} from '@quickbite/api/mobile/deliveries';
+import { userFacingMessage } from '@quickbite/api/errors';
+import { listMyNotifications, markNotificationRead } from '@quickbite/api/mobile/notices';
 import type { EarningsRange } from '@/features/rider/rider-content';
 import type { NearbyOrder, RiderCurrentOrder, RiderStats } from '@/features/rider/rider-home';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/api/supabaseClient';
 import { startRiderTracking, stopRiderTracking } from '@/features/rider/rider-tracking';
 import { riderTrackingAction } from '@/features/rider/tracking-policy';
+import { formatOrderCode } from '@quickbite/domain';
 import { ORDER_STATUS_META, type OrderStatus } from '@/constants/orderStatus';
+import { toast } from 'sonner-native';
+import { queryKeys } from '@/lib/query-keys';
 
-export const riderOrdersKey = ['rider-orders'] as const;
-export const riderHistoryKey = ['rider-history'] as const;
-export const riderNoticesKey = ['rider-notices'] as const;
+export const riderOrdersKey = queryKeys.rider.orders;
+export const riderHistoryKey = queryKeys.rider.history;
+export const riderNoticesKey = queryKeys.rider.notices;
 
 function orderCode(order: RiderDelivery) {
-  const note = order.notes?.trim();
-  if (note && /^QB\d+$/i.test(note)) return note.toUpperCase();
-  return order.id.replace(/-/g, '').slice(-6).toUpperCase();
+  return formatOrderCode(order.id, order.notes);
 }
 
 function statusLabelFor(status: OrderStatus) {
@@ -175,7 +175,7 @@ export function todayStats(
   };
 }
 
-export const riderRatingKey = ['rider-rating'] as const;
+export const riderRatingKey = queryKeys.rider.rating;
 
 export function useRiderRating() {
   const { session } = useAuth();
@@ -274,7 +274,7 @@ export function useClaimDelivery() {
       for (const [key, data] of context?.previousEntries ?? []) {
         queryClient.setQueryData(key, data);
       }
-      Alert.alert('Could not claim', userFacingMessage(error));
+      toast.error('Could not claim', { description: userFacingMessage(error) });
     },
     onSuccess: (_data, orderId) => {
       if (profile?.is_online) void startRiderTracking(orderId);
@@ -319,7 +319,7 @@ export function useAdvanceRiderOrder() {
       for (const [key, data] of context?.previousEntries ?? []) {
         queryClient.setQueryData(key, data);
       }
-      Alert.alert('Could not update', userFacingMessage(error));
+      toast.error('Could not update', { description: userFacingMessage(error) });
     },
     onSuccess: (_data, input) => {
       if (input.action === 'deliver') void stopRiderTracking(input.id);

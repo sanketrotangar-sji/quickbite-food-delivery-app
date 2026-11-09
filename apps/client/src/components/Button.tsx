@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { AppText } from '@/components/AppText';
+import { PressableScale } from '@/components/PressableScale';
 import { colors, radii, spacing } from '@/constants/theme';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'google';
@@ -22,16 +23,13 @@ export function Button({ label, onPress, loading, disabled, variant = 'primary',
   const labelColor =
     variant === 'primary' || variant === 'secondary' ? colors.white : colors.text;
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
       disabled={isDisabled}
-      style={({ pressed }) => [
-        styles.base,
-        variantStyles[variant],
-        pressed && !isDisabled && styles.pressed,
-        isDisabled && styles.disabled,
-        style,
-      ]}>
+      haptic={variant === 'primary'}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
+      style={[styles.base, variantStyles[variant], isDisabled && styles.disabled, style]}>
       {loading ? (
         <ActivityIndicator color={variant === 'primary' ? colors.white : colors.primary} />
       ) : (
@@ -42,7 +40,7 @@ export function Button({ label, onPress, loading, disabled, variant = 'primary',
           </AppText>
         </View>
       )}
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -59,12 +57,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  pressed: { opacity: 0.88, transform: [{ scale: 0.99 }] },
   disabled: { opacity: 0.5 },
 });
 
 const variantStyles = StyleSheet.create({
-  primary: { backgroundColor: colors.primary },
+  /** Previous primary fill: colors.primary (#F15A24); uses primaryDark (#D44812) for white label contrast */
+  primary: { backgroundColor: colors.primaryDark },
   secondary: { backgroundColor: colors.secondary },
   ghost: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
   google: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },

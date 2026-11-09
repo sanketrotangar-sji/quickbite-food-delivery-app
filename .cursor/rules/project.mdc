@@ -5,19 +5,23 @@ alwaysApply: true
 
 # QuickBite — agent rules
 
-## Source of truth
+## Read first
 
-- Product, roles, sidebars, workflow, tables, naming, RPCs, auth, and RLS: **`docs/REQUIREMENTS.md`**
-- Status and decisions: **`docs/PROGRESS.md`** — update after every meaningful task
-- Pre-submission backlog: **`docs/PLAN.md`**
-- Pitch / setup / deploy: **`README.md`**
+- Product, roles, workflow, tables, RPCs, auth, RLS: **`docs/REQUIREMENTS.md`**
+- How to write code, folders, vendors, hooks: **`docs/STANDARDS.md`**
+- Other agents: **`AGENTS.md`**
+- Smallest change: **`.cursor/rules/ponytail.mdc`** and **`.cursor/skills/`**
+- Status: **`docs/PROGRESS.md`** — update after every meaningful task
+- Backlog: **`docs/PLAN.md`** — audit fixes are the section **Audit fixes (2026-11-07)**; do one numbered step per task
+- Pitch / setup: **`README.md`**
+- Diagrams: **`docs/architecture.md`**
 - Schema DDL: **`supabase/migrations/`** (apply order = filename). If code and REQUIREMENTS disagree, fix migrations first, then docs
 
 ## Stay in scope
 
 - Do **not** add features, pages, tables, or refactors that are not requested
 - Do **not** “improve” unrelated files while fixing one bug
-- Do **not** create new `.md` files unless the user explicitly asks
+- Do **not** create new `.md` files unless the user explicitly asks (allowed set: `README`, `REQUIREMENTS`, `STANDARDS`, `PROGRESS`, `PLAN`, `architecture`, `AGENTS.md`, `.cursor/rules`)
 - Prefer the smallest change that satisfies the request
 
 ## Database
@@ -38,9 +42,11 @@ alwaysApply: true
 
 - **Ask before** deleting files, wiping cloud data, or running destructive SQL
 - Do not commit secrets (`.env`); only `.env.example`
+- Do not skip git hooks (`--no-verify`) unless the user explicitly asked
+- Destructive git / docker / `supabase db reset` are denied or require approval via `.cursor/hooks`
 
 ## After finishing work
 
-1. Keep code aligned with `docs/REQUIREMENTS.md`
+1. Keep code aligned with `docs/REQUIREMENTS.md` and `docs/STANDARDS.md`
 2. Update **Done / In progress / Next / Decisions** in `docs/PROGRESS.md` when status changed
-3. Do not sprawl documentation outside the approved files (`README`, `REQUIREMENTS`, `PROGRESS`, `PLAN`, `.cursor/rules`)
+3. Do not sprawl documentation outside the approved files

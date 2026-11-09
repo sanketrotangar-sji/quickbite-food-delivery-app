@@ -1,10 +1,22 @@
 # QuickBite — Progress
 
-Update this file after every meaningful task. Status as of **2026-10-12**.
+Update this file after every meaningful task. Status as of **2026-11-09**.
 
 ---
 
 ## Done
+
+### Assessment 4 — Option 2: Find-dishes-by-photo + AI auto-tags (Vision) — 2026-11-09
+- [x] `@quickbite/domain` (`packages/domain/src/vision.ts` + `vision.test.ts`): canonical tag taxonomy (`CANONICAL_FOOD_TAGS`), category normalizer, image data-URL validator, search query builder, and pure Tag P/R/F1 & Hit@K/MRR scorers
+- [x] Edge `supabase/functions/vision-food` + `_shared/vision.ts` (+ Deno tests): Groq Vision (`qwen/qwen3.8-27b`) + Cloud Ollama Vision failover, `NOT_FOOD_IMAGE` guard, `qwen3-embedding:0.6b` hybrid pgvector search, and 8 km range filter — deployed live to cloud Supabase (`motqehtswgjbbvoazarh`)
+- [x] `@quickbite/api` (`packages/api/src/vision.ts` + `dashboard/menu.ts`): `searchDishesByPhoto` (supports both base64 `imageDataUrl` and remote `imageUrl`), `suggestDishTagsFromPhoto`, `updateMenuItemReview`, and `tags` persistence on `menu_items`
+- [x] Manager `/menu` (`apps/manager/src/features/kitchen/screens/MenuPage.tsx`): photo upload auto-trigger, "Auto-tag with AI" button, interactive Owner Review/Correct tag chips (`tags[]`, `category`, `is_veg`), and save flow
+- [x] Customer Explore (`apps/client` `HomeSearch`, `ExploreScreen`, `PhotoSearchSheet`, `photo-search.ts` + `photo-search.test.ts`): camera icon in search bar, photo scan sheet with AI food badges, live catalog food photo strip, MMKV JSI startup guard (`storage.ts`), and 1-tap Add to Cart for nearby matching dishes
+- [x] Android EAS preview APK build queued (`2212e39b-1407-4f7d-9c9a-e21212514611`)
+- [x] Backfilled all **389 real (`is_synthetic = false`) `menu_items`** in cloud Supabase with normalized canonical food tags (`scripts/backfill-menu-tags.mjs`)
+- [x] Evaluation harness (`scripts/eval-vision.mjs` → `docs/dct/vision-eval-results.json` & `docs/dct/ASSESSMENT4_REPORT.md`): scaled to **172 evaluation queries** (**160 canonical dishes** across 7 cuisines + **12 non-food/OOC negatives**, plus live verification against **15,998 cloud `pgvector` embeddings**):
+  - Photo Search Retrieval: Baseline (`Hit@1 65.0%` / `Hit@5 89.4%` / `MRR 0.749`) → Vector-Only (`Hit@1 99.4%` / `Hit@5 100.0%` / `MRR 0.997`) → Vision + Hybrid RRF (`Hit@1 100.0%` / `Hit@5 100.0%` / `MRR 1.000`), Live Cloud `match_embeddings_hybrid` RPC **90.0%**, Non-Food/OOC Refusal **100.0% (`12/12`)**
+  - Auto-Tagging (`n=160`): **Veg Acc 100.0% (`160/160`)**, **Category Acc 99.4% (`159/160`)**, **Cuisine Acc 96.9% (`155/160`)**, **Multi-label Tag Macro F1 80.1%** (Precision `87.5%`, Recall `74.4%`, Micro F1 `79.8%`)
 
 ### Product foundation
 - [x] Monorepo: `apps/client` (Expo), `apps/manager` (dashboard), `apps/landing`, `packages/shared`, `supabase/`
@@ -125,12 +137,78 @@ Update this file after every meaningful task. Status as of **2026-10-12**.
 - [x] Companion architecture: `docs/dct/PROJECT_ARCHITECTURE_REPORT.html`
 - [x] PLAN tracks T1–T7 marked done; DCT tag **`assessment-3`**
 
+### Engineering contract — 2026-11-02
+- [x] `docs/STANDARDS.md` + `AGENTS.md` + `.cursor/rules` (product vs how-to-write)
+- [x] Cursor `beforeShellExecution` shell-guard (deny destructive git/docker/db; ask for writes)
+- [x] Git pre-commit: block `.env` / secret files + `check:secrets`
+
+### Structure migration — 2026-11-03
+- [x] `packages/domain`, `packages/db`, `packages/api` (+ `@quickbite/shared` re-export)
+- [x] One landing (`apps/landing`); manager copy quarantined; logout → `/login`
+- [x] Expo `src/features/<name>/`; manager `features/{auth,kitchen,admin}` with thin routes
+- [x] Dead duplicates moved to `_structure_quarantine/` then **deleted** (2026-11-04 schema hardening)
+
+### Admin Ops monitoring — 2026-11-04
+- [x] Pure aggregators in `@quickbite/domain` (`ops-metrics`) + Vitest
+- [x] `loadOpsMetrics` in `@quickbite/api` (orders / `rio_events` / automation / audit; 24h)
+- [x] Manager **`/admin/ops`** page + nav (self-explanatory section blurbs)
+- [x] Sentry envelopes include `release` (`VITE_APP_RELEASE` / `EXPO_PUBLIC_APP_RELEASE` / `SENTRY_RELEASE`)
+- [x] Edge `_shared/requestLog.ts` wired into `rio` + `stripe-webhook`
+- [x] Metrics URL: local `npm run dashboard` → `/admin/ops` (Vite often `http://localhost:8080/admin/ops`); prod after deploy `https://quickbite-nine-phi.vercel.app/admin/ops` (admin role)
+
+### Schema hardening P0–P5 — 2026-11-04
+- [x] **P0** — Drop `user_roles`; `private.grant_role` writes `profiles.role` only; quarantine deleted; types hand-synced
+- [x] **P1** — `restaurant_browse` + CRM segments fence `is_synthetic` (corpus kept)
+- [x] **P2** — `private.resolve_checkout_offer` + thin `place_order`; domain `resolveCheckoutOffer` + Vitest
+- [x] **P3** — `order_payments` + backfill + sync trigger from `orders` payment columns (mirrors kept)
+- [x] **P4** — `notification_jobs` outbox + Edge enqueue/mark on SMS/push paths
+- [x] **P5** — `rider_profiles` + `customer_preferences` dual-write with profile columns
+- [x] Docs: REQUIREMENTS / STANDARDS / PLAN / AGENTS / README updated
+- [ ] Cloud `db push` for `2026110401*`–`2026110406*` (needs `supabase login` / `SUPABASE_ACCESS_TOKEN`)
+
+### Client rebuild (data → RIO → screens → UI → state) — 2026-11-06
+- [x] **Data** — new local Goa seed `supabase/seeds/goa_demo.sql` (Margao kitchens, real pins, hours, cost for two, bestsellers, live + expired offers, wrap-past-midnight and out-of-range cases); old `seed.sql` untouched; synthetic kept but fenced from every product read
+- [x] **Schema** `20261106010000_catalog_ux_fields` — offer windows on `home_highlights`, kitchen hours / `cost_for_two` / `is_pure_veg`, `menu_categories` + `menu_items.category_id` (trigger dual-write) + `is_bestseller`, open-now helper
+- [x] **RPCs** `20261106020000_customer_screen_rpcs` — `home_feed`, `browse_restaurants` (filters + keyset paging + server range), `restaurant_detail`, `order_tracking`; wrappers in `@quickbite/api/mobile/catalog`
+- [x] **RIO grounding** — tools read `browse_restaurants` / `restaurant_detail` (same rows as the app); every direct read filters `is_synthetic=false`; embeddings backfill skips synthetic unless `--include-synthetic`
+- [x] **Entry flow** — single splash (no second loader) → login with Skip → location explainer (GPS / area search / Margao fallback + "Change" banner) → Home; riders land on rider tabs; `resolveEntryRoute` + tests
+- [x] **Screens** — Home on `home_feed` (FlashList, sticky filters, veg toggle remembered), Explore on paged `browse_restaurants`, Restaurant on `restaurant_detail`, Checkout inline range check + coded failure actions, push permission asked after first order
+- [x] **UI system** — type scale + motion tokens; `Sheet` (gorhom) for address / note / payment / filter / customize; `PressableScale` + haptics; `Skeleton` + `QueryView`; `sonner-native` toasts + `showDialog` replace `Alert`; FlashList on Home / Orders / Notifications; `RemoteImage` branded placeholder (no stock photo); `LoadingSkeleton` / `LogoLoader` deleted
+- [x] **Lint** — `apps/client/eslint.config.mjs` + `npm run lint` (bans RN `Animated` / `FlatList` / `SectionList` / `Alert`, Supabase imports in screens; warns hex / `fontSize` literals) — 0 errors
+- [x] **State** — all query keys in `src/lib/query-keys.ts`; zustand + MMKV for location, auth prefs, browse prefs, last role, hearts; NetInfo `onlineManager`; order realtime only while an order is active; live-kitchen invalidation fixed (was hitting retired keys)
+- [x] Docs: STANDARDS §3a/§3b, `.cursor/rules/ui.mdc`, REQUIREMENTS tables + screen RPCs
+
+### Ponytail audit fixes (steps 1–9) — 2026-11-07
+- [x] **1. Sign-up trigger** — `20261107010000_fix_handle_new_user.sql` removes the dropped `user_roles` insert from `public.handle_new_user()`
+- [x] **2. Dead Home fetchers** — removed `fetchHomeCatalog`, `fetchHomeShell`, `fetchHomeDishes` (+ unused helpers) from `packages/api/src/mobile/home.ts`
+- [x] **3. Dead package & scripts** — deleted `packages/shared` and `scripts/{migrate-client-features,migrate-packages-api,extract-manager-pages}.mjs`
+- [x] **4. Admin overview & paging** — `20261107020000_admin_overview.sql` adds `public.admin_overview()` count RPC; `dashboard/admin.ts` paginates list queries with `.range(0, pageSize - 1)` and scopes restaurant profile/member lookups
+- [x] **5. Menu image upload** — moved `menu-images` storage upload to `uploadMenuThumb` in `packages/api/src/dashboard/menu.ts` + Vitest
+- [x] **6. Kitchen status test** — added full `nextKitchenStatus` transition Vitest in `apps/manager/src/api/orders.test.ts`
+- [x] **7. RIO file split** — split `supabase/functions/rio/index.ts` into `index.ts` (HTTP), `turn.ts` (model loop + follow-ups), `stream.ts` (NDJSON stream)
+- [x] **8. One-line api shims** — deleted 24 one-line re-export shims under `apps/{client,manager}/src/api/` and pointed imports directly at `@quickbite/api/*`
+- [x] **9. Style warnings in touched files** — replaced literal `fontSize` with `AppText variant` in touched client components/screens
+
+### Client UI/UX Pro Max pass (steps 1–7) — 2026-11-07
+- [x] **Metro watcher scope** — narrowed `watchFolders` in `apps/client/metro.config.js` and blocked `apps/manager`, `apps/landing`, and `node_modules/**/android/build/**` to avoid Linux `ENOSPC` watcher exhaustion
+- [x] **1. Warm contrast tokens** — raised `brandHex.textMuted` to `#6E675F` (≥4.5:1 on warm/white) and `Button` primary fill to `colors.primaryDark` (`#D44812`) with prior hex commented
+- [x] **2. Touch targets** — enlarged `QuantityStepper` (`34×34` + `hitSlop={10}`), tab bars (`minHeight: 48`), and heart/favorite controls (`hitSlop={12}` + descriptive accessibility labels)
+- [x] **3. Form & error a11y** — wired `accessibilityLabel` on `TextField` and `accessibilityRole="alert"` + `accessibilityLiveRegion="polite"` on inline address errors
+- [x] **4. Non-color dietary signal** — added `accessibilityRole="image"` and `Vegetarian` / `Non-vegetarian` label on `VegMark`
+- [x] **5. Sheet primitives** — replaced raw slide `Modal` in `NearbyOrderCard` and `AddressEditorModal` with `@/components/Sheet`
+- [x] **6. List virtualization** — converted `ExploreScreen` and `FavoritesScreen` vertical feeds from `ScrollView` + `.map` to `@shopify/flash-list`
+- [x] **7. Dynamic Type resilience** — added `maxFontSizeMultiplier={1.35}` default on `AppText` so largest system font scales cleanly without clipping
+- [x] **8. RIO assistant redesign** — full-width runtime-safe `RioCards` (kitchen/menu headers, receipt cart with savings banner & settled pill, urgency ticket badge), 2×2 starter grid, markdown list/bold rendering, latest-turn-only follow-up chips, Reanimated thinking pill (`ReduceMotion.System`), `primaryDark` contrast, MMKV thread cache, and 0 lint warnings across all RIO files
+
 ---
 
 ## In progress
 
 | Item | Notes |
 |------|--------|
+| Cloud apply schema hardening | Run `supabase db push` after CLI auth; then `npm run types:gen` |
+| Cloud apply client rebuild | `supabase db push` for `20261106010000` + `20261106020000`, deploy `rio`, re-run embeddings backfill, then `npm run types:gen` — until then Home / Explore / Restaurant / RIO error against cloud |
+| Dev client rebuild | New native modules (MMKV, bottom-sheet, gesture-handler, haptics, netinfo, flash-list) need a fresh EAS / `expo run` dev build; Expo Go and old dev clients will crash |
 | Android APK distribution | Prefer EAS cloud preview; local `build-*.apk` files are gitignored artifacts only |
 | Hosted Auth redirects | Confirm email + Google redirects for Vercel + `quickbite://` |
 | Maps secret | Set `OPENROUTESERVICE_API_KEY` in Supabase secrets if directions must avoid OSRM fallback |
@@ -142,9 +220,13 @@ Update this file after every meaningful task. Status as of **2026-10-12**.
 
 | Priority | Item |
 |----------|------|
+| Ops | `supabase db push` + `types:gen` for P0–P5 migrations |
+| **Now** | Run `npm run types:gen` after applied `20261107*` migrations + deployed `rio` |
+| Client | Wire recent searches UI; clear ~278 hex / `fontSize` lint warnings; unused splash images in `assets/images/splash/` |
+| Types | Pre-existing `packages/api/src/mobile/profiles.ts` error (`rio_memory` missing from generated `Profile`) — clears after `types:gen` |
 | DCT | Create git tag `assessment-3`, paste green CI URL + report links on Dev Control Tower |
 | Ops | Auth redirects, ORS key, EAS APK, optional landing deploy |
-| Later | Drop `user_roles` mirror; **P7** clean demo seed (backup first); optional T5 Modelfile bonus |
+| Later | Drop legacy payment/rider/`rio_memory` mirror columns after dual-write proves stable; **P7** clean demo seed; optional T5 Modelfile bonus |
 
 ---
 
@@ -167,6 +249,13 @@ Update this file after every meaningful task. Status as of **2026-10-12**.
 | ADR-013 | Android package `com.sjinnovation.quickbite`; ship via EAS |
 | ADR-014 | Manager service-role helper must not ship to browser; dashboard uses anon + JWT |
 | ADR-016 | OK to wipe/rebuild seed later with care for admin |
+| ADR-017 | Engineering contract: `docs/STANDARDS.md` + `AGENTS.md` + Cursor/git hooks |
+| ADR-018 | Structure: `packages/{domain,db,api}`, one landing app, feature folders in client/manager; quarantine deleted 2026-11-04 |
+| ADR-019 | Schema hardening: side tables + dual-write (`order_payments`, `notification_jobs`, `rider_profiles`, `customer_preferences`); fence synthetic from product browse; single checkout offer resolver |
+| ADR-020 | Customer screens read through screen-shaped RPCs (`home_feed`, `browse_restaurants`, `restaurant_detail`, `order_tracking`); range / ETA / open-now computed server-side; anon may browse |
+| ADR-021 | Entry: splash → login (skippable) → location (GPS / search / Margao fallback) → Home. No diet question at onboarding; Home veg toggle is remembered |
+| ADR-022 | Client libraries: reanimated, flash-list, gorhom bottom-sheet, sonner-native, MMKV + zustand, netinfo, expo-haptics. Device prefs on MMKV; server data only in React Query |
+| ADR-023 | Synthetic corpus stays in base tables, excluded from every product + RIO read; local demo uses `seeds/goa_demo.sql` |
 | A3-001 | Assessment 3 track order was **T4 → T3 → T1 → T2 → T5 → T6 → T7**; see A3-010 |
 | A3-010 | Live order: **T6 before T5** (CI/observability before cancel-risk) |
 | A3-011 | T5 cancel-risk: offline sklearn only (no live score column); synthetic corpus OK when real closed orders ≪ train size |
@@ -182,6 +271,12 @@ Update this file after every meaningful task. Status as of **2026-10-12**.
 
 ## Changelog (compressed)
 
+- **2026-11-07** — Ponytail skills in `.cursor/skills/`; always-on rule `.cursor/rules/ponytail.mdc`; completed all 9 Ponytail audit fixes (`handle_new_user`, dead Home fetchers, deleted `packages/shared` + 3 one-off scripts, `admin_overview` RPC + paged admin lists, `uploadMenuThumb` in `@quickbite/api` + Vitest, `nextKitchenStatus` Vitest, `rio` split into `index`/`turn`/`stream`, 24 api shims removed, `AppText variant` in touched client files)
+- **2026-11-06** — Client rebuild: Goa seed, catalog UX schema + screen RPCs, RIO grounding, new entry flow, screens on RPCs, UI system (sheets / toasts / FlashList / tokens / lint), state (query keys, MMKV stores, scoped realtime). Cloud push + dev-client rebuild pending
+- **2026-11-04** — Schema hardening P0–P5: drop `user_roles`, fence synthetic browse, `resolve_checkout_offer`, `order_payments`, notification outbox, profile side tables; quarantine deleted; unit+edge green (cloud `db push` pending CLI auth)
+- **2026-11-04** — Admin Ops: `/admin/ops` metrics page, domain aggregators + tests, Sentry release tags, Edge requestLog
+- **2026-11-03** — Structure migration: domain/db/api packages, feature folders, one landing, quarantine (later deleted)
+- **2026-11-02** — Engineering standards: `docs/STANDARDS.md`, `AGENTS.md`, `.cursor/rules`, Cursor shell-guard hook, git pre-commit (secrets / `.env`)
 - **2026-11-02** — Docs: architecture diagrams use native size + larger fonts; Markdown preview zoom controls always on
 - **2026-11-02** — Docs: `docs/architecture.md` — C4 containers, order lifecycle, and module map from the current monorepo
 - **2026-10-12** — Manager: Vercel Ready — `vercel.json` `rm -rf node_modules && bun install` so cache cannot keep Start **1.168.32** beside patched **1.168.61**

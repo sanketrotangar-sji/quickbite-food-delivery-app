@@ -39,6 +39,7 @@ export async function captureEdgeException(
     level: "error",
     server_name: "supabase-edge",
     environment: Deno.env.get("SENTRY_ENVIRONMENT") ?? "edge",
+    release: Deno.env.get("SENTRY_RELEASE")?.trim() || "quickbite@dev",
     exception: {
       values: [
         {

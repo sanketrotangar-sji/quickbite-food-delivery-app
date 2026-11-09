@@ -1,5 +1,5 @@
 /** Premium QuickBite tracking basemap — local MapLibre style; brand accents from shared tokens. */
-import { brandHex } from '../../../../../packages/shared/src/brand-tokens';
+import { brandHex } from '@quickbite/domain';
 
 export const ROUTE_ORANGE = brandHex.primary;
 export const MAP_LAND = brandHex.background;

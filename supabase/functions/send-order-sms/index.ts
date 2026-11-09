@@ -1,4 +1,8 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import {
+  enqueueNotificationJob,
+  markNotificationJob,
+} from "../_shared/notificationOutbox.ts";
 import { secretsMatch } from "../_shared/webhookAuth.ts";
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
@@ -253,6 +257,17 @@ Deno.serve(async (req) => {
     });
   }
 
+  const dedupeKey = `${order.id}:${event}`;
+  await enqueueNotificationJob(admin, {
+    userId: order.customer_id,
+    orderId: order.id,
+    channel: "sms",
+    templateKey: event,
+    payload: { status: order.status },
+    dedupeKey,
+  });
+  await markNotificationJob(admin, dedupeKey, "processing");
+
   const { data: profile, error: profileError } = await admin
     .from("profiles")
     .select("phone")
@@ -260,33 +275,37 @@ Deno.serve(async (req) => {
     .maybeSingle();
   if (profileError) {
     console.error(`send-order-sms [${requestId}] profile_lookup_failed`);
+    await markNotificationJob(admin, dedupeKey, "failed", "profile_lookup_failed");
     return json({ error: "profile_lookup_failed" }, 500);
   }
 
   const to = normalizePhone(profile?.phone as string | null);
   if (!to) {
+    await markNotificationJob(admin, dedupeKey, "skipped", "no_customer_phone");
     return json({
       ok: true,
       ignored: true,
       reason: "no_customer_phone",
-      idempotencyKey: `${order.id}:${event}`,
+      idempotencyKey: dedupeKey,
     });
   }
 
   const sent = await sendTwilioSms(to, order.status, order.id);
   if (!sent.ok) {
+    await markNotificationJob(admin, dedupeKey, "failed", sent.reason);
     return json({
       ok: true,
       sent: false,
       reason: sent.reason,
-      idempotencyKey: `${order.id}:${event}`,
+      idempotencyKey: dedupeKey,
     });
   }
 
+  await markNotificationJob(admin, dedupeKey, "sent");
   return json({
     ok: true,
     sent: true,
     channel: sent.channel,
-    idempotencyKey: `${order.id}:${event}`,
+    idempotencyKey: dedupeKey,
   });
 });

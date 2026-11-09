@@ -10,8 +10,10 @@ import {
   loadCrmSegmentCounts,
   loadCrmSegmentMembers,
   type CrmSegment,
-} from '@/api/admin';
+} from '@quickbite/api/dashboard/admin';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 const SEGMENTS: Array<{ id: CrmSegment; label: string; hint: string }> = [
   { id: 'new', label: 'New', hint: '≤1 delivered order' },
@@ -198,16 +200,16 @@ export function AdminCrmPage() {
           </p>
           <div className="mt-4 space-y-3">
             <Field label="Title">
-              <input
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              <Input
+                className="bg-background"
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                 placeholder="Come back for 20% off"
               />
             </Field>
             <Field label="Description">
-              <textarea
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              <Textarea
+                className="bg-background"
                 rows={2}
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -232,11 +234,11 @@ export function AdminCrmPage() {
                 </select>
               </Field>
               <Field label="Discount %">
-                <input
+                <Input
                   type="number"
                   min={1}
                   max={80}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="bg-background"
                   value={form.discount_percent}
                   onChange={(e) => setForm((f) => ({ ...f, discount_percent: e.target.value }))}
                 />
@@ -244,11 +246,11 @@ export function AdminCrmPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Window (days)">
-                <input
+                <Input
                   type="number"
                   min={1}
                   max={90}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="bg-background"
                   value={form.days}
                   onChange={(e) => setForm((f) => ({ ...f, days: e.target.value }))}
                 />

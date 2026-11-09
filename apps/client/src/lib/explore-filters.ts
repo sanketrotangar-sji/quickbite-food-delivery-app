@@ -1,11 +1,13 @@
+import { DELIVERY_MAX_KM } from '@quickbite/domain';
+import type { BrowseFilters } from '@quickbite/api/mobile/catalog';
 import { formatInr } from '@/constants/theme';
 import type { HomeDish, HomePlace, DietFilter } from '@/lib/home-catalog';
 import { filterHomeDishes, filterHomePlaces, POPULAR_CATEGORY_ID, VEG_CATEGORY_ID } from '@/lib/home-catalog';
 import { placePresentation } from '@/lib/home-presentation';
 
-export const OFFER_MIN_DISCOUNT = 25;
+export const OFFER_MIN_DISCOUNT = 15;
 /** Explore “Near me” radius when address + kitchen coords exist. */
-export const NEAR_ME_MAX_KM = 8;
+export const NEAR_ME_MAX_KM = DELIVERY_MAX_KM;
 
 export type QuickFilter = 'all' | 'near' | 'veg' | 'fast' | 'offers' | 'top' | 'budget';
 
@@ -133,6 +135,30 @@ export function filterExploreDishes(dishes: HomeDish[], places: HomePlace[], que
   return filterHomeDishes(dishes, categoryIdFor(filters), query, dietFor(filters)).filter((dish) => {
     if (filters.maxPrice > 0 && dish.price > filters.maxPrice) return false;
     if (constrained && !allowed.has(dish.restaurantId)) return false;
+    return true;
+  });
+}
+
+/** Filters the browse RPC can apply server-side (veg, offers, rating, cuisine, search). */
+export function toBrowseFilters(filters: ExploreFilters, query: string, cuisineLabel: string | null): BrowseFilters {
+  const diet = dietFor(filters);
+  return {
+    cuisine: categoryIdFor(filters) === POPULAR_CATEGORY_ID ? null : cuisineLabel,
+    vegOnly: diet === 'veg',
+    offersOnly: filters.offersOnly,
+    minRating: filters.minRating > 0 ? filters.minRating : null,
+    query: query.trim() || null,
+    sort: filters.minRating > 0 ? 'rating' : filters.maxMinutes > 0 ? 'eta' : filters.offersOnly ? 'offer' : 'relevance',
+  };
+}
+
+/** What the server does not filter: ETA cap, distance cap, budget (cost for two), non-veg only. */
+export function filterBrowsedPlaces(places: HomePlace[], filters: ExploreFilters) {
+  return places.filter((place) => {
+    if (dietFor(filters) === 'nonveg' && !place.hasNonVeg) return false;
+    if (filters.maxMinutes > 0 && placePresentation(place).minutesLow > filters.maxMinutes) return false;
+    if (filters.maxDistanceKm > 0 && place.distanceKm != null && place.distanceKm > filters.maxDistanceKm) return false;
+    if (filters.maxPrice > 0 && place.costForTwo != null && place.costForTwo / 2 > filters.maxPrice) return false;
     return true;
   });
 }

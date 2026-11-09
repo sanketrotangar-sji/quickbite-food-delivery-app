@@ -17,7 +17,9 @@ vi.mock('react-native', () => ({
 vi.mock('react-native-reanimated', () => ({
   default: {
     View: () => null,
+    Image: () => null,
   },
+  ReduceMotion: { System: 'system' },
   Easing: {
     bezier: vi.fn(),
     in: vi.fn(),
@@ -27,14 +29,16 @@ vi.mock('react-native-reanimated', () => ({
     quad: vi.fn(),
     sin: vi.fn(),
   },
-  runOnJS: (fn: Function) => fn,
-  useAnimatedStyle: (fn: Function) => fn(),
+  runOnJS: <T,>(fn: T) => fn,
+  useAnimatedStyle: (fn: () => unknown) => fn(),
   useSharedValue: (initial: unknown) => ({ value: initial }),
   withDelay: vi.fn(),
   withRepeat: vi.fn(),
   withSequence: vi.fn(),
   withTiming: vi.fn(),
 }));
+
+vi.mock('@/constants/theme', () => ({ colors: { background: '#F4F1EB' } }));
 
 import { AnimatedSplash } from './AnimatedSplash';
 

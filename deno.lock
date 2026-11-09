@@ -61,22 +61,30 @@
       "apps/client": {
         "packageJson": {
           "dependencies": [
-            "npm:@expo-google-fonts/inter@~0.4.2",
+            "npm:@eslint/js@^9.32.0",
             "npm:@expo-google-fonts/manrope@~0.4.2",
             "npm:@expo-google-fonts/sora@~0.4.2",
             "npm:@expo/vector-icons@^15.0.2",
+            "npm:@gorhom/bottom-sheet@^5.2.14",
             "npm:@maplibre/maplibre-react-native@^11.4.0",
-            "npm:@quickbite/shared@*",
+            "npm:@quickbite/api@*",
+            "npm:@quickbite/db@*",
+            "npm:@quickbite/domain@*",
             "npm:@react-native-async-storage/async-storage@2.2.0",
+            "npm:@react-native-community/netinfo@12.0.1",
+            "npm:@shopify/flash-list@2.0.2",
             "npm:@supabase/supabase-js@2.49.8",
             "npm:@tanstack/react-query@^5.103.1",
             "npm:@types/react@~19.2.2",
+            "npm:eslint-plugin-react-hooks@^5.2.0",
+            "npm:eslint@^9.32.0",
             "npm:expo-auth-session@~57.0.14",
             "npm:expo-constants@~57.0.21",
             "npm:expo-crypto@~57.0.3",
             "npm:expo-dev-client@~57.0.19",
             "npm:expo-device@~57.0.2",
             "npm:expo-font@~57.0.4",
+            "npm:expo-haptics@~57.0.3",
             "npm:expo-image@~57.0.5",
             "npm:expo-linking@~57.0.12",
             "npm:expo-location@~57.0.20",
@@ -85,22 +93,29 @@
             "npm:expo-router@~57.0.25",
             "npm:expo-splash-screen@~57.0.9",
             "npm:expo-status-bar@~57.0.1",
-            "npm:expo-symbols@~57.0.3",
             "npm:expo-system-ui@~57.0.4",
             "npm:expo-task-manager@~57.0.21",
             "npm:expo-web-browser@~57.0.3",
             "npm:expo@~57.0.27",
+            "npm:globals@^15.15.0",
             "npm:react-dom@19.2.3",
+            "npm:react-native-gesture-handler@2.32",
             "npm:react-native-keyboard-controller@1.21.9",
+            "npm:react-native-mmkv@^4.3.2",
+            "npm:react-native-nitro-modules@~0.37.2",
             "npm:react-native-reanimated@4.5.1",
             "npm:react-native-safe-area-context@5.7",
             "npm:react-native-screens@4.26",
+            "npm:react-native-svg@15.15.4",
             "npm:react-native-web@0.21",
             "npm:react-native-worklets@0.10.1",
             "npm:react-native@0.86.3",
             "npm:react@19.2.3",
+            "npm:sonner-native@0.27",
+            "npm:typescript-eslint@^8.56.1",
             "npm:typescript@~6.0.3",
-            "npm:vitest@^4.1.11"
+            "npm:vitest@^4.1.11",
+            "npm:zustand@^5.0.16"
           ]
         }
       },
@@ -126,7 +141,9 @@
             "npm:@eslint/js@^9.32.0",
             "npm:@lovable.dev/vite-tanstack-config@^2.23.1",
             "npm:@playwright/test@^1.55.0",
-            "npm:@quickbite/shared@*",
+            "npm:@quickbite/api@*",
+            "npm:@quickbite/db@*",
+            "npm:@quickbite/domain@*",
             "npm:@radix-ui/react-alert-dialog@^1.1.15",
             "npm:@radix-ui/react-dialog@^1.1.15",
             "npm:@radix-ui/react-label@^2.1.8",
@@ -151,6 +168,7 @@
             "npm:eslint-plugin-react-refresh@~0.4.20",
             "npm:eslint@^9.32.0",
             "npm:globals@^15.15.0",
+            "npm:landing@*",
             "npm:lucide-react@0.575",
             "npm:nitro@3.0.260603-beta",
             "npm:prettier@^3.7.3",
@@ -168,7 +186,17 @@
           ]
         }
       },
-      "packages/shared": {
+      "packages/api": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@quickbite/db@*",
+            "npm:@quickbite/domain@*",
+            "npm:@supabase/supabase-js@2.49.8",
+            "npm:date-fns@^4.1.0"
+          ]
+        }
+      },
+      "packages/domain": {
         "packageJson": {
           "dependencies": [
             "npm:vitest@^4.1.11"

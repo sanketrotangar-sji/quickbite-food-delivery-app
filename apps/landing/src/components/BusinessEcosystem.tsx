@@ -1,5 +1,5 @@
 import { ArrowRight, Bike, Store, UserRound } from 'lucide-react';
-import { DASHBOARD_URL } from '../config';
+import { getDashboardUrl } from '../config';
 
 const roles = [
   {
@@ -14,7 +14,7 @@ const roles = [
     title: 'Restaurants',
     flow: ['Manage menu', 'Receive orders', 'Prepare', 'Grow'],
     copy: 'Run your kitchen from one dashboard — menu, orders, and performance.',
-    href: DASHBOARD_URL,
+    href: getDashboardUrl(),
     cta: 'Learn More',
     icon: Store,
   },

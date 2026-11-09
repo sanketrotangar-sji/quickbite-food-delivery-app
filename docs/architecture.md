@@ -1,6 +1,6 @@
 # QuickBite — architecture
 
-How the monorepo fits together. Product rules, tables, and RPCs stay in [`REQUIREMENTS.md`](./REQUIREMENTS.md). One account has one `profiles.role`. Order status changes only through security-definer RPCs.
+How the monorepo fits together. Product rules stay in [`REQUIREMENTS.md`](./REQUIREMENTS.md). How we write code, where files go, and how vendors plug in: [`STANDARDS.md`](./STANDARDS.md). One account has one `profiles.role`. Order status changes only through security-definer RPCs.
 
 **Preview:** open this file, then `Ctrl+K` then `V`. Diagrams keep their real size (scroll, do not shrink). Use the **+ / −** buttons on each diagram, or scroll the mouse wheel over it to zoom.
 
@@ -133,6 +133,8 @@ graph TD
 
 Solid arrows are calls. The service-role key stays on Edge and scripts, never in `EXPO_PUBLIC_*` or `VITE_*`. Hover a diagram and click **+** if you still need a closer look.
 
+**Hardening note (2026-11-04):** payment state dual-writes to `order_payments`; SMS/push also enqueue `notification_jobs`; rider duty / RIO prefs dual-write `rider_profiles` / `customer_preferences`. Customer browse uses `restaurant_browse` (no synthetic kitchens). Checkout discounts resolve only via kitchen `%` + CRM (`private.resolve_checkout_offer`).
+
 ---
 
 ## 2. Data flow / request lifecycle
@@ -241,17 +243,19 @@ graph TD
 
   subgraph clientG ["apps/client"]
     croutes["app/ routes"]:::frontend
-    screens["screens + rider"]:::frontend
-    capi["src/api"]:::frontend
+    feats["src/features/*"]:::frontend
+    capi["thin api re-exports"]:::frontend
   end
 
   subgraph dashG ["apps/manager"]
-    droutes["src/routes"]:::frontend
-    dapi["src/api"]:::frontend
+    droutes["thin src/routes"]:::frontend
+    mfeats["features/auth kitchen admin"]:::frontend
   end
 
   landing["apps/landing"]:::frontend
-  shared["packages/shared"]:::shared
+  domain["packages/domain"]:::shared
+  dbpkg["packages/db"]:::db
+  apipkg["packages/api"]:::shared
 
   subgraph sb ["supabase/"]
     mig[("migrations/")]:::db
@@ -262,16 +266,17 @@ graph TD
 
   scripts["scripts/ + CI"]:::tooling
 
-  croutes --> screens --> capi
-  droutes --> dapi
-  landing -.-> droutes
-  capi --> shared
-  dapi --> shared
-  shared --> eshared
+  croutes --> feats --> capi
+  droutes --> mfeats
+  landing -.->|embedded on /| droutes
+  capi --> apipkg
+  mfeats --> apipkg
+  apipkg --> domain
+  apipkg --> dbpkg
+  domain --> eshared
   riofn --> eshared
   edges --> eshared
-  capi -.-> mig
-  dapi -.-> mig
+  apipkg -.-> mig
   riofn -.-> mig
   scripts -.-> mig
 
@@ -280,4 +285,4 @@ graph TD
   style sb fill:#EAF6EA,stroke:#68A063,color:#000
 ```
 
-Solid arrows are imports. Dashed arrows are a URL or a runtime call into Postgres. `apps/landing` does not import Supabase. Both apps share `@quickbite/shared`, which re-exports the order rules in `functions/_shared`.
+Solid arrows are imports. Dashed arrows are a URL or a runtime call into Postgres. Apps call `bindSupabase(client)` then use `@quickbite/api`. Marketing lives only in `apps/landing`.

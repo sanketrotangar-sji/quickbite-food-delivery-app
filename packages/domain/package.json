@@ -1,0 +1,14 @@
+{
+  "name": "@quickbite/domain",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Pure domain rules for QuickBite — roles, order status, auth validation",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.11"
+  }
+}

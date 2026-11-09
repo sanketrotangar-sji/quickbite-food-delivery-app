@@ -1,4 +1,5 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { requestLog } from "../_shared/requestLog.ts";
 import { verifyStripeSignature } from "../_shared/stripeSignature.ts";
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
@@ -44,28 +45,45 @@ async function writeAudit(
 
 Deno.serve(async (req) => {
   const requestId = crypto.randomUUID().slice(0, 8);
-  if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
+  const started = Date.now();
+  const respond = (body: unknown, status = 200) => {
+    const err =
+      status >= 400 && body && typeof body === "object" && "error" in body
+        ? String((body as { error: unknown }).error)
+        : undefined;
+    requestLog({
+      fn: "stripe-webhook",
+      requestId,
+      ms: Date.now() - started,
+      ok: status < 400,
+      status,
+      error: err,
+    });
+    return json(body, status);
+  };
+
+  if (req.method !== "POST") return respond({ error: "method_not_allowed" }, 405);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
   if (!supabaseUrl || !serviceRoleKey || !webhookSecret) {
     console.error(`stripe-webhook [${requestId}] missing_server_config`);
-    return json({ error: "server_not_configured" }, 500);
+    return respond({ error: "server_not_configured" }, 500);
   }
 
   const rawBody = await req.text();
   const signature = req.headers.get("stripe-signature");
   const valid = await verifyStripeSignature(rawBody, signature, webhookSecret);
   if (!valid) {
-    return json({ error: "invalid_signature" }, 400);
+    return respond({ error: "invalid_signature" }, 400);
   }
 
   let event: StripeEvent;
   try {
     event = JSON.parse(rawBody) as StripeEvent;
   } catch {
-    return json({ error: "invalid_json" }, 400);
+    return respond({ error: "invalid_json" }, 400);
   }
 
   const admin = createClient(supabaseUrl, serviceRoleKey, {
@@ -91,7 +109,7 @@ Deno.serve(async (req) => {
       eventType === "checkout.session.completed" ? asString(obj?.id) : null;
 
     if (!orderId && !paymentIntentId && !checkoutSessionId) {
-      return json({ ok: true, ignored: true, reason: "no_order_ref" });
+      return respond({ ok: true, ignored: true, reason: "no_order_ref" });
     }
 
     let query = admin.from("orders").select(
@@ -107,10 +125,10 @@ Deno.serve(async (req) => {
     const { data: order, error: lookupError } = await query.maybeSingle();
     if (lookupError) {
       console.error(`stripe-webhook [${requestId}] lookup_failed`, lookupError);
-      return json({ error: "order_lookup_failed" }, 500);
+      return respond({ error: "order_lookup_failed" }, 500);
     }
     if (!order) {
-      return json({ ok: true, ignored: true, reason: "order_not_found" });
+      return respond({ ok: true, ignored: true, reason: "order_not_found" });
     }
 
     if (order.payment_status === "paid") {
@@ -118,7 +136,7 @@ Deno.serve(async (req) => {
         event_id: event.id,
         event_type: eventType,
       });
-      return json({ ok: true, ignored: true, reason: "already_paid" });
+      return respond({ ok: true, ignored: true, reason: "already_paid" });
     }
 
     const { error: updateError } = await admin
@@ -136,7 +154,7 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       console.error(`stripe-webhook [${requestId}] pay_update_failed`, updateError);
-      return json({ error: "order_update_failed" }, 500);
+      return respond({ error: "order_update_failed" }, 500);
     }
 
     await writeAudit(admin, "stripe_payment_succeeded", order.id, {
@@ -146,7 +164,7 @@ Deno.serve(async (req) => {
       checkout_session_id: checkoutSessionId,
     });
 
-    return json({ ok: true, orderId: order.id, paymentStatus: "paid" });
+    return respond({ ok: true, orderId: order.id, paymentStatus: "paid" });
   }
 
   if (eventType === "charge.refunded" || eventType === "payment_intent.canceled") {
@@ -161,16 +179,16 @@ Deno.serve(async (req) => {
     else if (paymentIntentId) {
       query = query.eq("stripe_payment_intent_id", paymentIntentId);
     } else {
-      return json({ ok: true, ignored: true, reason: "no_order_ref" });
+      return respond({ ok: true, ignored: true, reason: "no_order_ref" });
     }
 
     const { data: order, error: lookupError } = await query.maybeSingle();
-    if (lookupError) return json({ error: "order_lookup_failed" }, 500);
+    if (lookupError) return respond({ error: "order_lookup_failed" }, 500);
     if (!order) {
-      return json({ ok: true, ignored: true, reason: "order_not_found" });
+      return respond({ ok: true, ignored: true, reason: "order_not_found" });
     }
     if (order.payment_status === "refunded" && order.refunded_at) {
-      return json({ ok: true, ignored: true, reason: "already_refunded" });
+      return respond({ ok: true, ignored: true, reason: "already_refunded" });
     }
 
     const { error: updateError } = await admin
@@ -184,7 +202,7 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       console.error(`stripe-webhook [${requestId}] refund_update_failed`, updateError);
-      return json({ error: "order_update_failed" }, 500);
+      return respond({ error: "order_update_failed" }, 500);
     }
 
     await writeAudit(admin, "stripe_charge_refunded", order.id, {
@@ -193,8 +211,8 @@ Deno.serve(async (req) => {
       payment_intent_id: paymentIntentId,
     });
 
-    return json({ ok: true, orderId: order.id, paymentStatus: "refunded" });
+    return respond({ ok: true, orderId: order.id, paymentStatus: "refunded" });
   }
 
-  return json({ ok: true, ignored: true, reason: "unhandled_event", type: eventType });
+  return respond({ ok: true, ignored: true, reason: "unhandled_event", type: eventType });
 });

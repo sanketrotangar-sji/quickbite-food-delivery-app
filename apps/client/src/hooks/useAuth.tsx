@@ -5,9 +5,9 @@ import { AppState } from 'react-native';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 
-import { acceptManagerInvites } from '@/api/applications';
+import { acceptManagerInvites } from '@quickbite/api/mobile/applications';
 import { createSessionFromUrl, signOut as apiSignOut } from '@/api/auth';
-import { getProfile } from '@/api/profiles';
+import { getProfile } from '@quickbite/api/mobile/profiles';
 import { supabase } from '@/api/supabaseClient';
 import { restoreRiderTracking, stopRiderTracking } from '@/features/rider/rider-tracking';
 import { hasRole, type Profile } from '@/types/models';
@@ -157,8 +157,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const uid = session?.user.id;
         if (uid) {
           try {
-            const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
-            await AsyncStorage.removeItem(`qb.rio.chat.${uid}`);
+            const { storage } = await import('@/lib/storage');
+            storage.remove(`qb.rio.chat.${uid}`);
           } catch {
             // Best-effort local RIO cache clear.
           }

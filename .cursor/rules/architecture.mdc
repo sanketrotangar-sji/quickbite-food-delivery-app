@@ -1,0 +1,33 @@
+---
+description: Folder layout, import rules, and third-party placement for QuickBite
+alwaysApply: true
+---
+
+# Architecture (new code)
+
+Full text: `docs/STANDARDS.md`. Follow that even if today’s folders are not migrated yet.
+
+## Placement
+
+- Expo UI → `apps/client` (customer + rider)
+- Dashboard UI → `apps/manager` (kitchen + admin)
+- Marketing → `apps/landing` only (do not add a second landing under manager)
+- Secrets / vendor SDKs / webhooks → `supabase/functions/<job>/`
+- Pure rules (status, fees, range, roles) → `packages/domain` (`packages/shared` is a dead re-export; delete it only in PLAN step 3)
+- Generated DB types → do not add a third `database.ts`
+
+New feature code uses `features/<name>/` with `api.ts`, `hooks.ts`, `screens/`, `components/`.
+
+## Imports
+
+- **Screens and presentational components** must not call `.from(`, `.rpc(`, or `functions.invoke(`. Put that in `api.ts`.
+- **RIO** calls the same place/cart/status RPCs. Do not invent a second order machine.
+- **Never** `EXPO_PUBLIC_*` or `VITE_*` for `SUPABASE_SERVICE_ROLE_KEY`.
+
+## Third parties
+
+Vendor secret + HTTP to Stripe/Twilio/ORS/etc. = Edge function. App only `invoke`s. No vendor secret SDK in Expo or Vite.
+
+## Shell
+
+Do not run destructive git/docker/db commands. Cursor hooks deny or ask. Do not pass `--no-verify` unless the human asked.

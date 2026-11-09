@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, View } from 'react-native';
 
-import type { DeliveryCoordinate } from '@/api/deliveries';
+import type { DeliveryCoordinate } from '@quickbite/api/mobile/deliveries';
 import { AppText } from '@/components/AppText';
 import { MAP_LAND } from '@/components/maps/quickbite-map-style';
 import { colors, radii } from '@/constants/theme';
@@ -35,7 +35,6 @@ export function CustomerOrderMap(props: Props) {
   }
 
   // Native MapLibre is only required in custom builds, never in Expo Go.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { NativeRouteMap } = require('../maps/NativeRouteMap') as typeof import('../maps/NativeRouteMap');
   return (
     <NativeRouteMap
@@ -47,18 +46,20 @@ export function CustomerOrderMap(props: Props) {
   );
 }
 
-function MapUnavailable({
+export function MapUnavailable({
   height,
   message,
   borderRadius,
+  icon = 'map-outline',
 }: {
   height?: number;
   message: string;
   borderRadius: number;
+  icon?: keyof typeof Ionicons.glyphMap;
 }) {
   return (
     <View style={[styles.message, height != null ? { height } : styles.fill, { borderRadius }]}>
-      <Ionicons name="map-outline" size={26} color={colors.primary} />
+      <Ionicons name={icon} size={26} color={colors.primary} />
       <AppText muted style={styles.messageText}>
         {message}
       </AppText>

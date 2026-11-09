@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { EmptyState } from '@/components/EmptyState';
-import { LoadingSkeleton } from '@/components/LoadingSkeleton';
+import { Skeleton } from '@/components/Skeleton';
 import { Screen } from '@/components/Screen';
 import { colors, formatInr, radii, tabBarInset } from '@/constants/theme';
 import { earningsBars, earningsSnapshot, recentEarnings, useRiderHistory } from '@/features/rider/use-rider-live';
@@ -46,7 +46,7 @@ export function EarningsScreen() {
             );
           })}
         </View>
-        {historyQuery.isLoading && !historyQuery.data ? <LoadingSkeleton rows={3} /> : null}
+        {historyQuery.isLoading && !historyQuery.data ? <Skeleton rows={3} /> : null}
         {historyQuery.isError ? (
           <EmptyState
             icon="cloud-offline-outline"

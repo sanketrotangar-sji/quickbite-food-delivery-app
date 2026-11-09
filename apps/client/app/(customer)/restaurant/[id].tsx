@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 
-import { RestaurantDetailScreen } from '@/screens/customer/RestaurantDetailScreen';
+import { RestaurantDetailScreen } from '@/features/restaurants/screens/RestaurantDetailScreen';
 
 export default function RestaurantRoute() {
   const params = useLocalSearchParams<{ id: string | string[] }>();

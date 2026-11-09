@@ -1,13 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { FlowHeader } from '@/components/FlowHeader';
-import { LoadingSkeleton } from '@/components/LoadingSkeleton';
+import { Skeleton } from '@/components/Skeleton';
 import { Screen } from '@/components/Screen';
 import { colors, formatInr, radii } from '@/constants/theme';
 import { pickActive, toCurrentOrder, useAdvanceRiderOrder, useRiderOrders } from '@/features/rider/use-rider-live';
@@ -21,6 +21,7 @@ import {
 import type { RiderCurrentOrder } from '@/features/rider/rider-home';
 import { RiderRouteMap } from '@/features/rider/components/RiderRouteMap';
 import { useRiderTracking } from '@/features/rider/rider-tracking';
+import { toast } from 'sonner-native';
 
 const TRACK = ['Pickup', 'Picked up', 'Drop', 'Delivered'] as const;
 
@@ -68,7 +69,7 @@ function contentFor(step: DeliveryStep, order: RiderCurrentOrder): StepContent {
       rows: [
         { label: 'Drop', value: order.drop.address },
         { label: 'Distance', value: `${order.drop.distanceKm.toFixed(1)} km` },
-        { label: 'ETA', value: 'about 16 min' },
+        { label: 'ETA', value: `about ${order.minutesToPickup} min` },
       ],
       cta: "I've arrived",
     };
@@ -112,8 +113,8 @@ export function DeliveryScreen() {
       <Screen>
         <FlowHeader title="Delivery" />
         <View style={styles.loading}>
-          <LoadingSkeleton variant="feature" rows={1} />
-          <LoadingSkeleton rows={2} />
+          <Skeleton variant="feature" rows={1} />
+          <Skeleton rows={2} />
         </View>
       </Screen>
     );
@@ -153,7 +154,7 @@ export function DeliveryScreen() {
         if (action === 'deliver') setDeliveryStep(orderId, 'completed');
         else advanceDeliveryStep(orderId, 'out_for_delivery');
       })
-      .catch((error: Error) => Alert.alert('Could not update delivery', error.message));
+      .catch((error: Error) => toast.error('Could not update delivery', { description: error.message }));
   }
 
   return (

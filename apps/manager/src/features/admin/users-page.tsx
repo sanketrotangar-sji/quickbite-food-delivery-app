@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
-import { loadAdminUsers } from '@/api/admin';
+import { loadAdminUsers } from '@quickbite/api/dashboard/admin';
+import { Input } from '@/components/ui/input';
 
 export function AdminUsersPage() {
   const users = useQuery({ queryKey: ['admin-users'], queryFn: loadAdminUsers });
@@ -18,8 +19,8 @@ export function AdminUsersPage() {
     <div className="mx-auto max-w-6xl">
       <p className="text-xs font-bold uppercase text-primary">Directory</p>
       <h1 className="mt-1 text-3xl font-extrabold">Users</h1>
-      <input
-        className="mt-5 w-full max-w-sm rounded-lg border border-border bg-card px-3 py-2 text-sm"
+      <Input
+        className="mt-5 max-w-sm bg-card"
         placeholder="Search name, email, or role"
         value={query}
         onChange={(event) => setQuery(event.target.value)}

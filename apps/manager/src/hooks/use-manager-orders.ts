@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { listRestaurantOrders, listRestaurantOrderStats, nextKitchenStatus, setRestaurantOrderStatus, type DbOrder } from '@/api/orders';
+import { listRestaurantOrders, listRestaurantOrderStats, nextKitchenStatus, setRestaurantOrderStatus, type DbOrder } from '@quickbite/api/dashboard/orders';
 import { supabase } from '@/integrations/supabase/client';
 import type { Order, OrderStatus } from '@/lib/quickbite-data';
 
