@@ -10,7 +10,7 @@ import { RestaurantDiscovery } from "./components/RestaurantDiscovery";
 import { RioSection } from "./components/RioSection";
 import { WhyQuickBite } from "./components/WhyQuickBite";
 import { setDashboardUrlOverride } from "./config";
-import "./styles.css";
+import "./landing-theme.css";
 
 export type LandingPageProps = {
   /** Same-origin login when embedded in the dashboard. */

@@ -1,17 +1,22 @@
 # QuickBite — Progress
 
-Update this file after every meaningful task. Status as of **2026-11-09**.
+Update this file after every meaningful task. Status as of **2026-11-12**.
 
 ---
 
 ## Done
+
+### Landing CSS re-wire (dashboard embed) — 2026-11-12
+- [x] Split `apps/landing/src/landing-theme.css` (qb `@theme` + `.qb-*`); standalone `styles.css` imports it
+- [x] Manager `styles.css`: `@source ../../landing/src` + `@import "landing/landing-theme.css"` so guest `/` gets tokens and utilities again
 
 ### Assessment 4 — Option 2: Find-dishes-by-photo + AI auto-tags (Vision) — 2026-11-09
 - [x] `@quickbite/domain` (`packages/domain/src/vision.ts` + `vision.test.ts`): canonical tag taxonomy (`CANONICAL_FOOD_TAGS`), category normalizer, image data-URL validator, search query builder, and pure Tag P/R/F1 & Hit@K/MRR scorers
 - [x] Edge `supabase/functions/vision-food` + `_shared/vision.ts` (+ Deno tests): Groq Vision (`qwen/qwen3.8-27b`) + Cloud Ollama Vision failover, `NOT_FOOD_IMAGE` guard, `qwen3-embedding:0.6b` hybrid pgvector search, and 8 km range filter — deployed live to cloud Supabase (`motqehtswgjbbvoazarh`)
 - [x] `@quickbite/api` (`packages/api/src/vision.ts` + `dashboard/menu.ts`): `searchDishesByPhoto` (supports both base64 `imageDataUrl` and remote `imageUrl`), `suggestDishTagsFromPhoto`, `updateMenuItemReview`, and `tags` persistence on `menu_items`
 - [x] Manager `/menu` (`apps/manager/src/features/kitchen/screens/MenuPage.tsx`): photo upload auto-trigger, "Auto-tag with AI" button, interactive Owner Review/Correct tag chips (`tags[]`, `category`, `is_veg`), and save flow
-- [x] Customer Explore (`apps/client` `HomeSearch`, `ExploreScreen`, `PhotoSearchSheet`, `photo-search.ts` + `photo-search.test.ts`): camera icon in search bar, photo scan sheet with AI food badges, live catalog food photo strip, MMKV JSI startup guard (`storage.ts`), and 1-tap Add to Cart for nearby matching dishes
+- [x] Customer Explore (`apps/client` `HomeSearch`, `ExploreScreen`, `PhotoSearchSheet`): camera opens Take photo or Gallery (`expo-image-picker`). No sample-photo fallback. 1-tap Add for matches inside 8 km
+- [x] Reports rebuilt 2026-11-10 in one theme: Assessment 4 is 4 pages (goal, built, e2e, results, conclusion). Project report is 6 pages (what it is, contents, how to use, system diagram, part-by-part, A1–A4 metrics, conclusion).
 - [x] Android EAS preview APK build queued (`2212e39b-1407-4f7d-9c9a-e21212514611`)
 - [x] Backfilled all **389 real (`is_synthetic = false`) `menu_items`** in cloud Supabase with normalized canonical food tags (`scripts/backfill-menu-tags.mjs`)
 - [x] Evaluation harness (`scripts/eval-vision.mjs` → `docs/dct/vision-eval-results.json` & `docs/dct/ASSESSMENT4_REPORT.md`): scaled to **172 evaluation queries** (**160 canonical dishes** across 7 cuisines + **12 non-food/OOC negatives**, plus live verification against **15,998 cloud `pgvector` embeddings**):

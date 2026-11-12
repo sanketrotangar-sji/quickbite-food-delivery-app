@@ -1,6 +1,8 @@
 @import "tailwindcss" source(none);
 @source "../src";
+@source "../../landing/src";
 @import "tw-animate-css";
+@import "landing/landing-theme.css";
 
 @custom-variant dark (&:is(.dark *));
 
